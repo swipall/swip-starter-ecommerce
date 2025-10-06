@@ -1,9 +1,8 @@
-import { graphql, type ResultOf, type VariablesOf } from '@/graphql';
-import type { TadaDocumentNode } from 'gql.tada';
-import { print } from 'graphql';
-import { getAuthToken } from '@/lib/auth';
-import { getCurrencyCode } from '@/lib/settings';
-import { getLocale } from 'next-intl/server';
+import type {TadaDocumentNode} from 'gql.tada';
+import {print} from 'graphql';
+import {getAuthToken} from '@/lib/auth';
+import {getCurrencyCode} from '@/lib/settings';
+import {getLocale} from 'next-intl/server';
 
 const VENDURE_API_URL = process.env.VENDURE_SHOP_API_URL || process.env.NEXT_PUBLIC_VENDURE_SHOP_API_URL;
 const VENDURE_CHANNEL_TOKEN = process.env.VENDURE_CHANNEL_TOKEN || process.env.NEXT_PUBLIC_VENDURE_CHANNEL_TOKEN || '__default_channel__';
@@ -28,7 +27,7 @@ interface VendureRequestOptions {
 
 interface VendureResponse<T> {
   data?: T;
-  errors?: Array<{ message: string; [key: string]: any }>;
+  errors?: Array<{ message: string; [key: string]: unknown }>;
 }
 
 /**
@@ -141,5 +140,6 @@ export async function mutate<TResult, TVariables>(
     : [variables: TVariables, options?: VendureRequestOptions]
 ): Promise<{ data: TResult; token?: string }> {
   // Mutations use the same underlying implementation as queries in GraphQL
-  return query(document, ...[variables, options] as any);
+  // @ts-expect-error - Complex conditional type inference, runtime behavior is correct
+  return query(document, variables, options);
 }

@@ -5,7 +5,7 @@ export const graphql = initGraphQLTada<{
     introspection: introspection;
     scalars: {
         DateTime: string,
-        JSON: any,
+        JSON: Record<string, unknown>,
         Money: number
     }
 }>();

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import Cookies from 'js-cookie';
 import type { ResultOf } from '@/graphql';
 import type { GetActiveChannelQuery } from '@/lib/vendure/queries';

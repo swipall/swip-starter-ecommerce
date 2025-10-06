@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import {Package, User, LogOut} from 'lucide-react';
+import {Package, User} from 'lucide-react';
 import {redirect} from 'next/navigation';
 import {getActiveCustomer} from '@/lib/vendure/actions';
 

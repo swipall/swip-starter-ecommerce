@@ -56,7 +56,7 @@ export default async function OrderConfirmationPage({ params }: { params: { code
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Order Not Found</h1>
           <p className="text-muted-foreground mb-8">
-            We couldn't find an order with that code.
+            We couldn&apos;t find an order with that code.
           </p>
           <Button asChild>
             <Link href="/public">Return to Home</Link>

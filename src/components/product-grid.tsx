@@ -1,7 +1,7 @@
-import { ResultOf } from '@/graphql';
-import { ProductCard } from './product-card';
-import { Pagination } from './pagination';
-import { SortDropdown } from './sort-dropdown';
+import {ResultOf} from '@/graphql';
+import {ProductCard} from './product-card';
+import {Pagination} from './pagination';
+import {SortDropdown} from './sort-dropdown';
 import {SearchProductsQuery} from "@/lib/vendure/queries";
 
 interface ProductGridProps {
@@ -13,7 +13,7 @@ interface ProductGridProps {
     take: number;
 }
 
-export async function ProductGrid({ productDataPromise, currentPage, take }: ProductGridProps) {
+export async function ProductGrid({productDataPromise, currentPage, take}: ProductGridProps) {
     const result = await productDataPromise;
     const searchResult = result.data.search;
     const totalPages = Math.ceil(searchResult.totalItems / take);
@@ -32,17 +32,17 @@ export async function ProductGrid({ productDataPromise, currentPage, take }: Pro
                 <p className="text-sm text-muted-foreground">
                     {searchResult.totalItems} {searchResult.totalItems === 1 ? 'product' : 'products'}
                 </p>
-                <SortDropdown />
+                <SortDropdown/>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {searchResult.items.map((product: any) => (
-                    <ProductCard key={product.productId} product={product} />
+                {searchResult.items.map((product, i) => (
+                    <ProductCard key={'product-grid-item' + i} product={product}/>
                 ))}
             </div>
 
             {totalPages > 1 && (
-                <Pagination currentPage={currentPage} totalPages={totalPages} />
+                <Pagination currentPage={currentPage} totalPages={totalPages}/>
             )}
         </div>
     );

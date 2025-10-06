@@ -23,7 +23,13 @@ export function FacetFilters({ productDataPromise }: FacetFiltersProps) {
     const router = useRouter();
 
     // Group facet values by facet
-    const facetGroups = searchResult.facetValues.reduce((acc: any, item: any) => {
+    interface FacetGroup {
+        id: string;
+        name: string;
+        values: Array<{ id: string; name: string; count: number }>;
+    }
+
+    const facetGroups = searchResult.facetValues.reduce((acc: Record<string, FacetGroup>, item) => {
         const facetName = item.facetValue.facet.name;
         if (!acc[facetName]) {
             acc[facetName] = {
@@ -83,11 +89,11 @@ export function FacetFilters({ productDataPromise }: FacetFiltersProps) {
                 )}
             </div>
 
-            {Object.entries(facetGroups).map(([facetName, facet]: [string, any]) => (
+            {Object.entries(facetGroups).map(([facetName, facet]) => (
                 <div key={facet.id} className="space-y-3">
                     <h3 className="font-medium text-sm">{facetName}</h3>
                     <div className="space-y-2">
-                        {facet.values.map((value: any) => {
+                        {facet.values.map((value) => {
                             const isChecked = selectedFacets.includes(value.id);
                             return (
                                 <div key={value.id} className="flex items-center space-x-2">

@@ -2,11 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Loader2, MapPin, Truck, CreditCard, Edit } from 'lucide-react';
-import Image from 'next/image';
-import { OrderLine } from '../types';
 import { useCheckout } from '../checkout-provider';
 import { placeOrder as placeOrderAction } from '../actions';
 

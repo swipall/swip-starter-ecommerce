@@ -22,7 +22,7 @@ export async function addToCart(variantId: string, quantity: number = 1) {
     } else {
       return { success: false, error: result.data.addItemToOrder.message };
     }
-  } catch (error) {
+  } catch {
     return { success: false, error: 'Failed to add item to cart' };
   }
 }

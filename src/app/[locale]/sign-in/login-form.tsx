@@ -55,7 +55,7 @@ export function LoginForm() {
                             Forgot password?
                         </Link>
                         <div className="text-muted-foreground">
-                            Don't have an account?{' '}
+                            Don&apos;t have an account?{' '}
                             <Link href="/register" className="hover:text-primary">
                                 Register
                             </Link>

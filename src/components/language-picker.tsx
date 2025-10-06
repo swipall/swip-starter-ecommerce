@@ -21,7 +21,7 @@ export function LanguagePicker() {
                 <SelectValue />
             </SelectTrigger>
             <SelectContent>
-                {channel.availableLanguageCodes.map((code) => (
+                {channel.availableLanguageCodes?.map((code) => (
                     <SelectItem key={code} value={code}>
                         {code.toUpperCase()}
                     </SelectItem>

@@ -5,7 +5,7 @@ import { LoginMutation } from '@/lib/vendure/mutations';
 import { setAuthToken } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
-export async function loginAction(prevState: any, formData: FormData) {
+export async function loginAction(prevState: { error?: string } | undefined, formData: FormData) {
     const username = formData.get('username') as string;
     const password = formData.get('password') as string;
 
@@ -31,8 +31,8 @@ export async function loginAction(prevState: any, formData: FormData) {
         }
 
         redirect('/');
-    } catch (error: any) {
-        if (error.message === "NEXT_REDIRECT") throw error;
+    } catch (error: unknown) {
+        if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;
         return { error: 'An unexpected error occurred. Please try again.' };
     }
 }

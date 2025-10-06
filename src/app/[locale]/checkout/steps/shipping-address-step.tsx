@@ -32,27 +32,6 @@ interface AddressFormData {
   company?: string;
 }
 
-interface CustomerAddress {
-  id: string;
-  fullName?: string | null;
-  company?: string | null;
-  streetLine1: string;
-  streetLine2?: string | null;
-  city?: string | null;
-  province?: string | null;
-  postalCode?: string | null;
-  country: { id: string; code: string; name: string };
-  phoneNumber?: string | null;
-  defaultShippingAddress?: boolean | null;
-  defaultBillingAddress?: boolean | null;
-}
-
-interface Country {
-  id: string;
-  code: string;
-  name: string;
-}
-
 export default function ShippingAddressStep({ onComplete }: ShippingAddressStepProps) {
   const router = useRouter();
   const { addresses, countries, order } = useCheckout();
