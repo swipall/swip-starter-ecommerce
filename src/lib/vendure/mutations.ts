@@ -376,3 +376,45 @@ export const LogoutMutation = graphql(`
         }
     }
 `);
+
+export const UpdateCustomerMutation = graphql(`
+    mutation UpdateCustomer($input: UpdateCustomerInput!) {
+        updateCustomer(input: $input) {
+            __typename
+            id
+            firstName
+            lastName
+            emailAddress
+        }
+    }
+`);
+
+export const RequestUpdateCustomerEmailAddressMutation = graphql(`
+    mutation RequestUpdateCustomerEmailAddress($password: String!, $newEmailAddress: String!) {
+        requestUpdateCustomerEmailAddress(password: $password, newEmailAddress: $newEmailAddress) {
+            __typename
+            ... on Success {
+                success
+            }
+            ... on ErrorResult {
+                errorCode
+                message
+            }
+        }
+    }
+`);
+
+export const UpdateCustomerEmailAddressMutation = graphql(`
+    mutation UpdateCustomerEmailAddress($token: String!) {
+        updateCustomerEmailAddress(token: $token) {
+            __typename
+            ... on Success {
+                success
+            }
+            ... on ErrorResult {
+                errorCode
+                message
+            }
+        }
+    }
+`);
