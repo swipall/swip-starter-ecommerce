@@ -1,8 +1,9 @@
 <p align="center">
-  <a href="https://vendure.io/">
-    <img src="https://a.storyblok.com/f/328257/699x480/8dbb4c7a3c/logo-icon.png/m/" alt="Vendure" width="300"/>
+  <a href="https://vendure.io">
+    <img alt="Vendure logo" height="60" width="auto" src="https://a.storyblok.com/f/328257/699x480/8dbb4c7a3c/logo-icon.png/m/0x80">
   </a>
 </p>
+
 
 # Vendure Next.js Storefront Starter
 
