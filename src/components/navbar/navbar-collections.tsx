@@ -1,5 +1,10 @@
 import {getTopCollections} from '@/lib/collections';
-import {NavigationLink} from "@/components/navbar/navbar-link";
+import {
+    NavigationMenu,
+    NavigationMenuList,
+    NavigationMenuItem,
+} from '@/components/ui/navigation-menu';
+import {NavbarLink} from '@/components/navbar/navbar-link';
 
 export async function NavbarCollections() {
     "use cache";
@@ -7,15 +12,16 @@ export async function NavbarCollections() {
     const collections = await getTopCollections();
 
     return (
-        <>
-            {collections.map((collection) => (
-                <NavigationLink
-                    key={collection.slug}
-                    href={`/collection/${collection.slug}`}
-                >
-                    {collection.name}
-                </NavigationLink>
-            ))}
-        </>
+        <NavigationMenu>
+            <NavigationMenuList>
+                {collections.map((collection) => (
+                    <NavigationMenuItem key={collection.slug}>
+                        <NavbarLink href={`/collection/${collection.slug}`}>
+                            {collection.name}
+                        </NavbarLink>
+                    </NavigationMenuItem>
+                ))}
+            </NavigationMenuList>
+        </NavigationMenu>
     );
 }
