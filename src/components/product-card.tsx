@@ -39,9 +39,13 @@ export function ProductCard({product: productProp}: ProductCardProps) {
                 <Suspense fallback={<div className="h-8 w-36 rounded bg-muted"></div>}>
                     <p className="text-lg font-bold">
                         {product.priceWithTax.__typename === 'PriceRange' ? (
-                            <>
-                                from <Price value={product.priceWithTax.min}/>
-                            </>
+                            product.priceWithTax.min !== product.priceWithTax.max ? (
+                                <>
+                                    from <Price value={product.priceWithTax.min}/>
+                                </>
+                            ) : (
+                                <Price value={product.priceWithTax.min}/>
+                            )
                         ) : product.priceWithTax.__typename === 'SinglePrice' ? (
                             <Price value={product.priceWithTax.value}/>
                         ) : null}
