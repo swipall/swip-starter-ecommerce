@@ -34,7 +34,7 @@ async function VerifyEmailContent({searchParams}: {searchParams: Promise<Record<
     try {
         const result = await updateCustomerEmailAddress(token!, { useAuthToken: true });
 
-        if (result.data.success) {
+        if (result.data?.success) {
             return (
                 <Card className="max-w-md mx-auto">
                     <CardHeader>

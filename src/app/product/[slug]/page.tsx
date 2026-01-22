@@ -39,8 +39,8 @@ export async function generateMetadata({
         };
     }
 
-    const description = truncateDescription(product.description);
-    const ogImage = product.featuredAsset?.preview;
+    const description = truncateDescription((product as any).description || product.name);
+    const ogImage = (product as any).featuredAsset?.preview;
 
     return {
         title: product.name,

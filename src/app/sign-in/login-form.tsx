@@ -1,10 +1,12 @@
 'use client';
 
 import {useState, useTransition} from 'react';
+import {useRouter} from 'next/navigation';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {loginAction} from './actions';
+import {setAuthUser} from '@/lib/auth-client';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Card, CardContent, CardFooter} from '@/components/ui/card';
@@ -19,7 +21,7 @@ import {
 import Link from 'next/link';
 
 const loginSchema = z.object({
-    username: z.email('Por favor ingresa un correo electrónico válido'),
+    email: z.email('Por favor ingresa un correo electrónico válido'),
     password: z.string().min(1, 'Por favor ingresa una contraseña'),
 });
 
@@ -30,13 +32,14 @@ interface LoginFormProps {
 }
 
 export function LoginForm({redirectTo}: LoginFormProps) {
+    const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
 
     const form = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
-            username: '',
+            email: '',
             password: '',
         },
     });
@@ -46,15 +49,26 @@ export function LoginForm({redirectTo}: LoginFormProps) {
 
         startTransition(async () => {
             const formData = new FormData();
-            formData.append('username', data.username);
+            formData.append('email', data.email);
             formData.append('password', data.password);
             if (redirectTo) {
                 formData.append('redirectTo', redirectTo);
             }
 
-            const result = await loginAction(undefined, formData);
-            if (result?.error) {
-                setServerError(result.error);
+            try {
+                const result = await loginAction(undefined, formData);                
+                if (result?.error) {
+                    setServerError(result.error);
+                } else if (result?.success && result?.user) {
+                    // Save user to localStorage
+                    setAuthUser(result.user);
+                    // Redirect after successful login and user saved
+                    router.push(result.redirectTo || '/');
+                    router.refresh();
+                }
+            } catch (error) {
+                // Log any unexpected errors
+                console.error('Login error:', error);
             }
         });
     };
@@ -70,7 +84,7 @@ export function LoginForm({redirectTo}: LoginFormProps) {
                     <CardContent className="space-y-4">
                         <FormField
                             control={form.control}
-                            name="username"
+                            name="email"
                             render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Correo Electrónico</FormLabel>

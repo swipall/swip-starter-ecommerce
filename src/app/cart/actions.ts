@@ -34,7 +34,6 @@ export async function applyPromotionCode(formData: FormData) {
 
     try {
         const res = await apiApplyPromotion(code, {useAuthToken: true});
-        console.log({res});
         updateTag('cart');
     } catch (error) {
         console.error('Error applying promotion:', error);
@@ -48,7 +47,6 @@ export async function removePromotionCode(formData: FormData) {
 
     try {
         const res = await apiRemovePromotion(code, {useAuthToken: true});
-        console.log({removeRes: res});
         updateTag('cart');
     } catch (error) {
         console.error('Error removing promotion:', error);

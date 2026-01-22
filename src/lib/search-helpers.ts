@@ -7,8 +7,8 @@ interface BuildSearchInputOptions {
 
 export function buildSearchInput({ searchParams, collectionSlug }: BuildSearchInputOptions): SearchInput {
     const page = Number(searchParams.page) || 1;
-    const take = 12;
-    const skip = (page - 1) * take;
+    const limit = 12;
+    const offset = (page - 1) * limit;
     const sortParam = (searchParams.sort as string) || 'name-asc';
     const searchTerm = searchParams.q as string;
 
@@ -28,13 +28,10 @@ export function buildSearchInput({ searchParams, collectionSlug }: BuildSearchIn
     };
 
     return {
-        ...(searchTerm && { query: searchTerm }),
-        take,
-        skip,
-        sort: sortMapping[sortParam] || sortMapping['name-asc'],
-        ...(facetValueIds.length > 0 && {
-            facets: { values: facetValueIds }
-        })
+        ...(searchTerm && { search: searchTerm }),
+        limit,
+        offset,
+        ordering: sortMapping[sortParam] || sortMapping['name-asc']
     };
 }
 

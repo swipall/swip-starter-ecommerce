@@ -6,7 +6,7 @@ import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Separator} from '@/components/ui/separator';
 import Image from 'next/image';
-import {getActiveCustomer} from "@/lib/swipall/actions";
+import {getAuthToken} from "@/lib/auth";
 import {notFound, redirect} from "next/navigation";
 import {Price} from '@/components/commerce/price';
 import {OrderStatusBadge} from '@/components/commerce/order-status-badge';
@@ -25,17 +25,18 @@ export async function generateMetadata({params}: OrderDetailPageProps): Promise<
 export default async function OrderDetailPage(props: PageProps<'/account/orders/[code]'>) {
     const params = await props.params;
     const {code} = params;
-    const activeCustomer = await getActiveCustomer();
+    
+    // Check if user is authenticated
+    const authToken = await getAuthToken();
+    if (!authToken) {
+        redirect('/sign-in');
+    }
 
     const orderRes = await getOrderDetail(code);
     const order = orderRes.data;
 
     if (!order) {
         return redirect('/account/orders');
-    }
-
-    if (order.customer?.id !== activeCustomer?.id) {
-        return notFound();
     }
 
     return (

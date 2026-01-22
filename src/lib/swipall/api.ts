@@ -202,8 +202,6 @@ async function request<TResult>(
         throw new Error(result.errors.map(e => e.message).join(', '));
     }
 
-    console.log(result);
-
     // Return the result directly (which is already typed as TResult)
     // (which will be InterfaceApiListResponse<T> or InterfaceApiDetailResponse<T>)
     return result as TResult;

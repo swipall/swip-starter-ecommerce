@@ -6,7 +6,6 @@ import {NavbarUser} from '@/components/layout/navbar/navbar-user';
 import {ThemeSwitcher} from '@/components/layout/navbar/theme-switcher';
 import {Suspense} from "react";
 import {SearchInput} from '@/components/layout/search-input';
-import {NavbarUserSkeleton} from '@/components/shared/skeletons/navbar-user-skeleton';
 import {SearchInputSkeleton} from '@/components/shared/skeletons/search-input-skeleton';
 
 export function Navbar() {
@@ -34,9 +33,7 @@ export function Navbar() {
                         <Suspense>
                             <NavbarCart/>
                         </Suspense>
-                        <Suspense fallback={<NavbarUserSkeleton />}>
-                            <NavbarUser/>
-                        </Suspense>
+                        <NavbarUser/>
                     </div>
                 </div>
             </div>

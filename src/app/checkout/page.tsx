@@ -5,7 +5,6 @@ import CheckoutFlow from './checkout-flow';
 import {CheckoutProvider} from './checkout-provider';
 import type { CheckoutOrder } from './types';
 import {noIndexRobots} from '@/lib/metadata';
-import {getActiveCustomer} from '@/lib/swipall/actions';
 import { getAvailableCountriesCached } from '@/lib/swipall/cached';
 
 export const metadata: Metadata = {
@@ -15,9 +14,6 @@ export const metadata: Metadata = {
 };
 
 export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
-    const customer = await getActiveCustomer();
-    const isGuest = !customer;
-
     const [orderRes, countries, shippingMethodsRes, paymentMethodsRes] = await Promise.all([
         getActiveOrder({ useAuthToken: true }),
         getAvailableCountriesCached(),
@@ -35,9 +31,10 @@ export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
         return redirect(`/order-confirmation/${activeOrder.code}`);
     }
 
-    const addresses = customer?.addresses || [];
-    const shippingMethods = shippingMethodsRes.data || [];
-    const paymentMethods = (paymentMethodsRes.data || []).filter(m => m.isEligible);
+    const addresses = activeOrder.shippingAddress ? [activeOrder.shippingAddress] : [];
+    const shippingMethods = shippingMethodsRes.results || [];
+    const paymentMethods = (paymentMethodsRes.results || []).filter(m => m.isEligible);
+    const countryList = Array.isArray(countries) ? countries : (countries?.results || []);
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -45,10 +42,10 @@ export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
             <CheckoutProvider
                 order={activeOrder}
                 addresses={addresses}
-                countries={countries}
+                countries={countryList}
                 shippingMethods={shippingMethods}
                 paymentMethods={paymentMethods}
-                isGuest={isGuest}
+                isGuest={false}
             >
                 <CheckoutFlow/>
             </CheckoutProvider>

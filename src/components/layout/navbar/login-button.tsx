@@ -3,6 +3,7 @@
 import {ComponentProps, useTransition} from "react";
 import {logoutAction} from "@/app/sign-in/actions";
 import {useRouter} from "next/navigation";
+import {removeAuthUser} from "@/lib/auth-client";
 
 interface LoginButtonProps extends ComponentProps<'button'> {
     isLoggedIn: boolean;
@@ -17,13 +18,16 @@ export function LoginButton({isLoggedIn, ...props}: LoginButtonProps) {
                 onClick={() => {
                     if (isLoggedIn) {
                         startTransition(async () => {
-                            await logoutAction()
+                            // Clear user from localStorage
+                            removeAuthUser();
+                            // Call logout action
+                            await logoutAction();
                         })
                     } else {
                         router.push('/sign-in')
                     }
                 }}>
-            {isLoggedIn ? 'Sign out' : 'Sign in'}
+            {isLoggedIn ? 'Cerrar sesión' : 'Iniciar sesión'}
         </button>
     )
 }

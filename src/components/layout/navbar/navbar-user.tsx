@@ -1,5 +1,7 @@
-import {User} from 'lucide-react';
-import {Button} from '@/components/ui/button';
+'use client';
+
+import { User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,39 +10,46 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from "next/link";
-import {LoginButton} from "@/components/layout/navbar/login-button";
-import {getActiveCustomer} from "@/lib/swipall/actions";
+import { LoginButton } from "@/components/layout/navbar/login-button";
+import { useAuthUser } from '@/hooks/use-auth-user';
+import { NavbarUserSkeleton } from '@/components/shared/skeletons/navbar-user-skeleton';
 
 
-export async function NavbarUser() {
-    const customer = await getActiveCustomer()
+export function NavbarUser() {
+    const { user, isLoading } = useAuthUser();
 
-    if (!customer) {
+    if (isLoading) {
+        return <NavbarUserSkeleton />;
+    }
+
+    if (!user) {
         return (
             <Button variant="ghost" asChild>
-                <LoginButton isLoggedIn={false}/>
+                <LoginButton isLoggedIn={false} />
             </Button>
         );
     }
+
+    const firstName = user.first_name || user.firstName || 'Usuario';
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost">
-                    <User className="h-5 w-5"/>
-                    Hi, {customer.firstName}
+                    <User className="h-5 w-5" />
+                    Hola, {firstName}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
                 <DropdownMenuItem asChild>
-                    <Link href="/account/profile">Profile</Link>
+                    <Link href="/account/profile">Perfil</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link href="/account/orders">Orders</Link>
+                    <Link href="/account/orders">Pedidos</Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator/>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                    <LoginButton isLoggedIn={true}/>
+                    <LoginButton isLoggedIn={true} />
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

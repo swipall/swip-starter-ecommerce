@@ -1,7 +1,6 @@
 'use server';
 
 import {resetPassword} from '@/lib/swipall/rest-adapter';
-import {setAuthToken} from '@/lib/auth';
 import {redirect} from 'next/navigation';
 
 export async function resetPasswordAction(prevState: { error?: string } | undefined, formData: FormData) {
@@ -20,14 +19,9 @@ export async function resetPasswordAction(prevState: { error?: string } | undefi
     try {
         const result = await resetPassword(token, password);
 
-        // Store the token in a cookie if returned
-        if (result.token) {
-            await setAuthToken(result.token);
-        }
-
-        redirect('/');
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Failed to reset password';
+        // Password reset successful, redirect to login
+        redirect('/sign-in?reset=success');
+    } catch (error: unknown) {        const message = error instanceof Error ? error.message : 'Failed to reset password';
         return {error: message};
     }
 }

@@ -2,15 +2,10 @@
 
 import { addToCart as apiAddToCart } from '@/lib/swipall/rest-adapter';
 import { updateTag } from 'next/cache';
-import { setAuthToken } from '@/lib/auth';
 
 export async function addToCart(variantId: string, quantity: number = 1) {
   try {
     const result = await apiAddToCart({ variantId, quantity }, { useAuthToken: true });
-
-    if (result.token) {
-      await setAuthToken(result.token);
-    }
 
     // Revalidate cart data across all pages
     updateTag('cart');

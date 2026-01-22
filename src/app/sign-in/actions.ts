@@ -1,36 +1,36 @@
 'use server';
 
-import {login, logout} from '@/lib/swipall/rest-adapter';
-import {removeAuthToken, setAuthToken} from '@/lib/auth';
-import {redirect} from "next/navigation";
-import {revalidatePath} from "next/cache";
+import { login, logout } from '@/lib/swipall/rest-adapter';
+import { removeAuthToken, setAuthToken } from '@/lib/auth';
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function loginAction(prevState: { error?: string } | undefined, formData: FormData) {
-    const username = formData.get('username') as string;
+    const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const redirectTo = formData.get('redirectTo') as string | null;
 
     try {
         const result = await login({
-            username,
+            email,
             password,
         });
-
         // Store the token in a cookie if returned
-        if (result.token) {
-            await setAuthToken(result.token);
+        if (result?.access_token) {
+            await setAuthToken(result.access_token);
+            revalidatePath('/', 'layout');
+
+            // Return user data to be stored in localStorage from client
+            return { 
+                success: true,
+                user: result.user,
+                redirectTo: (redirectTo?.startsWith('/') && !redirectTo.startsWith('//')) ? redirectTo : '/'
+            };
+        } else {
+            return { error: 'No se recibió token de autenticación' };
         }
-
-        revalidatePath('/', 'layout');
-
-        // Validate redirectTo is a safe internal path
-        const safeRedirect = redirectTo?.startsWith('/') && !redirectTo.startsWith('//')
-            ? redirectTo
-            : '/';
-
-        redirect(safeRedirect);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Invalid email or password.';
+        const message = error instanceof Error ? error.message : 'Correo electrónico o contraseña inválidos';
         return { error: message };
     }
 }
@@ -42,7 +42,8 @@ export async function logoutAction() {
         // Continue with logout even if API call fails
         console.error('Logout error:', error);
     }
-    
+
     await removeAuthToken();
+    revalidatePath('/', 'layout');
     redirect('/')
 }

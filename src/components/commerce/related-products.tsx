@@ -14,9 +14,9 @@ async function getRelatedProducts(collectionSlug: string, currentProductId: stri
     cacheTag(`related-products-${collectionSlug}`)
 
     const result = await searchProducts({
-        query: collectionSlug,
-        take: 13, // Fetch extra to account for filtering out current product
-        skip: 0
+        search: collectionSlug,
+        limit: 13, // Fetch extra to account for filtering out current product
+        offset: 0
     });
 
     // Filter out the current product and limit to 12

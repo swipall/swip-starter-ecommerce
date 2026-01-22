@@ -93,7 +93,7 @@ export async function placeOrder(paymentMethodCode: string) {
             {useAuthToken: true}
         );
 
-        const orderCode = result.data.code;
+        const orderCode = result.data?.code;
 
         // Update the cart tag to immediately invalidate cached cart data
         updateTag('cart');

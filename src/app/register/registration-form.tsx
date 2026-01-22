@@ -103,9 +103,16 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                 formData.append('redirectTo', redirectTo);
             }
 
-            const result = await registerAction(undefined, formData);
-            if (result?.error) {
-                setServerError(result.error);
+            try {
+                const result = await registerAction(undefined, formData);
+                if (result?.error) {
+                    setServerError(result.error);
+                }
+            } catch (error) {
+                // Redirect errors are expected, ignore them
+                if (error instanceof Error && error.message.includes('redirect')) {
+                    return;
+                }
             }
         });
     };

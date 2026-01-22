@@ -115,11 +115,14 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
   const onSaveNewAddress = async (data: AddressFormData) => {
     setSaving(true);
     try {
-      const newAddress = await createCustomerAddress(data);
-      setDialogOpen(false);
-      reset();
-      router.refresh();
-      setSelectedAddressId(newAddress.id);
+      const response = await createCustomerAddress(data);
+      const addressData = (response as any)?.data;
+      if (addressData?.id) {
+        setDialogOpen(false);
+        reset();
+        router.refresh();
+        setSelectedAddressId(addressData.id);
+      }
     } catch (error) {
       console.error('Error creating address:', error);
       alert(`Error creating address: ${error instanceof Error ? error.message : 'Unknown error'}`);

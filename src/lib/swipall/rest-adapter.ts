@@ -22,23 +22,24 @@ import { post, get, put, patch, remove } from './api';
 // ============================================================================
 
 export interface LoginInput {
-    username: string;
+    email: string;
     password: string;
 }
 
-export interface LoginResponse {
-    user: {
-        id: string;
-        identifier: string;
-        firstName?: string;
-        lastName?: string;
-        emailAddress: string;
-    };
-    token: string;
+export interface UserInterface {
+    first_name: string;
+    last_name: string;
+    pk: string;
 }
 
-export async function login(credentials: LoginInput): Promise<InterfaceApiDetailResponse<LoginResponse>> {
-    return post<InterfaceApiDetailResponse<LoginResponse>>('/api/v1/shop/login/', credentials);
+export interface LoginResponse {
+    user: UserInterface;
+    access_token: string;
+    refresh_token: string;
+}
+
+export async function login(credentials: LoginInput): Promise<LoginResponse> {
+    return post<LoginResponse>('/api/v1/shop/login/', credentials);
 }
 
 export async function logout(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
@@ -50,12 +51,17 @@ export async function logout(options?: { useAuthToken?: boolean }): Promise<Inte
 // ============================================================================
 
 export interface CurrentUser {
-    id: string;
-    identifier: string;
+    id?: string;
+    pk?: string;
+    identifier?: string;
     firstName?: string;
+    first_name?: string;
     lastName?: string;
-    emailAddress: string;
+    last_name?: string;
+    emailAddress?: string;
+    email?: string;
     phoneNumber?: string;
+    phone?: string;
     addresses?: Address[];
 }
 
@@ -176,6 +182,11 @@ export interface InterfaceInventoryItem {
     taxonomy: TaxonomyInterface[];
     web_price: string;
     extra_materials?: any[];
+    description?: string;
+    app_price?: string;
+    collections?: Collection[];
+    featuredAsset?: Asset;
+    variants?: ProductVariant[];
 }
 
 export interface ProductVariant {

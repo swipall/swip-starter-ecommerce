@@ -37,6 +37,10 @@ export async function registerAction(prevState: { error?: string } | undefined, 
 
         redirect(verifyUrl);
     } catch (error: unknown) {
+        // Don't catch redirect errors
+        if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+            throw error;
+        }
         const message = error instanceof Error ? error.message : 'El registro falló';
         return { error: message };
     }

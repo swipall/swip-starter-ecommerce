@@ -21,7 +21,7 @@ export default async function AddressesPage(_props: PageProps<'/account/addresse
                 </p>
             </div>
 
-            <AddressesClient addresses={addressesRes.data} countries={countriesRes.data} />
+            <AddressesClient addresses={addressesRes.results} countries={countriesRes.results} />
         </div>
     );
 }
