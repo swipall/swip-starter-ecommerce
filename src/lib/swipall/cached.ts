@@ -1,5 +1,5 @@
-import {cacheLife, cacheTag} from 'next/cache';
-import { getActiveChannel, getAvailableCountries, getTopCollections as getTopCollectionsREST } from './rest-adapter';
+import { cacheLife, cacheTag } from 'next/cache';
+import { CatalogInterface, getActiveChannel, getAvailableCountries, getCatalogs as getCatalogsREST, InterfaceApiListResponse } from './rest-adapter';
 
 /**
  * Get the active channel with caching enabled.
@@ -29,8 +29,7 @@ export async function getAvailableCountriesCached() {
 
     try {
         const result = await getAvailableCountries();
-        // Ensure we return an array
-        return Array.isArray(result.data) ? result.data : [];
+        return result;
     } catch (error) {
         // Return safe default during build/offline
         return [];
@@ -41,17 +40,21 @@ export async function getAvailableCountriesCached() {
  * Get top-level collections with caching enabled.
  * Collections rarely change, so we cache them for 1 day.
  */
-export async function getTopCollections() {
+export async function getCatalogs(params: Record<string, any> = {}): Promise<InterfaceApiListResponse<CatalogInterface>> {
     'use cache';
     cacheLife('days');
     cacheTag('collections');
 
     try {
-        const result = await getTopCollectionsREST();
-        // Ensure we return an array
-        return Array.isArray(result.data) ? result.data : [];
+        const result = await getCatalogsREST(params);
+        return result;
     } catch (error) {
         // Return safe default during build/offline
-        return [];
+        return {
+            results: [],
+            count: 0,
+            next: null,
+            previous: null,
+        };
     }
 }

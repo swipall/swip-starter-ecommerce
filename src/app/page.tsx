@@ -1,5 +1,5 @@
 import type {Metadata} from "next";
-import {HeroSection} from "@/components/layout/hero-section";
+import {FeaturedBannersDisplay} from "@/components/layout/home/banners-section";
 import {FeaturedProducts} from "@/components/commerce/featured-products";
 import {SITE_NAME, SITE_URL, buildCanonicalUrl} from "@/lib/metadata";
 
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 export default async function Home(_props: PageProps<'/'>) {
     return (
         <div className="min-h-screen">
-            <HeroSection/>
+            <FeaturedBannersDisplay/>
             <FeaturedProducts/>
 
             {/* You can add more sections here */}

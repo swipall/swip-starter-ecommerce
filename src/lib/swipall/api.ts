@@ -1,4 +1,4 @@
-import {getAuthToken} from '@/lib/auth';
+import { getAuthToken } from '@/lib/auth';
 
 const SWIPALL_API_URL = process.env.SWIPALL_SHOP_API_URL || process.env.NEXT_PUBLIC_SWIPALL_SHOP_API_URL;
 const SWIPALL_AUTH_TOKEN_HEADER = process.env.SWIPALL_AUTH_TOKEN_HEADER || 'Authorization';
@@ -12,13 +12,12 @@ interface SwipallRequestOptions {
 }
 
 interface SwipallResponse<T> {
-    data?: T;
     error?: {
         message: string;
         code?: string;
         [key: string]: unknown;
     };
-    errors?: Array<{ message: string; [key: string]: unknown }>;
+    errors?: Array<{ message: string;[key: string]: unknown }>;
 }
 
 /**
@@ -37,9 +36,24 @@ function extractAuthToken(headers: Headers): string | null {
  */
 export async function get<TResult>(
     endpoint: string,
+    params?: Record<string, string | number | boolean | undefined> | any,
     options?: SwipallRequestOptions
-): Promise<{ data: TResult; token?: string }> {
-    return request<TResult>('GET', endpoint, undefined, options);
+): Promise<TResult> {
+    // Build query string from params
+    let url = endpoint;
+    if (params) {
+        const queryParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined) {
+                queryParams.append(key, String(value));
+            }
+        });
+        const queryString = queryParams.toString();
+        if (queryString) {
+            url = `${endpoint}?${queryString}`;
+        }
+    }
+    return request<TResult>('GET', url, undefined, options);
 }
 
 /**
@@ -49,7 +63,7 @@ export async function post<TResult, TBody = unknown>(
     endpoint: string,
     body?: TBody,
     options?: SwipallRequestOptions
-): Promise<{ data: TResult; token?: string }> {
+): Promise<TResult> {
     return request<TResult>('POST', endpoint, body, options);
 }
 
@@ -60,7 +74,7 @@ export async function put<TResult, TBody = unknown>(
     endpoint: string,
     body?: TBody,
     options?: SwipallRequestOptions
-): Promise<{ data: TResult; token?: string }> {
+): Promise<TResult> {
     return request<TResult>('PUT', endpoint, body, options);
 }
 
@@ -71,7 +85,7 @@ export async function patch<TResult, TBody = unknown>(
     endpoint: string,
     body?: TBody,
     options?: SwipallRequestOptions
-): Promise<{ data: TResult; token?: string }> {
+): Promise<TResult> {
     return request<TResult>('PATCH', endpoint, body, options);
 }
 
@@ -81,7 +95,7 @@ export async function patch<TResult, TBody = unknown>(
 export async function remove<TResult>(
     endpoint: string,
     options?: SwipallRequestOptions
-): Promise<{ data: TResult; token?: string }> {
+): Promise<TResult> {
     return request<TResult>('DELETE', endpoint, undefined, options);
 }
 
@@ -93,16 +107,14 @@ async function request<TResult>(
     endpoint: string,
     body?: unknown,
     options?: SwipallRequestOptions
-): Promise<{ data: TResult; token?: string }> {
+): Promise<TResult> {
     // Return empty data during build time if API URL is not configured
     if (!SWIPALL_API_URL) {
         if (process.env.NODE_ENV === 'production' && !IS_BUILD_TIME) {
             throw new Error('SWIPALL_SHOP_API_URL or NEXT_PUBLIC_SWIPALL_SHOP_API_URL environment variable is not set');
         }
         // During build, return minimal safe data
-        return {
-            data: {} as TResult,
-        };
+        return {} as TResult;
     }
 
     const {
@@ -149,23 +161,29 @@ async function request<TResult>(
     } catch (fetchError: any) {
         // Network error or URL not configured - return safe fallback
         console.warn(`[Swipall API] Fetch failed for ${method} ${endpoint}:`, fetchError?.message);
-        
+
         // Return appropriate empty data based on endpoint pattern
         let emptyData: TResult;
-        if (endpoint.includes('/search')) {
-            // Search returns SearchResult structure
-            emptyData = { items: [], totalItems: 0, facetValues: [] } as TResult;
-        } else if (endpoint.includes('/collections') || endpoint.includes('/countries') || endpoint.includes('/addresses') || endpoint.includes('/shipping-methods') || endpoint.includes('/payment-methods')) {
-            // Array endpoints
-            emptyData = [] as TResult;
+        if (endpoint.includes('/search') || 
+            endpoint.includes('/collections') || 
+            endpoint.includes('/countries') || 
+            endpoint.includes('/addresses') || 
+            endpoint.includes('/shipping-methods') || 
+            endpoint.includes('/payment-methods') ||
+            endpoint.includes('/taxonomies')) {
+            // List endpoints - return InterfaceApiListResponse structure
+            emptyData = {
+                results: [],
+                count: 0,
+                next: null,
+                previous: null,
+            } as TResult;
         } else {
-            // Object endpoints (product, order, customer, etc.)
+            // Detail endpoints - return empty object
             emptyData = {} as TResult;
         }
-        
-        return {
-            data: emptyData,
-        };
+
+        return emptyData;
     }
 
     if (!response.ok) {
@@ -184,16 +202,11 @@ async function request<TResult>(
         throw new Error(result.errors.map(e => e.message).join(', '));
     }
 
-    if (!result.data) {
-        throw new Error('No data returned from Swipall API');
-    }
+    console.log(result);
 
-    const newToken = extractAuthToken(response.headers);
-
-    return {
-        data: result.data,
-        ...(newToken && {token: newToken}),
-    };
+    // Return the result directly (which is already typed as TResult)
+    // (which will be InterfaceApiListResponse<T> or InterfaceApiDetailResponse<T>)
+    return result as TResult;
 }
 
 /**
@@ -202,28 +215,18 @@ async function request<TResult>(
  */
 export async function query<TResult>(
     endpoint: string,
-    variables?: unknown,
+    params?: Record<string, string | number | boolean | undefined>,
     options?: SwipallRequestOptions
-): Promise<{ data: TResult; token?: string }> {
-    // For REST, queries are typically GET requests with query params
-    // For now, we'll support both GET and POST depending on complexity
-    const queryParams = new URLSearchParams();
-    if (variables && typeof variables === 'object') {
-        Object.entries(variables).forEach(([key, value]) => {
-            queryParams.append(key, String(value));
-        });
-    }
-    
-    const endpointWithParams = queryParams.toString() ? `${endpoint}?${queryParams.toString()}` : endpoint;
-    return get<TResult>(endpointWithParams, options);
+): Promise<TResult> {
+    return get<TResult>(endpoint, params, options);
 }
 
 export async function mutate<TResult>(
     endpoint: string,
-    variables?: unknown,
+    params?: Record<string, string | number | boolean | undefined>,
     options?: SwipallRequestOptions
-): Promise<{ data: TResult; token?: string }> {
+): Promise<TResult> {
     // For REST, mutations are POST/PUT/PATCH requests
-    return post<TResult>(endpoint, variables, options);
+    return post<TResult>(endpoint, params, options);
 }
 

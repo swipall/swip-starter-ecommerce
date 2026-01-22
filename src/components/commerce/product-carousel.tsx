@@ -2,12 +2,12 @@
 
 import {ProductCard} from "@/components/commerce/product-card";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious,} from "@/components/ui/carousel";
-import type { Product as RestProduct } from '@/lib/swipall/rest-adapter';
+import type { InterfaceInventoryItem } from '@/lib/swipall/rest-adapter';
 import {useId} from "react";
 
 interface ProductCarouselClientProps {
     title: string;
-    products: RestProduct[];
+    products: InterfaceInventoryItem[];
 }
 
 export function ProductCarousel({title, products}: ProductCarouselClientProps) {

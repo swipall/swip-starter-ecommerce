@@ -10,7 +10,7 @@ export async function Cart() {
     
     try {
         const result = await getActiveOrder({ useAuthToken: true });
-        activeOrder = result.data;
+        activeOrder = result;
     } catch (error) {
         console.error('[Cart] Failed to fetch active order:', error);
         // Continue with empty cart if API fails

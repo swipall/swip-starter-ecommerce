@@ -37,12 +37,12 @@ export interface LoginResponse {
     token: string;
 }
 
-export async function login(credentials: LoginInput): Promise<{ data: LoginResponse; token?: string }> {
-    return post<LoginResponse>('/auth/login', credentials);
+export async function login(credentials: LoginInput): Promise<InterfaceApiDetailResponse<LoginResponse>> {
+    return post<InterfaceApiDetailResponse<LoginResponse>>('/auth/login', credentials);
 }
 
-export async function logout(options?: { useAuthToken?: boolean }): Promise<{ data: { success: boolean }; token?: string }> {
-    return post<{ success: boolean }>('/auth/logout', undefined, { useAuthToken: options?.useAuthToken });
+export async function logout(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/auth/logout', undefined, { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================
@@ -78,8 +78,8 @@ export interface Address {
     defaultBillingAddress?: boolean;
 }
 
-export async function getActiveCustomer(options?: { useAuthToken?: boolean }): Promise<{ data: CurrentUser; token?: string }> {
-    return get<CurrentUser>('/auth/me', { useAuthToken: options?.useAuthToken });
+export async function getActiveCustomer(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<CurrentUser>> {
+    return get<InterfaceApiDetailResponse<CurrentUser>>('/auth/me', { useAuthToken: options?.useAuthToken });
 }
 
 export interface UpdateCustomerInput {
@@ -87,16 +87,16 @@ export interface UpdateCustomerInput {
     lastName?: string;
 }
 
-export async function updateCustomer(input: UpdateCustomerInput, options?: { useAuthToken?: boolean }): Promise<{ data: CurrentUser; token?: string }> {
-    return patch<CurrentUser>('/customers/me', input, { useAuthToken: options?.useAuthToken });
+export async function updateCustomer(input: UpdateCustomerInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<CurrentUser>> {
+    return patch<InterfaceApiDetailResponse<CurrentUser>>('/customers/me', input, { useAuthToken: options?.useAuthToken });
 }
 
 export async function updateCustomerPassword(
     currentPassword: string,
     newPassword: string,
     options?: { useAuthToken?: boolean }
-): Promise<{ data: { success: boolean }; token?: string }> {
-    return post<{ success: boolean }>('/customers/me/password', { currentPassword, newPassword }, { useAuthToken: options?.useAuthToken });
+): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/customers/me/password', { currentPassword, newPassword }, { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================
@@ -117,24 +117,24 @@ export interface CreateAddressInput {
     defaultBillingAddress?: boolean;
 }
 
-export async function createCustomerAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<{ data: Address; token?: string }> {
-    return post<Address>('/customers/me/addresses', input, { useAuthToken: options?.useAuthToken });
+export async function createCustomerAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Address>> {
+    return post<InterfaceApiDetailResponse<Address>>('/customers/me/addresses', input, { useAuthToken: options?.useAuthToken });
 }
 
-export async function updateCustomerAddress(id: string, input: Partial<CreateAddressInput>, options?: { useAuthToken?: boolean }): Promise<{ data: Address; token?: string }> {
-    return patch<Address>(`/customers/me/addresses/${id}`, input, { useAuthToken: options?.useAuthToken });
+export async function updateCustomerAddress(id: string, input: Partial<CreateAddressInput>, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Address>> {
+    return patch<InterfaceApiDetailResponse<Address>>(`/customers/me/addresses/${id}`, input, { useAuthToken: options?.useAuthToken });
 }
 
-export async function deleteCustomerAddress(id: string, options?: { useAuthToken?: boolean }): Promise<{ data: { success: boolean }; token?: string }> {
-    return remove<{ success: boolean }>(`/customers/me/addresses/${id}`, { useAuthToken: options?.useAuthToken });
+export async function deleteCustomerAddress(id: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
+    return remove<InterfaceApiDetailResponse<{ success: boolean }>>(`/customers/me/addresses/${id}`, { useAuthToken: options?.useAuthToken });
 }
 
-export async function setDefaultShippingAddress(id: string, options?: { useAuthToken?: boolean }): Promise<{ data: Address; token?: string }> {
-    return patch<Address>(`/customers/me/addresses/${id}`, { defaultShippingAddress: true }, { useAuthToken: options?.useAuthToken });
+export async function setDefaultShippingAddress(id: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Address>> {
+    return patch<InterfaceApiDetailResponse<Address>>(`/customers/me/addresses/${id}`, { defaultShippingAddress: true }, { useAuthToken: options?.useAuthToken });
 }
 
-export async function setDefaultBillingAddress(id: string, options?: { useAuthToken?: boolean }): Promise<{ data: Address; token?: string }> {
-    return patch<Address>(`/customers/me/addresses/${id}`, { defaultBillingAddress: true }, { useAuthToken: options?.useAuthToken });
+export async function setDefaultBillingAddress(id: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Address>> {
+    return patch<InterfaceApiDetailResponse<Address>>(`/customers/me/addresses/${id}`, { defaultBillingAddress: true }, { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================
@@ -149,6 +149,33 @@ export interface Product {
     featuredAsset?: Asset;
     variants: ProductVariant[];
     collections?: Collection[];
+}
+
+export interface InventoryAvailable {
+    id: string;
+    quantity: number;
+}
+
+export interface InventoryPicture {
+    id: string;
+    url: string;
+}
+
+
+export interface InterfaceInventoryItem {
+    attribute_combinations: any[];
+    available?: InventoryAvailable;
+    barcode: string | null;
+    featured_image: string | null;
+    id: string;
+    kind: 'group' | 'product' | 'compound';
+    name: string;
+    pictures: InventoryPicture[] | null;
+    sku: string;
+    slug: string;
+    taxonomy: TaxonomyInterface[];
+    web_price: string;
+    extra_materials?: any[];
 }
 
 export interface ProductVariant {
@@ -172,28 +199,74 @@ export interface Collection {
     slug: string;
 }
 
-export async function getProduct(slug: string): Promise<{ data: Product; token?: string }> {
-    return get<Product>(`/products/${slug}`);
+export interface CatalogsParams {
+    parent__slug?: string;
 }
 
-export async function getCollection(slug: string): Promise<{ data: Collection; token?: string }> {
-    return get<Collection>(`/collections/${slug}`);
+interface CatalogSettings {
+    url: string;
 }
 
-export async function getTopCollections(): Promise<{ data: Collection[]; token?: string }> {
-    return get<Collection[]>('/collections/top');
+export interface CatalogInterface {
+    code: string | null;
+    id: string;
+    kind: string;
+    name: string;
+    ordering: number;
+    parent: CatalogInterface | null;
+    settings: CatalogSettings | null;
+    slug: string;
 }
 
-export async function getAvailableCountries(): Promise<{ data: Array<{ id: string; code: string; name: string }>; token?: string }> {
-    return get<Array<{ id: string; code: string; name: string }>>('/countries');
+export interface TaxonomyInterface {
+    id: string;
+    name: string;
+    slug: string;
+    value: string | null;
+    thumbnail?: string;
+    icon?: string;
+    color?: string;
+    imagen?: string;
 }
 
-export async function getActiveChannel(): Promise<{ data: any; token?: string }> {
-    return get('/channel');
+export interface InterfaceApiListResponse<T> {
+    results: T[];
+    count: number;
+    next: string | null;
+    previous: string | null;
 }
 
-export async function getCustomerAddresses(options?: { useAuthToken?: boolean }): Promise<{ data: Address[]; token?: string }> {
-    return get<Address[]>('/customers/me/addresses', { useAuthToken: options?.useAuthToken });
+export interface InterfaceApiDetailResponse<T> {
+    data?: T;
+    [key: string]: unknown;
+}
+
+export async function getProduct(slug: string): Promise<InterfaceApiDetailResponse<InterfaceInventoryItem>> {
+    return get<InterfaceApiDetailResponse<InterfaceInventoryItem>>(`/products/${slug}`);
+}
+
+export async function getCollection(slug: string): Promise<InterfaceApiDetailResponse<Collection>> {
+    return get<InterfaceApiDetailResponse<Collection>>(`/collections/${slug}`);
+}
+
+export async function getTaxonomies(params: any): Promise<InterfaceApiListResponse<TaxonomyInterface>> {
+    return get<InterfaceApiListResponse<TaxonomyInterface>>('/api/v1/shop/taxonomies', params);
+}
+
+export async function getCatalogs(params?: CatalogsParams): Promise<InterfaceApiListResponse<CatalogInterface>> {
+    return get<InterfaceApiListResponse<CatalogInterface>>('/api/v1/utils/catalogs', params);
+}
+
+export async function getAvailableCountries(): Promise<InterfaceApiListResponse<{ id: string; code: string; name: string }>> {
+    return get<InterfaceApiListResponse<{ id: string; code: string; name: string }>>('/countries');
+}
+
+export async function getActiveChannel(): Promise<InterfaceApiDetailResponse<any>> {
+    return get<InterfaceApiDetailResponse<any>>('/channel');
+}
+
+export async function getCustomerAddresses(options?: { useAuthToken?: boolean }): Promise<InterfaceApiListResponse<Address>> {
+    return get<InterfaceApiListResponse<Address>>('/customers/me/addresses', { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================
@@ -208,23 +281,10 @@ export interface SearchInput {
     facets?: Record<string, string[]>;
 }
 
-export interface SearchResult {
-    items: Product[];
-    totalItems: number;
-    facetValues?: Array<{
-        count: number;
-        facetValue: {
-            id: string;
-            name: string;
-            facet: {
-                id: string;
-                name: string;
-            };
-        };
-    }>;
-}
+// SearchResult is now an alias for InterfaceApiListResponse<InterfaceInventoryItem>
+export type SearchResult = InterfaceApiListResponse<InterfaceInventoryItem>;
 
-export async function searchProducts(input: SearchInput): Promise<{ data: SearchResult; token?: string }> {
+export async function searchProducts(input: SearchInput): Promise<SearchResult> {
     const params = new URLSearchParams();
     if (input.query) params.append('q', input.query);
     if (input.skip) params.append('skip', String(input.skip));
@@ -236,9 +296,8 @@ export async function searchProducts(input: SearchInput): Promise<{ data: Search
         });
     }
 
-    const queryString = params.toString();
-    const endpoint = queryString ? `/products/search?${queryString}` : '/products/search';
-    return get<SearchResult>(endpoint);
+    const endpoint = `/api/v1/shop/items`;
+    return get<InterfaceApiListResponse<InterfaceInventoryItem>>(endpoint, params);
 }
 
 // ============================================================================
@@ -291,8 +350,8 @@ export interface Order {
     customer?: CurrentUser;
 }
 
-export async function getActiveOrder(options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return get<Order>('/cart', { useAuthToken: options?.useAuthToken });
+export async function getActiveOrder(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return get<InterfaceApiDetailResponse<Order>>('/cart', { useAuthToken: options?.useAuthToken });
 }
 
 export interface AddToCartInput {
@@ -300,36 +359,36 @@ export interface AddToCartInput {
     quantity: number;
 }
 
-export async function addToCart(input: AddToCartInput, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return post<Order>('/cart/items', input, { useAuthToken: options?.useAuthToken });
+export async function addToCart(input: AddToCartInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return post<InterfaceApiDetailResponse<Order>>('/cart/items', input, { useAuthToken: options?.useAuthToken });
 }
 
-export async function removeFromCart(lineId: string, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return remove<Order>(`/cart/items/${lineId}`, { useAuthToken: options?.useAuthToken });
+export async function removeFromCart(lineId: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return remove<InterfaceApiDetailResponse<Order>>(`/cart/items/${lineId}`, { useAuthToken: options?.useAuthToken });
 }
 
-export async function adjustQuantity(lineId: string, quantity: number, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return patch<Order>(`/cart/items/${lineId}`, { quantity }, { useAuthToken: options?.useAuthToken });
+export async function adjustQuantity(lineId: string, quantity: number, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return patch<InterfaceApiDetailResponse<Order>>(`/cart/items/${lineId}`, { quantity }, { useAuthToken: options?.useAuthToken });
 }
 
-export async function applyPromotionCode(couponCode: string, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return post<Order>('/cart/promotions', { couponCode }, { useAuthToken: options?.useAuthToken });
+export async function applyPromotionCode(couponCode: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return post<InterfaceApiDetailResponse<Order>>('/cart/promotions', { couponCode }, { useAuthToken: options?.useAuthToken });
 }
 
-export async function removePromotionCode(couponCode: string, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return remove<Order>(`/cart/promotions/${couponCode}`, { useAuthToken: options?.useAuthToken });
+export async function removePromotionCode(couponCode: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return remove<InterfaceApiDetailResponse<Order>>(`/cart/promotions/${couponCode}`, { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================
 // Checkout Endpoints
 // ============================================================================
 
-export async function setShippingAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return patch<Order>('/cart/shipping-address', input, { useAuthToken: options?.useAuthToken });
+export async function setShippingAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return patch<InterfaceApiDetailResponse<Order>>('/cart/shipping-address', input, { useAuthToken: options?.useAuthToken });
 }
 
-export async function setBillingAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return patch<Order>('/cart/billing-address', input, { useAuthToken: options?.useAuthToken });
+export async function setBillingAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return patch<InterfaceApiDetailResponse<Order>>('/cart/billing-address', input, { useAuthToken: options?.useAuthToken });
 }
 
 export interface ShippingMethod {
@@ -348,14 +407,14 @@ export interface PaymentMethod {
     isEligible: boolean;
 }
 
-export async function getEligibleShippingMethods(options?: { useAuthToken?: boolean }): Promise<{ data: ShippingMethod[]; token?: string }> {
-    return get<ShippingMethod[]>('/cart/shipping-methods', { useAuthToken: options?.useAuthToken });
+export async function getEligibleShippingMethods(options?: { useAuthToken?: boolean }): Promise<InterfaceApiListResponse<ShippingMethod>> {
+    return get<InterfaceApiListResponse<ShippingMethod>>('/cart/shipping-methods', { useAuthToken: options?.useAuthToken });
 }
-export async function getEligiblePaymentMethods(options?: { useAuthToken?: boolean }): Promise<{ data: PaymentMethod[]; token?: string }> {
-    return get<PaymentMethod[]>('/payment-methods', { useAuthToken: options?.useAuthToken });
+export async function getEligiblePaymentMethods(options?: { useAuthToken?: boolean }): Promise<InterfaceApiListResponse<PaymentMethod>> {
+    return get<InterfaceApiListResponse<PaymentMethod>>('/payment-methods', { useAuthToken: options?.useAuthToken });
 }
-export async function setShippingMethod(shippingMethodId: string[], options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return post<Order>('/cart/shipping-method', { shippingMethodId }, { useAuthToken: options?.useAuthToken });
+export async function setShippingMethod(shippingMethodId: string[], options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return post<InterfaceApiDetailResponse<Order>>('/cart/shipping-method', { shippingMethodId }, { useAuthToken: options?.useAuthToken });
 }
 
 export interface PaymentInput {
@@ -364,28 +423,28 @@ export interface PaymentInput {
     metadata?: Record<string, any>;
 }
 
-export async function addPaymentToOrder(input: PaymentInput, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return post<Order>('/cart/payment', input, { useAuthToken: options?.useAuthToken });
+export async function addPaymentToOrder(input: PaymentInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return post<InterfaceApiDetailResponse<Order>>('/cart/payment', input, { useAuthToken: options?.useAuthToken });
 }
 
-export async function transitionOrderToState(state: string, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return post<Order>('/cart/transition', { state }, { useAuthToken: options?.useAuthToken });
+export async function transitionOrderToState(state: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return post<InterfaceApiDetailResponse<Order>>('/cart/transition', { state }, { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================
 // Order History Endpoints
 // ============================================================================
 
-export async function getCustomerOrders(params?: { take?: number; skip?: number }, options?: { useAuthToken?: boolean }): Promise<{ data: { orders: Order[]; totalItems: number }; token?: string }> {
+export async function getCustomerOrders(params?: { take?: number; skip?: number }, options?: { useAuthToken?: boolean }): Promise<InterfaceApiListResponse<Order>> {
     const searchParams = new URLSearchParams();
     if (params?.take) searchParams.set('take', params.take.toString());
     if (params?.skip) searchParams.set('skip', params.skip.toString());
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    return get<{ orders: Order[]; totalItems: number }>(`/orders${query}`, { useAuthToken: options?.useAuthToken });
+    return get<InterfaceApiListResponse<Order>>(`/orders${query}`, { useAuthToken: options?.useAuthToken });
 }
 
-export async function getOrderDetail(code: string, options?: { useAuthToken?: boolean }): Promise<{ data: Order; token?: string }> {
-    return get<Order>(`/orders/${code}`, { useAuthToken: options?.useAuthToken });
+export async function getOrderDetail(code: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
+    return get<InterfaceApiDetailResponse<Order>>(`/orders/${code}`, { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================
@@ -399,34 +458,34 @@ export interface RegisterInput {
     password: string;
 }
 
-export async function registerCustomer(input: RegisterInput): Promise<{ data: { success: boolean }; token?: string }> {
-    return post<{ success: boolean }>('/auth/register', input);
+export async function registerCustomer(input: RegisterInput): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/auth/register', input);
 }
 
-export async function requestPasswordReset(emailAddress: string): Promise<{ data: { success: boolean }; token?: string }> {
-    return post<{ success: boolean }>('/auth/reset-password/request', { emailAddress });
+export async function requestPasswordReset(emailAddress: string): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/auth/reset-password/request', { emailAddress });
 }
 
-export async function resetPassword(token: string, password: string): Promise<{ data: { user: CurrentUser }; token?: string }> {
-    return post<{ user: CurrentUser }>('/auth/reset-password', { token, password });
+export async function resetPassword(token: string, password: string): Promise<InterfaceApiDetailResponse<{ user: CurrentUser }>> {
+    return post<InterfaceApiDetailResponse<{ user: CurrentUser }>>('/auth/reset-password', { token, password });
 }
 
 // ============================================================================
 // Email Verification Endpoints
 // ============================================================================
 
-export async function verifyCustomerAccount(token: string): Promise<{ data: { success: boolean }; token?: string }> {
-    return post<{ success: boolean }>('/auth/verify', { token });
+export async function verifyCustomerAccount(token: string): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/auth/verify', { token });
 }
 
 export async function requestUpdateCustomerEmailAddress(
     password: string,
     newEmailAddress: string,
     options?: { useAuthToken?: boolean }
-): Promise<{ data: { success: boolean }; token?: string }> {
-    return post<{ success: boolean }>('/customers/me/email/request-update', { password, newEmailAddress }, { useAuthToken: options?.useAuthToken });
+): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/customers/me/email/request-update', { password, newEmailAddress }, { useAuthToken: options?.useAuthToken });
 }
 
-export async function updateCustomerEmailAddress(token: string, options?: { useAuthToken?: boolean }): Promise<{ data: { success: boolean }; token?: string }> {
-    return post<{ success: boolean }>('/customers/me/email/update', { token }, { useAuthToken: options?.useAuthToken });
+export async function updateCustomerEmailAddress(token: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/customers/me/email/update', { token }, { useAuthToken: options?.useAuthToken });
 }

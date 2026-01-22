@@ -35,12 +35,12 @@ export default async function OrdersPage(props: PageProps<'/account/orders'>) {
         skip,
     });
 
-    if (!result.data?.orders) {
+    if (!result.results || result.results.length === 0) {
         return redirect('/sign-in');
     }
 
-    const orders = result.data.orders;
-    const totalItems = result.data.totalItems || 0;
+    const orders = result.results;
+    const totalItems = result.count || 0;
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
     return (

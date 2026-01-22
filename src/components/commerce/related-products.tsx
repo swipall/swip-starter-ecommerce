@@ -1,7 +1,7 @@
 import { ProductCarousel } from "@/components/commerce/product-carousel";
 import { cacheLife, cacheTag } from "next/cache";
 import { searchProducts } from '@/lib/swipall/rest-adapter';
-import type { Product } from '@/lib/swipall/rest-adapter';
+import type { InterfaceInventoryItem } from '@/lib/swipall/rest-adapter';
 
 interface RelatedProductsProps {
     collectionSlug: string;
@@ -20,8 +20,8 @@ async function getRelatedProducts(collectionSlug: string, currentProductId: stri
     });
 
     // Filter out the current product and limit to 12
-    return result.data.items
-        .filter((product: Product) => product.id !== currentProductId)
+    return result.results
+        .filter((product: InterfaceInventoryItem) => product.id !== currentProductId)
         .slice(0, 12);
 }
 

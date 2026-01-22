@@ -15,7 +15,7 @@ export async function OrderConfirmation({params}: PageProps<'/order-confirmation
 
     try {
         const result = await getOrderDetail(code);
-        orderData = result.data;
+        orderData = result;
     }
     catch (error) {
         notFound();

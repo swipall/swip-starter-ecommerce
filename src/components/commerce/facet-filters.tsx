@@ -5,6 +5,7 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import type { SearchResult } from '@/lib/swipall/rest-adapter';
 
 interface FacetValue {
     facet: {
@@ -16,29 +17,12 @@ interface FacetValue {
     count: number;
 }
 
-interface SearchResult {
-    items: any[];
-    totalItems: number;
-    facetValues?: Array<{
-        count: number;
-        facetValue: {
-            id: string;
-            name: string;
-            facet: { id: string; name: string };
-        };
-    }>;
-}
-
 interface FacetFiltersProps {
-    productDataPromise: Promise<{
-        data: SearchResult;
-        token?: string;
-    }>;
+    productDataPromise: Promise<SearchResult>;
 }
 
 export function FacetFilters({ productDataPromise }: FacetFiltersProps) {
-    const result = use(productDataPromise);
-    const searchResult = result.data;
+    const searchResult = use(productDataPromise);
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const router = useRouter();

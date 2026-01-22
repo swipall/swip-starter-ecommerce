@@ -1,26 +1,29 @@
-import {cacheLife} from 'next/cache';
-import {getTopCollections} from '@/lib/swipall/cached';
-import type { Collection } from '@/lib/swipall/rest-adapter';
+import { cacheLife } from 'next/cache';
+import { getCatalogs } from '@/lib/swipall/cached';
+import { getTaxonomies, TaxonomyInterface, type Collection } from '@/lib/swipall/rest-adapter';
 import {
     NavigationMenu,
     NavigationMenuList,
     NavigationMenuItem,
 } from '@/components/ui/navigation-menu';
-import {NavbarLink} from '@/components/layout/navbar/navbar-link';
+import { NavbarLink } from '@/components/layout/navbar/navbar-link';
 
 export async function NavbarCollections() {
     "use cache";
     cacheLife('days');
-
-    const collections = await getTopCollections();
-
+    const params = {
+        kind: 'family',
+        is_visible_on_web: true,
+    }
+    const taxonomies = await getTaxonomies(params);
+    
     return (
         <NavigationMenu>
             <NavigationMenuList>
-                {collections.map((collection: Collection) => (
+                {taxonomies.results.map((collection: TaxonomyInterface) => (
                     <NavigationMenuItem key={collection.slug}>
                         <NavbarLink href={`/collection/${collection.slug}`}>
-                            {collection.name}
+                            {collection.value}
                         </NavbarLink>
                     </NavigationMenuItem>
                 ))}

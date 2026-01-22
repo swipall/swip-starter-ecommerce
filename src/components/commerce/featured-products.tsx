@@ -9,7 +9,7 @@ async function getFeaturedCollectionProducts() {
     try {
         // Fetch featured products via REST search
         const result = await searchProducts({ take: 12, skip: 0, sort: 'name:ASC' });
-        return result.data.items;
+        return result.results;
     } catch (error) {
         // Return empty array during build or when API is unavailable
         return [];
@@ -26,7 +26,7 @@ export async function FeaturedProducts() {
 
     return (
         <ProductCarousel
-            title="Featured Products"
+            title="Productos Destacados"
             products={products}
         />
     )

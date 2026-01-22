@@ -24,7 +24,7 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
     });
 
     const results = await searchProducts(params);
-    return { data: results.data, token: results.token };
+    return results;
 }
 
 async function getCollectionMetadata(slug: string) {

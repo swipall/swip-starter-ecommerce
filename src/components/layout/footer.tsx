@@ -1,6 +1,5 @@
-import {cacheLife} from 'next/cache';
-import {getTopCollections} from '@/lib/swipall/cached';
-import type { Collection } from '@/lib/swipall/rest-adapter';
+import { getTaxonomies, TaxonomyInterface } from '@/lib/swipall/rest-adapter';
+import { cacheLife } from 'next/cache';
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,8 +18,11 @@ async function Copyright() {
 export async function Footer() {
     'use cache'
     cacheLife('days');
-
-    const collections = await getTopCollections();
+    const params = {
+        kind: 'family',
+        is_visible_on_web: true,
+    }
+    const collections = await getTaxonomies(params);
 
     return (
         <footer className="border-t border-border mt-auto">
@@ -33,15 +35,15 @@ export async function Footer() {
                     </div>
 
                     <div>
-                        <p className="text-sm font-semibold mb-4">Categories</p>
+                        <p className="text-sm font-semibold mb-4">Categorías</p>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            {collections.map((collection: Collection) => (
+                            {collections.results.map((collection: TaxonomyInterface) => (
                                 <li key={collection.id}>
                                     <Link
                                         href={`/collection/${collection.slug}`}
                                         className="hover:text-foreground transition-colors"
                                     >
-                                        {collection.name}
+                                        {collection.value}
                                     </Link>
                                 </li>
                             ))}
@@ -88,7 +90,7 @@ export async function Footer() {
                 {/* Bottom Section */}
                 <div
                     className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-                    <Copyright/>
+                    <Copyright />
                     <div className="flex items-center gap-2">
                         <span>Powered by</span>
                         <a

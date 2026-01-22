@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
         remotePatterns: [
             {
                 hostname: 'localhost'
+            },
+            {
+                hostname: 'mmcbv4.b-cdn.net'
             }
         ],
     },
