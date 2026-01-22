@@ -38,7 +38,7 @@ export interface LoginResponse {
 }
 
 export async function login(credentials: LoginInput): Promise<InterfaceApiDetailResponse<LoginResponse>> {
-    return post<InterfaceApiDetailResponse<LoginResponse>>('/auth/login', credentials);
+    return post<InterfaceApiDetailResponse<LoginResponse>>('/api/v1/shop/login/', credentials);
 }
 
 export async function logout(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
@@ -274,11 +274,10 @@ export async function getCustomerAddresses(options?: { useAuthToken?: boolean })
 // ============================================================================
 
 export interface SearchInput {
-    query?: string;
-    skip?: number;
-    take?: number;
-    sort?: string;
-    facets?: Record<string, string[]>;
+    offset?: number;
+    limit?: number;
+    search?: string;
+    ordering?: string;
 }
 
 // SearchResult is now an alias for InterfaceApiListResponse<InterfaceInventoryItem>
@@ -286,16 +285,10 @@ export type SearchResult = InterfaceApiListResponse<InterfaceInventoryItem>;
 
 export async function searchProducts(input: SearchInput): Promise<SearchResult> {
     const params = new URLSearchParams();
-    if (input.query) params.append('q', input.query);
-    if (input.skip) params.append('skip', String(input.skip));
-    if (input.take) params.append('take', String(input.take));
-    if (input.sort) params.append('sort', input.sort);
-    if (input.facets) {
-        Object.entries(input.facets).forEach(([key, values]) => {
-            values.forEach(v => params.append(`facets[${key}]`, v));
-        });
-    }
-
+    if (input.search) params.append('search', input.search);
+    if (input.offset) params.append('offset', String(input.offset));
+    if (input.limit) params.append('limit', String(input.limit));
+    if (input.ordering) params.append('ordering', input.ordering);
     const endpoint = `/api/v1/shop/items`;
     return get<InterfaceApiListResponse<InterfaceInventoryItem>>(endpoint, params);
 }
@@ -451,15 +444,10 @@ export async function getOrderDetail(code: string, options?: { useAuthToken?: bo
 // Registration & Password Reset Endpoints
 // ============================================================================
 
-export interface RegisterInput {
-    emailAddress: string;
-    firstName: string;
-    lastName: string;
-    password: string;
-}
+export interface RegisterInput { first_name: string; last_name: string; email: string; password1: string; password2: string; username: string }
 
 export async function registerCustomer(input: RegisterInput): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
-    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/auth/register', input);
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/api/v1/shop/register/', input);
 }
 
 export async function requestPasswordReset(emailAddress: string): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {

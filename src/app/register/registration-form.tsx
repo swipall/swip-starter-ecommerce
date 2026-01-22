@@ -18,16 +18,44 @@ import {
 } from '@/components/ui/form';
 import Link from 'next/link';
 
+function indexSpaceBetween(value: string) {
+    return value.search(" ");
+}
+
+const createUserName = (first_name: string, last_name: string): string => {
+    let username = "";
+    const randomNum = Math.floor(Math.random() * (9999 - 999) + 999);
+    const fL = last_name.charAt(0).toLowerCase();
+    const SlIndex = indexSpaceBetween(last_name);
+    if (SlIndex !== -1) {
+        const sL = last_name.charAt(SlIndex + 1).toLowerCase();
+        const fNameIndex = indexSpaceBetween(first_name);
+        if (fNameIndex !== -1) {
+            username = fL + sL + first_name.substring(0, fNameIndex).toLowerCase();
+        } else {
+            username = fL + sL + first_name;
+        }
+    } else {
+        const fNameIndex = indexSpaceBetween(first_name);
+        if (fNameIndex !== -1) {
+            username = fL + first_name.substring(0, fNameIndex).toLowerCase();
+        } else {
+            username = fL + first_name.toLowerCase();
+        }
+    }
+    username += randomNum;
+    return username;
+};
+
 const registrationSchema = z.object({
-    emailAddress: z.string().email('Please enter a valid email address'),
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
-    phoneNumber: z.string().optional(),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
+    email: z.string().email('Por favor ingresa un correo electrónico válido'),
+    first_name: z.string().min(1, 'El nombre es requerido'),
+    last_name: z.string().min(1, 'El apellido es requerido'),
+    password1: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+    password2: z.string(),
+}).refine((data) => data.password1 === data.password2, {
+    message: "Las contraseñas no coinciden",
+    path: ["password2"],
 });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
@@ -43,25 +71,34 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
     const form = useForm<RegistrationFormData>({
         resolver: zodResolver(registrationSchema),
         defaultValues: {
-            emailAddress: '',
-            firstName: '',
-            lastName: '',
-            phoneNumber: '',
-            password: '',
-            confirmPassword: '',
+            email: '',
+            first_name: '',
+            last_name: '',
+            password1: '',
+            password2: '',
         },
     });
 
     const onSubmit = (data: RegistrationFormData) => {
         setServerError(null);
 
+        // Validar que los nombres no sean vacíos
+        if (!data.first_name.trim() || !data.last_name.trim()) {
+            setServerError('El nombre y el apellido son requeridos');
+            return;
+        }
+
+        // Generar username automáticamente
+        const generatedUsername = createUserName(data.first_name, data.last_name);
+
         startTransition(async () => {
             const formData = new FormData();
-            formData.append('emailAddress', data.emailAddress);
-            if (data.firstName) formData.append('firstName', data.firstName);
-            if (data.lastName) formData.append('lastName', data.lastName);
-            if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
-            formData.append('password', data.password);
+            formData.append('email', data.email);
+            formData.append('username', generatedUsername);
+            formData.append('first_name', data.first_name);
+            formData.append('last_name', data.last_name);
+            formData.append('password1', data.password1);
+            formData.append('password2', data.password2);
             if (redirectTo) {
                 formData.append('redirectTo', redirectTo);
             }
@@ -84,14 +121,14 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                     <CardContent className="space-y-4">
                         <FormField
                             control={form.control}
-                            name="emailAddress"
+                            name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Email Address</FormLabel>
+                                    <FormLabel>Correo Electrónico</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="email"
-                                            placeholder="you@example.com"
+                                            placeholder="tu@ejemplo.com"
                                             disabled={isPending}
                                             {...field}
                                         />
@@ -104,14 +141,14 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="firstName"
+                                name="first_name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>First Name</FormLabel>
+                                        <FormLabel>Nombre</FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="text"
-                                                placeholder="John"
+                                                placeholder="Juan"
                                                 disabled={isPending}
                                                 {...field}
                                             />
@@ -123,14 +160,14 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
 
                             <FormField
                                 control={form.control}
-                                name="lastName"
+                                name="last_name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Last Name</FormLabel>
+                                        <FormLabel>Apellido</FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="text"
-                                                placeholder="Doe"
+                                                placeholder="García"
                                                 disabled={isPending}
                                                 {...field}
                                             />
@@ -143,29 +180,10 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
 
                         <FormField
                             control={form.control}
-                            name="phoneNumber"
+                            name="password1"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Phone Number (Optional)</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="tel"
-                                            placeholder="+1 (555) 000-0000"
-                                            disabled={isPending}
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Password</FormLabel>
+                                    <FormLabel>Contraseña</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="password"
@@ -181,10 +199,10 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
 
                         <FormField
                             control={form.control}
-                            name="confirmPassword"
+                            name="password2"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Confirm Password</FormLabel>
+                                    <FormLabel>Confirmar Contraseña</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="password"
@@ -205,15 +223,15 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                         )}
 
                         <Button type="submit" className="w-full" disabled={isPending}>
-                            {isPending ? 'Creating account...' : 'Create Account'}
+                            {isPending ? 'Creando cuenta...' : 'Crear Cuenta'}
                         </Button>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4 mt-4">
 
                         <div className="text-sm text-center text-muted-foreground">
-                            Already have an account?{' '}
+                            ¿Ya tienes una cuenta?{' '}
                             <Link href={signInHref} className="hover:text-primary underline">
-                                Sign in
+                                Inicia sesión
                             </Link>
                         </div>
                     </CardFooter>

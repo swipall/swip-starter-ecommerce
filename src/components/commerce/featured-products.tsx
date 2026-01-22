@@ -8,7 +8,7 @@ async function getFeaturedCollectionProducts() {
 
     try {
         // Fetch featured products via REST search
-        const result = await searchProducts({ take: 12, skip: 0, sort: 'name:ASC' });
+        const result = await searchProducts({  limit: 10,offset: 0, });
         return result.results;
     } catch (error) {
         // Return empty array during build or when API is unavailable
