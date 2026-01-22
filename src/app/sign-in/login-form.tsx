@@ -6,7 +6,6 @@ import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {loginAction} from './actions';
-import {setAuthUser} from '@/lib/auth-client';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Card, CardContent, CardFooter} from '@/components/ui/card';
