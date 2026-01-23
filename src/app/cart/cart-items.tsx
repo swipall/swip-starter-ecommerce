@@ -4,32 +4,10 @@ import {Button} from '@/components/ui/button';
 import {Minus, Plus, X} from 'lucide-react';
 import {Price} from '@/components/commerce/price';
 import {removeFromCart, adjustQuantity} from './actions';
+import type {Order} from '@/lib/swipall/rest-adapter';
 
-type ActiveOrder = {
-    id: string;
-    currencyCode: string;
-    lines: Array<{
-        id: string;
-        quantity: number;
-        unitPriceWithTax: number;
-        linePriceWithTax: number;
-        productVariant: {
-            id: string;
-            name: string;
-            sku: string;
-            product: {
-                name: string;
-                slug: string;
-                featuredAsset?: {
-                    preview: string;
-                } | null;
-            };
-        };
-    }>;
-};
-
-export async function CartItems({activeOrder}: { activeOrder: ActiveOrder | null }) {
-    if (!activeOrder || activeOrder.lines.length === 0) {
+export async function CartItems({activeOrder}: { activeOrder: Order | null }) {
+    if (!activeOrder || !activeOrder.lines || activeOrder.lines.length === 0) {
         return (
             <div className="container mx-auto px-4 py-16">
                 <div className="text-center">
@@ -47,43 +25,34 @@ export async function CartItems({activeOrder}: { activeOrder: ActiveOrder | null
 
     return (
         <div className="lg:col-span-2 space-y-4">
-            {activeOrder.lines.map((line) => (
+            {activeOrder.lines.map((line) => {
+                const unitPrice = line.sub_total ? parseFloat(line.sub_total) / line.quantity : 0;
+                return (
                 <div
                     key={line.id}
                     className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg bg-card"
                 >
-                    {line.productVariant.product.featuredAsset && (
-                        <Link
-                            href={`/src/app/%5Blocale%5D/product/${line.productVariant.product.slug}`}
-                            className="flex-shrink-0"
-                        >
+                    {line.item.featured_image && (
+                        <div className="flex-shrink-0">
                             <Image
-                                src={line.productVariant.product.featuredAsset.preview}
-                                alt={line.productVariant.name}
+                                src={line.item.featured_image}
+                                alt={line.item.name}
                                 width={120}
                                 height={120}
                                 className="rounded-md object-cover w-full sm:w-[120px] h-[120px]"
                             />
-                        </Link>
+                        </div>
                     )}
 
                     <div className="flex-grow min-w-0">
-                        <Link
-                            href={`/src/app/%5Blocale%5D/product/${line.productVariant.product.slug}`}
-                            className="font-semibold hover:underline block"
-                        >
-                            {line.productVariant.product.name}
-                        </Link>
-                        {line.productVariant.name !== line.productVariant.product.name && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                {line.productVariant.name}
-                            </p>
-                        )}
+                        <p className="font-semibold">
+                            {line.item.name}
+                        </p>
                         <p className="text-sm text-muted-foreground mt-1">
-                            SKU: {line.productVariant.sku}
+                            SKU: {line.item.sku}
                         </p>
                         <p className="text-sm text-muted-foreground mt-2 sm:hidden">
-                            <Price value={line.unitPriceWithTax} currencyCode={activeOrder.currencyCode}/> each
+                            <Price value={unitPrice}/> each
                         </p>
 
                         <div className="flex items-center gap-3 mt-4">
@@ -142,8 +111,7 @@ export async function CartItems({activeOrder}: { activeOrder: ActiveOrder | null
 
                             <div className="sm:hidden ml-auto">
                                 <p className="font-semibold text-lg">
-                                    <Price value={line.linePriceWithTax}
-                                           currencyCode={activeOrder.currencyCode}/>
+                                    <Price value={parseFloat(line.total)}/>
                                 </p>
                             </div>
                         </div>
@@ -151,14 +119,15 @@ export async function CartItems({activeOrder}: { activeOrder: ActiveOrder | null
 
                     <div className="hidden sm:block text-right flex-shrink-0">
                         <p className="font-semibold text-lg">
-                            <Price value={line.linePriceWithTax} currencyCode={activeOrder.currencyCode}/>
+                            <Price value={parseFloat(line.total)}/>
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
-                            <Price value={line.unitPriceWithTax} currencyCode={activeOrder.currencyCode}/> each
+                            <Price value={unitPrice}/> each
                         </p>
                     </div>
                 </div>
-            ))}
+                );
+            })}
         </div>
     );
 }

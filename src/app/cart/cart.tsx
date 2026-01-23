@@ -10,16 +10,14 @@ export async function Cart() {
     
     try {
         const result = await getActiveOrder({ useAuthToken: true });
-        console.log(result);
-        
-        activeOrder = result;
+        activeOrder = result?.data || null;
     } catch (error) {
         console.error('[Cart] Failed to fetch active order:', error);
         // Continue with empty cart if API fails
     }
 
     // Handle empty cart case
-    if (!activeOrder || !Array.isArray(activeOrder.lines) || activeOrder.lines.length === 0) {
+    if (!activeOrder || !activeOrder.lines || activeOrder.lines.length === 0) {
         return <CartItems activeOrder={null}/>;
     }
 

@@ -253,8 +253,10 @@ export interface InterfaceApiDetailResponse<T> {
     [key: string]: unknown;
 }
 
-export async function getProduct(slug: string): Promise<InterfaceApiDetailResponse<InterfaceInventoryItem>> {
-    return get<InterfaceApiDetailResponse<InterfaceInventoryItem>>(`/products/${slug}`);
+export async function getProduct(id: string): Promise<InterfaceApiDetailResponse<InterfaceInventoryItem>> {
+    const endpoint = `/api/v1/shop/item/${id}`;
+    console.log(`[getProduct] Fetching from endpoint: ${endpoint}`);
+    return get<InterfaceApiDetailResponse<InterfaceInventoryItem>>(endpoint);
 }
 
 export async function getCollection(slug: string): Promise<InterfaceApiDetailResponse<Collection>> {
@@ -327,32 +329,66 @@ export interface OrderLine {
     linePriceWithTax: number;
 }
 
-export interface Order {
+export interface Order extends ShopCart {
+    lines: ShopCartItem[];
+}
+
+export interface AddressInterface {
     id: string;
-    code: string;
-    state: string;
-    totalQuantity: number;
-    totalWithTax: number;
-    shippingWithTax: number;
-    subTotalWithTax?: number;
-    currencyCode?: string;
-    couponCodes?: string[];
-    discounts?: Array<{
-        description: string;
-        amountWithTax: number;
-    }>;
-    lines: OrderLine[];
-    shippingAddress?: Address;
-    billingAddress?: Address;
-    shippingLines?: Array<{
-        shippingMethod: {
-            id: string;
-            name: string;
-            description?: string;
-        };
-        priceWithTax: number;
-    }>;
-    customer?: CurrentUser;
+    address: string;
+    suburb: string;
+    postal_code: string;
+    city: string;
+    state: string
+    country: string
+    receiver?: string;
+    references?: string;
+    mobile?: string;
+}
+
+export interface ShopCart {
+    count_items: {
+        count: number | null;
+    };
+    created_at: string;
+    discount_total: string;
+    expired_at: string | null;
+    grand_total: string;
+    id: string;
+    ieps_total: string;
+    isr_total: string;
+    kind: string;
+    shipment_address: string | AddressInterface | null;
+    source: number;
+    sub_total: string;
+    tax_total: string;
+    updated_at: string;
+    for_pickup: boolean;
+    for_delivery: boolean;
+}
+
+interface ShopCartItemBase {
+    id: string;
+    allow_serial_numbers: boolean;
+    attribute_combinations: any[];
+    barcode: string;
+    featured_image: string | null;
+    name: string;
+    sku: string;
+}
+
+export interface ShopCartItem {
+    base: string;
+    extra_fields: any[];
+    extra_materials: any[];
+    id: string;
+    item: ShopCartItemBase;
+    kind: string;
+    properties: any[];
+    quantity: number;
+    serial_number: string | null;
+    sub_total: string;
+    total: string;
 }
 
 export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?: string }): Promise<InterfaceApiDetailResponse<Order>> {
@@ -364,8 +400,8 @@ export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?
 
     try {
         const [cartResponse, itemsResponse] = await Promise.all([
-            get<InterfaceApiDetailResponse<Order>>(`/api/v1/shop/cart/${storedCartId}`, undefined, { useAuthToken: options?.useAuthToken }),
-            get<InterfaceApiDetailResponse<OrderLine[]> | InterfaceApiListResponse<OrderLine>>(
+            get<InterfaceApiDetailResponse<ShopCart>>(`/api/v1/shop/cart/${storedCartId}`, undefined, { useAuthToken: options?.useAuthToken }),
+            get<InterfaceApiDetailResponse<ShopCartItem[]> | InterfaceApiListResponse<ShopCartItem>>(
                 `/api/v1/shop/cart/${storedCartId}/items`,
                 undefined,
                 { useAuthToken: options?.useAuthToken }
@@ -373,24 +409,28 @@ export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?
         ]);
 
         const cartData = cartResponse?.data;
-        const itemLines = Array.isArray((itemsResponse as InterfaceApiDetailResponse<OrderLine[]>)?.data)
-            ? (itemsResponse as InterfaceApiDetailResponse<OrderLine[]>)?.data || []
-            : Array.isArray((itemsResponse as InterfaceApiListResponse<OrderLine>)?.results)
-                ? (itemsResponse as InterfaceApiListResponse<OrderLine>).results
+        const itemLines = Array.isArray((itemsResponse as InterfaceApiDetailResponse<ShopCartItem[]>)?.data)
+            ? (itemsResponse as InterfaceApiDetailResponse<ShopCartItem[]>)?.data || []
+            : Array.isArray((itemsResponse as InterfaceApiListResponse<ShopCartItem>)?.results)
+                ? (itemsResponse as InterfaceApiListResponse<ShopCartItem>).results
                 : [];
 
-        const orderWithLines = cartData ? { ...cartData, lines: itemLines } : undefined;
+        const orderWithLines = cartData ? { ...cartData, lines: itemLines } as Order : undefined;
 
         if (orderWithLines?.id) {
             await setCartId(orderWithLines.id);
         }
 
-        return { ...cartResponse, data: orderWithLines };
+        return { ...cartResponse, data: orderWithLines } as InterfaceApiDetailResponse<Order>;
     } catch (error) {
         await clearCartId();
         console.error('[getActiveOrder] Failed to fetch cart:', error);
         return { data: undefined } as InterfaceApiDetailResponse<Order>;
     }
+}
+
+export const createShopCart = async (): Promise<InterfaceApiDetailResponse<ShopCart>> => {
+    return post<InterfaceApiDetailResponse<ShopCart>>('/api/v1/shop/cart/', {});
 }
 
 export interface AddToCartInput {

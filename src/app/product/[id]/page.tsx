@@ -18,21 +18,28 @@ import {
     buildOgImages,
 } from '@/lib/metadata';
 
-async function getProductData(slug: string) {
+async function getProductData(id: string) {
     'use cache';
     cacheLife('hours');
-    cacheTag(`product-${slug}`);
+    cacheTag(`product-${id}`);
 
-    return await getProduct(slug);
+    try {
+        const result = await getProduct(id);
+        console.log(`[getProductData] Result status:`, result);
+        return result;
+    } catch (error) {
+        console.error(`[getProductData] Error fetching product:`, error);
+        throw error;
+    }
 }
 
 export async function generateMetadata({
     params,
-}: PageProps<'/product/[slug]'>): Promise<Metadata> {
-    const { slug } = await params;
-    const result = await getProductData(slug);
+}: PageProps<'/product/[id]'>): Promise<Metadata> {
+    const { id: encodedId } = await params;
+    const id = decodeURIComponent(encodedId);
+    const result = await getProductData(id);
     const product = result.data;
-
     if (!product) {
         return {
             title: 'Product Not Found',
@@ -52,7 +59,7 @@ export async function generateMetadata({
             title: product.name,
             description: description || `Shop ${product.name} at ${SITE_NAME}`,
             type: 'website',
-            url: buildCanonicalUrl(`/product/${product.slug}`),
+            url: buildCanonicalUrl(`/product/${product.id}`),
             images: buildOgImages(ogImage, product.name),
         },
         twitter: {
@@ -64,11 +71,10 @@ export async function generateMetadata({
     };
 }
 
-export default async function ProductDetailPage({params, searchParams}: PageProps<'/product/[slug]'>) {
-    const { slug } = await params;
-    const searchParamsResolved = await searchParams;
-
-    const result = await getProductData(slug);
+export default async function ProductDetailPage({params, searchParams}: PageProps<'/product/[id]'>) {
+    const { id: encodedId } = await params;
+    const id = decodeURIComponent(encodedId);
+    const result = await getProductData(id);
 
     const product = result.data;
 
