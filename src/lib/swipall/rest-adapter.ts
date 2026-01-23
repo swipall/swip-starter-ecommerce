@@ -16,6 +16,7 @@
  */
 
 import { post, get, put, patch, remove } from './api';
+import { getCartId, setCartId, clearCartId } from '@/lib/cart';
 
 // ============================================================================
 // Authentication Endpoints
@@ -354,8 +355,42 @@ export interface Order {
     customer?: CurrentUser;
 }
 
-export async function getActiveOrder(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return get<InterfaceApiDetailResponse<Order>>('/api/v1/shop/carts/', { useAuthToken: options?.useAuthToken });
+export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?: string }): Promise<InterfaceApiDetailResponse<Order>> {
+    const storedCartId = options?.cartId || await getCartId();
+
+    if (!storedCartId) {
+        return { data: undefined } as InterfaceApiDetailResponse<Order>;
+    }
+
+    try {
+        const [cartResponse, itemsResponse] = await Promise.all([
+            get<InterfaceApiDetailResponse<Order>>(`/api/v1/shop/cart/${storedCartId}`, undefined, { useAuthToken: options?.useAuthToken }),
+            get<InterfaceApiDetailResponse<OrderLine[]> | InterfaceApiListResponse<OrderLine>>(
+                `/api/v1/shop/cart/${storedCartId}/items`,
+                undefined,
+                { useAuthToken: options?.useAuthToken }
+            ),
+        ]);
+
+        const cartData = cartResponse?.data;
+        const itemLines = Array.isArray((itemsResponse as InterfaceApiDetailResponse<OrderLine[]>)?.data)
+            ? (itemsResponse as InterfaceApiDetailResponse<OrderLine[]>)?.data || []
+            : Array.isArray((itemsResponse as InterfaceApiListResponse<OrderLine>)?.results)
+                ? (itemsResponse as InterfaceApiListResponse<OrderLine>).results
+                : [];
+
+        const orderWithLines = cartData ? { ...cartData, lines: itemLines } : undefined;
+
+        if (orderWithLines?.id) {
+            await setCartId(orderWithLines.id);
+        }
+
+        return { ...cartResponse, data: orderWithLines };
+    } catch (error) {
+        await clearCartId();
+        console.error('[getActiveOrder] Failed to fetch cart:', error);
+        return { data: undefined } as InterfaceApiDetailResponse<Order>;
+    }
 }
 
 export interface AddToCartInput {
@@ -364,15 +399,42 @@ export interface AddToCartInput {
 }
 
 export async function addToCart(input: AddToCartInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return post<InterfaceApiDetailResponse<Order>>('/cart/items', input, { useAuthToken: options?.useAuthToken });
+    const cartId = await getCartId();
+    const endpoint = cartId ? `/api/v1/shop/cart/${cartId}/items` : '/api/v1/shop/cart/items';
+
+    const result = await post<InterfaceApiDetailResponse<Order>>(endpoint, input, { useAuthToken: options?.useAuthToken });
+
+    if (result?.data?.id) {
+        await setCartId(result.data.id);
+    }
+
+    return result;
 }
 
 export async function removeFromCart(lineId: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return remove<InterfaceApiDetailResponse<Order>>(`/cart/items/${lineId}`, { useAuthToken: options?.useAuthToken });
+    const cartId = await getCartId();
+    const endpoint = cartId ? `/api/v1/shop/cart/${cartId}/items/${lineId}` : `/cart/items/${lineId}`;
+
+    const result = await remove<InterfaceApiDetailResponse<Order>>(endpoint, { useAuthToken: options?.useAuthToken });
+
+    if (result?.data?.id) {
+        await setCartId(result.data.id);
+    }
+
+    return result;
 }
 
 export async function adjustQuantity(lineId: string, quantity: number, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return patch<InterfaceApiDetailResponse<Order>>(`/cart/items/${lineId}`, { quantity }, { useAuthToken: options?.useAuthToken });
+    const cartId = await getCartId();
+    const endpoint = cartId ? `/api/v1/shop/cart/${cartId}/items/${lineId}` : `/cart/items/${lineId}`;
+
+    const result = await patch<InterfaceApiDetailResponse<Order>>(endpoint, { quantity }, { useAuthToken: options?.useAuthToken });
+
+    if (result?.data?.id) {
+        await setCartId(result.data.id);
+    }
+
+    return result;
 }
 
 export async function applyPromotionCode(couponCode: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
