@@ -30,12 +30,13 @@ export async function registerAction(prevState: { error?: string } | undefined, 
             password2,
         });
 
-        // Redirect to verification pending page, preserving redirectTo if present
-        const verifyUrl = redirectTo
-            ? `/verify-pending?redirectTo=${encodeURIComponent(redirectTo)}`
-            : '/verify-pending';
+        // here we could navigate to verify-pending page with redirectTo param but for now redirect to sign-in
+        /// since the commerce does not require verification to sign in
+        const signInHref = redirectTo
+            ? `/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`
+            : '/sign-in';
 
-        redirect(verifyUrl);
+        redirect(signInHref);
     } catch (error: unknown) {
         // Don't catch redirect errors
         if (error instanceof Error && error.message === 'NEXT_REDIRECT') {

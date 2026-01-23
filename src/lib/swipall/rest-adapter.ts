@@ -355,7 +355,7 @@ export interface Order {
 }
 
 export async function getActiveOrder(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return get<InterfaceApiDetailResponse<Order>>('/cart', { useAuthToken: options?.useAuthToken });
+    return get<InterfaceApiDetailResponse<Order>>('/api/v1/shop/carts/', { useAuthToken: options?.useAuthToken });
 }
 
 export interface AddToCartInput {

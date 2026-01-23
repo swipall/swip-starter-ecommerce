@@ -12,14 +12,14 @@ export async function generateMetadata({
     const searchQuery = resolvedParams.q as string | undefined;
 
     const title = searchQuery
-        ? `Search results for "${searchQuery}"`
-        : 'Search Products';
+        ? `Búsqueda de "${searchQuery}"`
+        : 'Buscar Productos';
 
     return {
         title,
         description: searchQuery
-            ? `Find products matching "${searchQuery}" at ${SITE_NAME}`
-            : `Search our product catalog at ${SITE_NAME}`,
+            ? `Encuentra productos que coincidan con "${searchQuery}" en ${SITE_NAME}`
+            : `Busca en nuestro catálogo de productos en ${SITE_NAME}`,
         robots: noIndexRobots(),
     };
 }

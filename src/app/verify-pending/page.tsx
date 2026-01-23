@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Verification Pending',
-    description: 'Check your email to verify your account.',
+    title: 'Verificación Pendiente',
+    description: 'Revisa tu correo electrónico para verificar tu cuenta.',
 };
 
 async function VerifyPendingContent({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
@@ -25,22 +25,22 @@ async function VerifyPendingContent({searchParams}: {searchParams: Promise<Recor
                     <CheckCircle className="h-16 w-16 text-green-600" />
                 </div>
                 <div className="space-y-2 text-center">
-                    <h1 className="text-2xl font-bold">Check Your Email</h1>
+                    <h1 className="text-2xl font-bold">Verifica tu correo electrónico</h1>
                     <p className="text-muted-foreground">
-                        We&apos;ve sent a verification link to your email address.
-                        Please check your inbox and click the link to verify your account.
+                        Hemos enviado un enlace de verificación a tu dirección de correo electrónico.
+                        Por favor, revisa tu bandeja de entrada y haz clic en el enlace para verificar tu cuenta.
                     </p>
                 </div>
                 <div className="bg-muted p-4 rounded-md">
                     <p className="text-sm text-muted-foreground">
-                        Don&apos;t see the email? Check your spam folder or request a new verification link.
+                        ¿No ves el correo electrónico? Revisa tu carpeta de spam o solicita un nuevo enlace de verificación.
                     </p>
                 </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
                 <Link href={signInHref} className="w-full">
                     <Button className="w-full">
-                        Go to Sign In
+                        Ir a Iniciar Sesión
                     </Button>
                 </Link>
             </CardFooter>
@@ -52,7 +52,7 @@ export default async function VerifyPendingPage({searchParams}: PageProps<'/veri
     return (
         <div className="flex min-h-screen items-center justify-center px-4">
             <div className="w-full max-w-md space-y-6">
-                <Suspense fallback={<div>Loading...</div>}>
+                <Suspense fallback={<div>Cargando...</div>}>
                     <VerifyPendingContent searchParams={searchParams} />
                 </Suspense>
             </div>

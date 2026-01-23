@@ -10,6 +10,8 @@ export async function Cart() {
     
     try {
         const result = await getActiveOrder({ useAuthToken: true });
+        console.log(result);
+        
         activeOrder = result;
     } catch (error) {
         console.error('[Cart] Failed to fetch active order:', error);
