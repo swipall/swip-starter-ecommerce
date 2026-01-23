@@ -20,7 +20,7 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
 
     const params = buildSearchInput({
         searchParams,
-        collectionSlug: slug,
+        taxonomies__slug__and: slug,
     });
 
     const results = await searchProducts(params);
@@ -32,7 +32,8 @@ async function getCollectionMetadata(slug: string) {
     cacheLife('hours');
     cacheTag(`collection-meta-${slug}`);
 
-    return await getCollection(slug);
+    // return await getCollection(slug);
+    return { data: {name: '', slug: slug }}
 }
 
 export async function generateMetadata({
@@ -71,7 +72,7 @@ export async function generateMetadata({
     };
 }
 
-export default async function CollectionPage({params, searchParams}: PageProps<'/collection/[slug]'>) {
+export default async function CollectionPage({ params, searchParams }: PageProps<'/collection/[slug]'>) {
     const { slug } = await params;
     const searchParamsResolved = await searchParams;
     const page = getCurrentPage(searchParamsResolved);

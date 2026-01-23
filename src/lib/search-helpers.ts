@@ -2,23 +2,16 @@ import type { SearchInput } from '@/lib/swipall/rest-adapter';
 
 interface BuildSearchInputOptions {
     searchParams: { [key: string]: string | string[] | undefined };
-    collectionSlug?: string;
+    taxonomy?: string;
+    taxonomies__slug__and?: string;
 }
 
-export function buildSearchInput({ searchParams, collectionSlug }: BuildSearchInputOptions): SearchInput {
+export function buildSearchInput({ searchParams, taxonomy, taxonomies__slug__and }: BuildSearchInputOptions): SearchInput {
     const page = Number(searchParams.page) || 1;
     const limit = 12;
     const offset = (page - 1) * limit;
-    const sortParam = (searchParams.sort as string) || 'name-asc';
+    const sortParam = (searchParams.ordering as string) || 'name-asc';
     const searchTerm = searchParams.q as string;
-
-    // Extract facet value IDs from search params
-    const facetValueIds = searchParams.facets
-        ? Array.isArray(searchParams.facets)
-            ? searchParams.facets
-            : [searchParams.facets]
-        : [];
-
     // Map sort parameter to a simple string for REST API
     const sortMapping: Record<string, string> = {
         'name-asc': 'name_asc',
@@ -29,6 +22,8 @@ export function buildSearchInput({ searchParams, collectionSlug }: BuildSearchIn
 
     return {
         ...(searchTerm && { search: searchTerm }),
+        ...(taxonomy && { taxonomy }),
+        ...(taxonomies__slug__and && { taxonomies__slug__and }),
         limit,
         offset,
         ordering: sortMapping[sortParam] || sortMapping['name-asc']
