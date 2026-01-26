@@ -104,23 +104,34 @@ export interface AddressInterface {
 // Product Types
 // ============================================================================
 
-export interface Product {
-    id: string;
-    name: string;
-    slug: string;
-    description?: string;
-    featuredAsset?: Asset;
-    variants: ProductVariant[];
-    collections?: Collection[];
+export enum ProductKind {
+    Group = 'group',
+    Product = 'product',
+    Compound = 'compound',
+    Service = 'service',
 }
 
+export interface ProductAttribute {
+    id: string;
+    name: string;
+    value: string;
+    meli_settings: null;
+    slug: string;
+    kind: string;
+    ordering: number;
+    icon: string | null;
+    color: string;
+    imagen: string | null;
+    is_visible_on_web: boolean;
+    parent: null;
+}
 export interface InterfaceInventoryItem {
-    attribute_combinations: any[];
+    attribute_combinations: ProductAttribute[];
     available?: InventoryAvailable;
     barcode: string | null;
     featured_image: string | null;
     id: string;
-    kind: 'group' | 'product' | 'compound';
+    kind: ProductKind;
     name: string;
     pictures: InventoryPicture[] | null;
     sku: string;
@@ -132,16 +143,20 @@ export interface InterfaceInventoryItem {
     app_price?: string;
     collections?: Collection[];
     featuredAsset?: Asset;
-    variants?: ProductVariant[];
+    variants?: InterfaceInventoryItem[];
 }
 
 export interface ProductVariant {
     id: string;
+    slug: string;
     name: string;
+    web_price: string;
     sku: string;
-    price: number;
-    priceWithTax: number;
-    stock: number;
+    barcode: string | null;
+    featured_image: string | null;
+    pictures: InventoryPicture[] | null;
+    taxonomy: TaxonomyInterface[];
+    available: InventoryAvailable;
 }
 
 export interface Asset {

@@ -23,7 +23,7 @@ export async function ProductGrid({productDataPromise, currentPage, take}: Produ
     if (!searchResult?.results || !Array.isArray(searchResult.results) || searchResult.results.length === 0) {
         return (
             <div className="text-center py-12">
-                <p className="text-muted-foreground">No products found</p>
+                <p className="text-muted-foreground">No se encontraron productos</p>
             </div>
         );
     }
@@ -32,7 +32,7 @@ export async function ProductGrid({productDataPromise, currentPage, take}: Produ
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                    {searchResult.count} {searchResult.count === 1 ? 'product' : 'products'}
+                    {searchResult.count} {searchResult.count === 1 ? 'producto' : 'productos'}
                 </p>
                 <SortDropdown/>
             </div>

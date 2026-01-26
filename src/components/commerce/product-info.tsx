@@ -1,44 +1,98 @@
 'use client';
 
-import {useState, useMemo, useTransition, useEffect} from 'react';
-import {usePathname, useRouter, useSearchParams} from 'next/navigation';
-import {Button} from '@/components/ui/button';
-import {Label} from '@/components/ui/label';
-import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
-import {ShoppingCart, CheckCircle2} from 'lucide-react';
-import {addToCart, getGroupVariants as loadGroupVariants} from '@/app/product/[id]/actions';
-import {toast} from 'sonner';
-import {Price} from '@/components/commerce/price';
-import { InterfaceInventoryItem, ProductVariant } from '@/lib/swipall/types';
+import { addToCart, getGroupVariant } from '@/app/product/[id]/actions';
+import { Price } from '@/components/commerce/price';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { InterfaceInventoryItem, ProductKind, ProductVariant } from '@/lib/swipall/types/types';
+import { CheckCircle2, ShoppingCart } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 
 interface ProductInfoProps {
     product: InterfaceInventoryItem;
     searchParams: { [key: string]: string | string[] | undefined };
 }
 
-export function ProductInfo({product, searchParams}: ProductInfoProps) {
+interface VariantOption {
+    label: string;
+    key: string;
+    kind: string;
+    values: {
+        key: string;
+        name: string;
+        value: string;
+    }[]
+}
+
+export function ProductInfo({ product, searchParams }: ProductInfoProps) {
     const pathname = usePathname();
     const router = useRouter();
     const currentSearchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
     const [isAdded, setIsAdded] = useState(false);
 
-    // Variants state (only for group kind)
-    const [variants, setVariants] = useState<ProductVariant[]>([]);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+    const [variants, setVariants] = useState<VariantOption[]>([]);
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
+    const generateVariantLabel = (kind: string) => {
+        if (kind === 'size') return 'Tamaño';
+        if (kind === 'color') return 'Color';
+        return kind.charAt(0).toUpperCase() + kind.slice(1);
+    }
+
+    const formatVariants = (product: InterfaceInventoryItem) => {
+        let variantsArray: VariantOption[] = [
+            {
+                key: 'size',
+                label: 'Tamaño',
+                kind: 'size',
+                values: []
+            },
+            {
+                key: 'color',
+                label: 'Color',
+                kind: 'color',
+                values: []
+            }
+        ];
+        product.attribute_combinations.forEach((attr) => {
+            const existingVariant = variantsArray.find(v => v.kind === attr.kind);
+            if (existingVariant) {
+                existingVariant.values.push({
+                    key: attr.id,
+                    name: attr.name,
+                    value: attr.value
+                });
+            } else {
+                variantsArray.push({
+                    label: generateVariantLabel(attr.kind),
+                    key: attr.kind,
+                    kind: attr.kind,
+                    values: [{
+                        key: attr.id,
+                        name: attr.name,
+                        value: attr.value
+                    }]
+                });
+            }
+        });
+        setVariants(variantsArray);
+    }
+
     useEffect(() => {
-        console.log(product);
-        
         // Only load variants for 'group' kind
-        if (product.kind === 'group') {
+        if (product.kind === ProductKind.Group) {
             startTransition(async () => {
-                const res = await loadGroupVariants(product.id);
-                if (res?.success) {
-                    setVariants(res.variants || []);
-                    setSelectedVariantId(res.variants?.[0]?.id || null);
-                } else {
-                    toast.error('Error', { description: res?.error || 'Error al cargar las variantes' });
+                try {
+                    formatVariants(product);
+
+                    fetchVariantBySizeAndColor(null, null)
+                } catch (error) {
+                    toast.error('Error', { description: error instanceof Error ? error.message : 'Error al cargar las variantes' });
                 }
             });
         } else {
@@ -48,22 +102,26 @@ export function ProductInfo({product, searchParams}: ProductInfoProps) {
         }
     }, [product.id, product.kind]);
 
-    // Selected variant by id
-    const selectedVariant = useMemo(() => {
-        if (selectedVariantId) {
-            return variants.find(v => v.id === selectedVariantId) || null;
+    const fetchVariantBySizeAndColor = async (sizeId: string | null, colorId: string | null) => {
+        const params = {
+            ...colorId && { color: colorId },
+            ...sizeId && { size: sizeId }
         }
-        return variants.length === 1 ? variants[0] : null;
-    }, [variants, selectedVariantId]);
+        const res: ProductVariant = await getGroupVariant(product.id, params);
+        console.log(res);
+        setSelectedVariant(res);
+    }
+
 
     const handleVariantChange = (variantId: string) => {
+
         setSelectedVariantId(variantId);
     };
 
     const handleAddToCart = async () => {
         // For 'group' kind, require a selected variant
         if (product.kind === 'group' && !selectedVariant) return;
-        
+
         // For 'group' kind use the variant ID, otherwise use the product ID
         const itemId = product.kind === 'group' ? selectedVariant?.id : product.id;
         if (!itemId) return;
@@ -87,30 +145,29 @@ export function ProductInfo({product, searchParams}: ProductInfoProps) {
         });
     };
 
-    const isInStock = product.kind === 'group' 
-        ? (selectedVariant?.available.quantity ?? 0) > 0 
-        : (product.available.quantity ?? 0) > 0;
-    const canAddToCart = product.kind === 'group' 
-        ? !!selectedVariant && isInStock 
+    const isInStock = product.kind === ProductKind.Group
+        ? false
+        : (product.available?.quantity ?? 0) > 0;
+    const canAddToCart = product.kind === ProductKind.Group
+        ? !!selectedVariant && isInStock
         : isInStock;
 
     return (
         <div className="space-y-6">
             {/* Product Title */}
             <div>
-                <h1 className="text-3xl font-bold">{product.name}</h1>
                 <p className="text-2xl font-bold mt-2">
-                    <Price value={product.kind === 'group' ? selectedVariant?.web_price : product.web_price}/>
+                    <Price value={product.kind === ProductKind.Group ? 0 : Number(product.web_price) || 0} />
                 </p>
             </div>
 
             {/* Product Description */}
             <div className="prose prose-sm max-w-none">
-                <div dangerouslySetInnerHTML={{__html: product.description}}/>
+                <div dangerouslySetInnerHTML={{ __html: product.description || '' }} />
             </div>
 
             {/* Variants Selection - only for group kind */}
-            {product.kind === 'group' && variants.length > 0 && (
+            {product.kind === ProductKind.Group && variants.length > 0 && (
                 <div className="space-y-4">
                     <Label className="text-base font-semibold">
                         Variantes
@@ -119,21 +176,30 @@ export function ProductInfo({product, searchParams}: ProductInfoProps) {
                         value={selectedVariantId || ''}
                         onValueChange={(value) => handleVariantChange(value)}
                     >
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 items-center">
                             {variants.map((variant) => (
-                                <div key={variant.id}>
-                                    <RadioGroupItem
-                                        value={variant.id}
-                                        id={variant.id}
-                                        className="peer sr-only"
-                                    />
-                                    <Label
-                                        htmlFor={variant.id}
-                                        className="flex items-center justify-center rounded-md border-2 border-muted bg-popover px-4 py-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
-                                    >
-                                        {variant.name}
-                                    </Label>
-                                </div>
+                                (
+                                    <div key={variant.key} className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        <p>{variant.label}</p>
+                                        {
+                                            variant.values.map((option) => (
+                                                <div key={option.key}>
+                                                    <RadioGroupItem
+                                                        value={option.key}
+                                                        id={option.key}
+                                                        className="peer sr-only"
+                                                    />
+                                                    <Label
+                                                        htmlFor={option.key}
+                                                        className="flex items-center justify-center rounded-md border-2 border-muted bg-popover px-4 py-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
+                                                    >
+                                                        {option.value}
+                                                    </Label>
+                                                </div>
+                                            ))
+                                        }
+                                    </div>
+                                )
                             ))}
                         </div>
                     </RadioGroup>
@@ -159,12 +225,12 @@ export function ProductInfo({product, searchParams}: ProductInfoProps) {
                 >
                     {isAdded ? (
                         <>
-                            <CheckCircle2 className="mr-2 h-5 w-5"/>
+                            <CheckCircle2 className="mr-2 h-5 w-5" />
                             Se agregó al carrito
                         </>
                     ) : (
                         <>
-                            <ShoppingCart className="mr-2 h-5 w-5"/>
+                            <ShoppingCart className="mr-2 h-5 w-5" />
                             {isPending
                                 ? 'Agregando...'
                                 : !selectedVariant && variants.length > 0

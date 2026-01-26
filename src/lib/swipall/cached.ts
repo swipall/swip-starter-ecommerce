@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from 'next/cache';
-import { CatalogInterface, getActiveChannel, getAvailableCountries, getCatalogs as getCatalogsREST, InterfaceApiListResponse } from './rest-adapter';
+import { getActiveChannel, getAvailableCountries, getCatalogs as getCatalogsREST } from './rest-adapter';
+import { CatalogInterface, InterfaceApiListResponse } from './types/types';
 
 /**
  * Get the active channel with caching enabled.

@@ -1,6 +1,9 @@
 import { get } from './api';
-import type { InterfaceApiListResponse, ProductVariant } from './types';
+import { ProductVariant } from './types/types';
 
-export async function getGroupVariants(itemId: string): Promise<InterfaceApiListResponse<ProductVariant>> {
-  return get<InterfaceApiListResponse<ProductVariant>>(`/api/v1/shop/item/${itemId}/variants`);
+interface ApiGetGroupVariantsParams {
+    [key: string]: any;
+}
+export async function getGroupVariantByTaxonomies(itemId: string, params?: ApiGetGroupVariantsParams): Promise<ProductVariant> {
+  return get<ProductVariant>(`/api/v1/shop/group/${itemId}/variants`,params);
 }

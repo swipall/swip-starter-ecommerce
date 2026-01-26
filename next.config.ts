@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
             },
             {
                 hostname: 'mmcbv4.b-cdn.net'
+            },
+            {
+                hostname: 'mmcb.b-cdn.net'
             }
         ],
     },

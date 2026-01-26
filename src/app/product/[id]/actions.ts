@@ -1,7 +1,7 @@
 'use server';
 
+import { getGroupVariantByTaxonomies } from '@/lib/swipall/group-variants';
 import { addToCart as apiAddToCart } from '@/lib/swipall/rest-adapter';
-import { getGroupVariants as apiGetGroupVariants } from '@/lib/swipall/group-variants';
 import { updateTag } from 'next/cache';
 
 export async function addToCart(productId: string, quantity: number = 1) {
@@ -18,12 +18,11 @@ export async function addToCart(productId: string, quantity: number = 1) {
   }
 }
 
-export async function getGroupVariants(itemId: string) {
+export async function getGroupVariant(itemId: string, params?: any) {
   try {
-    const res = await apiGetGroupVariants(itemId);
-    return { success: true, variants: res.results || [] };
+    const res = await getGroupVariantByTaxonomies(itemId, params);
+    return res;
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to load variants';
-    return { success: false, error: message };
+    throw error;
   }
 }
