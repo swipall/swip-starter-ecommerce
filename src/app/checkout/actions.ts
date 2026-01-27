@@ -1,15 +1,17 @@
 'use server';
 
 import useShopModel from '@/lib/models/shop.model';
+import useUserModel from '@/lib/models/user.model';
 import {
     setShippingAddress as apiSetShippingAddress,
     setBillingAddress as apiSetBillingAddress,
     setShippingMethod as apiSetShippingMethod,
     addPaymentToOrder as apiAddPayment,
-    createCustomerAddress as apiCreateAddress,
     transitionOrderToState,
 } from '@/lib/swipall/rest-adapter';
 import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
+import { createAddress, createCustomerInfo } from '@/lib/swipall/users';
+import { AddressInterface } from '@/lib/swipall/users/user.types';
 import { revalidatePath, updateTag } from 'next/cache';
 import { redirect } from "next/navigation";
 
@@ -51,13 +53,38 @@ export async function setShippingMethod(shippingMethodId: string) {
     }
 }
 
-export async function createCustomerAddress(address: AddressInput) {
+export async function registerCustomerInfo(address: Partial<AddressInterface>) {
     try {
-        const result = await apiCreateAddress(address, { useAuthToken: true });
+        const result = await createCustomerInfo(address, { useAuthToken: true });
         revalidatePath('/checkout');
-        return result.data;
+        return result;
+    } catch (error) {
+        throw new Error('Failed to register customer info');
+    }
+}
+
+export async function createCustomerAddress(address: Partial<AddressInterface>) {
+    try {
+        const result = await createAddress(address, { useAuthToken: true });
+        revalidatePath('/checkout');
+        return result;
     } catch (error) {
         throw new Error('Failed to create customer address');
+    }
+}
+
+export async function updateShippingAddressForCart(addressId: string) {
+    try {
+        const shopModel = useShopModel();
+        const cartId = await shopModel.getCurrentCartId();
+        if (cartId) {
+            await shopModel.updateCartShippingAddress(cartId, {
+                shipment_address: addressId,
+            });
+        }
+        revalidatePath('/checkout');
+    } catch (error) {
+        throw new Error('Failed to update shipping address');
     }
 }
 
@@ -95,7 +122,7 @@ export async function placeOrder(paymentMethodCode: string) {
             { useAuthToken: true }
         );
 
-        const orderCode = result.data?.code;
+        const orderCode = result.data?.id;
 
         // Update the cart tag to immediately invalidate cached cart data
         updateTag('cart');
@@ -136,10 +163,11 @@ export async function setCustomerForOrder(
 }
 
 
-export async function fetchDeliveryItem(): Promise<InterfaceInventoryItem[]> {
+export async function fetchDeliveryItem(): Promise<InterfaceInventoryItem | null> {
     try {
         const shopModel = useShopModel();
-        return await shopModel.fetchDeliveryConcept();
+        const results = await shopModel.fetchDeliveryConcept();
+        return results.length > 0 ? results[0] : null;
     } catch (error) {
         console.error('Error fetching delivery item:', error);
         throw error;
@@ -175,3 +203,18 @@ export async function updateCartForPickup(deliveryServiceItem?: InterfaceInvento
         throw error;
     }
 }
+
+export async function fetchAddresses() {
+    try {
+        const userModel = useUserModel();
+        const addresses = await userModel.getUserAddresses();
+        return addresses;
+    }
+    catch (error) {
+        console.error('Error fetching user addresses:', error);
+        throw error;
+    }
+
+}
+
+

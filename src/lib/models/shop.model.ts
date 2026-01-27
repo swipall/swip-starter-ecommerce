@@ -123,6 +123,14 @@ export default function useShopModel() {
         }
     }
 
+    const updateCartShippingAddress = async (cartId: string, body: { shipment_address?: string | null; external_reference?: string | null; }) => {
+        try {
+            return await updateCartDeliveryInfo(cartId, body);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     return {
         addItemToCart,
         onCreateNewCart,
@@ -134,6 +142,7 @@ export default function useShopModel() {
         onUpdateCartForDelivery,
         onUpdateCartForPickup,
         onSetCustomerToCart,
-        removeCurrentCartId
+        removeCurrentCartId,
+        updateCartShippingAddress
     };
 }

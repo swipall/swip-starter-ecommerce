@@ -63,9 +63,6 @@ export async function updateCustomerPassword(
 // Customer Address Endpoints
 // ============================================================================
 
-export async function createCustomerAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Address>> {
-    return post<InterfaceApiDetailResponse<Address>>('/customers/me/addresses', input, { useAuthToken: options?.useAuthToken });
-}
 
 export async function updateCustomerAddress(id: string, input: Partial<CreateAddressInput>, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Address>> {
     return patch<InterfaceApiDetailResponse<Address>>(`/customers/me/addresses/${id}`, input, { useAuthToken: options?.useAuthToken });

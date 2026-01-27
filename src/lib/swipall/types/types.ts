@@ -5,6 +5,8 @@
  * throughout the Swipall REST adapter, organized by feature.
  */
 
+import { AddressInterface } from "../users/user.types";
+
 // ============================================================================
 // Authentication Types
 // ============================================================================
@@ -87,18 +89,6 @@ export interface CreateAddressInput {
     defaultBillingAddress?: boolean;
 }
 
-export interface AddressInterface {
-    id: string;
-    address: string;
-    suburb: string;
-    postal_code: string;
-    city: string;
-    state: string;
-    country: string;
-    receiver?: string;
-    references?: string;
-    mobile?: string;
-}
 
 // ============================================================================
 // Product Types
@@ -338,7 +328,7 @@ export interface ShopCart {
     ieps_total: string;
     isr_total: string;
     kind: string;
-    shipment_address: string | AddressInterface | null;
+    shipment_address: AddressInterface | null;
     source: number;
     sub_total: string;
     tax_total: string;

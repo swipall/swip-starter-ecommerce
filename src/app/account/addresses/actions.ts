@@ -1,12 +1,12 @@
 'use server';
 
 import {
-    createCustomerAddress as apiCreateAddress,
     updateCustomerAddress as apiUpdateAddress,
     deleteCustomerAddress as apiDeleteAddress,
     setDefaultShippingAddress as apiSetDefaultShipping,
     setDefaultBillingAddress as apiSetDefaultBilling,
 } from '@/lib/swipall/rest-adapter';
+import { createAddress as createApiAddress } from '@/lib/swipall/users';
 import {revalidatePath} from 'next/cache';
 
 interface AddressInput {
@@ -27,9 +27,9 @@ interface UpdateAddressInput extends AddressInput {
 
 export async function createAddress(address: AddressInput) {
     try {
-        const result = await apiCreateAddress(address, {useAuthToken: true});
+        const result = await createApiAddress(address, {useAuthToken: true});
         revalidatePath('/account/addresses');
-        return result.data;
+        return result;
     } catch (error) {
         throw new Error('Failed to create address');
     }

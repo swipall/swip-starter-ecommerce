@@ -3,14 +3,15 @@
  * These are based on the REST API Order response structure
  */
 
-import type { Order, OrderLine as RestOrderLine, Address } from '@/lib/swipall/rest-adapter';
+import { Order, ShopCartItem } from "@/lib/swipall/types/types";
+
 
 // Re-export the REST Order type as CheckoutOrder for now
 // Later we can create a custom mapped type if needed
 export type CheckoutOrder = Order;
 
 // Re-export OrderLine from REST adapter
-export type OrderLine = RestOrderLine;
+export type OrderLine = ShopCartItem;
 
 export interface ShippingAddress {
     id?: string;

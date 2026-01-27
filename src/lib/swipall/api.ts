@@ -144,7 +144,7 @@ async function request<TResult>(
         }
     }
 
-    const url = `${SWIPALL_API_URL}${endpoint}`;
+    const url = `${SWIPALL_API_URL}${endpoint}`;    
     const requestInit: RequestInit = {
         ...fetchOptions,
         method,

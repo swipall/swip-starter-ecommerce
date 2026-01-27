@@ -8,89 +8,79 @@ import { useCheckout } from './checkout-provider';
 import { Price } from '@/components/commerce/price';
 
 export default function OrderSummary() {
-  const { order } = useCheckout();
-  return (
-    <Card className="sticky top-4">
-      <CardHeader>
-        <CardTitle>Order Summary</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          {order.lines.map((line: OrderLine) => (
-            <div key={line.id} className="flex gap-3">
-              {line.productVariant.product.featuredAsset && (
-                <div className="flex-shrink-0 w-15 h-15">
-                  <Image
-                    src={line.productVariant.product.featuredAsset.preview}
-                    alt={line.productVariant.name}
-                    width={60}
-                    height={60}
-                    className="rounded object-cover w-full h-full"
-                  />
+    const { order } = useCheckout();
+    return (
+        <Card className="sticky top-4">
+            <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-3">
+                    {order.lines.map((line: OrderLine) => (
+                        <div key={line.id} className="flex gap-3">
+                            {line.item.featured_image && (
+                                <div className="flex-shrink-0 w-15 h-15">
+                                    <Image
+                                        src={line.item.featured_image}
+                                        alt={line.item.name}
+                                        width={60}
+                                        height={60}
+                                        className="rounded object-cover w-full h-full"
+                                    />
+                                </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium line-clamp-2">
+                                    {line.item.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Qty: {line.quantity}
+                                </p>
+                            </div>
+                            <div className="text-sm font-medium">
+                                <Price value={Number(line.total)} />
+                            </div>
+                        </div>
+                    ))}
                 </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium line-clamp-2">
-                  {line.productVariant.product.name}
-                </p>
-                {line.productVariant.name !== line.productVariant.product.name && (
-                  <p className="text-xs text-muted-foreground">
-                    {line.productVariant.name}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Qty: {line.quantity}
-                </p>
-              </div>
-              <div className="text-sm font-medium">
-                <Price value={line.linePriceWithTax} currencyCode={order.currencyCode} />
-              </div>
-            </div>
-          ))}
-        </div>
 
-        <Separator />
+                <Separator />
 
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Subtotal</span>
-            <span>
-              <Price value={order.subTotalWithTax || order.totalWithTax} currencyCode={order.currencyCode} />
-            </span>
-          </div>
+                <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal</span>
+                        <span>
+                            <Price value={Number(order.sub_total)} />
+                        </span>
+                    </div>
 
-          {order.discounts && order.discounts.length > 0 && (
-            <>
-              {order.discounts.map((discount: { description: string; amountWithTax: number }, index: number) => (
-                <div key={index} className="flex justify-between text-sm text-green-600">
-                  <span>{discount.description}</span>
-                  <span>
-                    <Price value={discount.amountWithTax} currencyCode={order.currencyCode} />
-                  </span>
+                    {order.discount_total && (
+                        <div className="flex justify-between text-sm text-green-600">
+                            <span>
+                                <Price value={Number(order.discount_total)} />
+                            </span>
+                        </div>
+                    )}
+
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Shipping</span>
+                        <span>
+                            {Number(order.tax_total) > 0
+                                ? <Price value={Number(order.tax_total)} />
+                                : 'To be calculated'}
+                        </span>
+                    </div>
                 </div>
-              ))}
-            </>
-          )}
 
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Shipping</span>
-            <span>
-              {order.shippingWithTax > 0
-                ? <Price value={order.shippingWithTax} currencyCode={order.currencyCode} />
-                : 'To be calculated'}
-            </span>
-          </div>
-        </div>
+                <Separator />
 
-        <Separator />
-
-        <div className="flex justify-between font-bold text-lg">
-          <span>Total</span>
-          <span>
-            <Price value={order.totalWithTax} currencyCode={order.currencyCode} />
-          </span>
-        </div>
-      </CardContent>
-    </Card>
-  );
+                <div className="flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span>
+                        <Price value={Number(order.grand_total)} />
+                    </span>
+                </div>
+            </CardContent>
+        </Card>
+    );
 }

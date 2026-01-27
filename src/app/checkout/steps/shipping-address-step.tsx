@@ -1,87 +1,67 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Field, FieldLabel, FieldError, FieldGroup } from '@/components/ui/field';
-import { useForm, Controller } from 'react-hook-form';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useZipAutoComplete from '@/lib/use-zip-auto-complete';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { createCustomerAddress, registerCustomerInfo, updateShippingAddressForCart } from '../actions';
 import { useCheckout } from '../checkout-provider';
-import { setShippingAddress, createCustomerAddress } from '../actions';
-import { CountrySelect } from '@/components/shared/country-select';
 
 interface ShippingAddressStepProps {
   onComplete: () => void;
 }
 
 interface AddressFormData {
-  fullName: string;
-  streetLine1: string;
-  streetLine2?: string;
+  address: string;
+  suburb: string;
+  postal_code: string;
   city: string;
-  province: string;
-  postalCode: string;
-  countryCode: string;
-  phoneNumber: string;
-  company?: string;
+  state: string;
+  country: string;
+  receiver?: string;
+  references?: string;
+  mobile?: string;
 }
 
 export default function ShippingAddressStep({ onComplete }: ShippingAddressStepProps) {
   const router = useRouter();
-  const { addresses, countries, order, isGuest } = useCheckout();
+  const { addresses, order } = useCheckout();
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(() => {
-    if (order.shippingAddress) {
+    if (order.shipment_address) {
       const matchingAddress = addresses.find(
-        (a) =>
-          a.streetLine1 === order.shippingAddress?.streetLine1 &&
-          a.postalCode === order.shippingAddress?.postalCode
+        (a) => a.id === order.shipment_address?.id
       );
       if (matchingAddress) return matchingAddress.id;
     }
-    const defaultAddress = addresses.find((a) => a.defaultShippingAddress);
-    return defaultAddress?.id || null;
+    return null;
   });
-  const [dialogOpen, setDialogOpen] = useState(addresses.length === 0 && !isGuest);
+  const [dialogOpen, setDialogOpen] = useState(addresses.length === 0);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [useSameForBilling, setUseSameForBilling] = useState(true);
 
   const getDefaultFormValues = (): Partial<AddressFormData> => {
-    const customerFullName = order.customer
-      ? `${order.customer.firstName} ${order.customer.lastName}`.trim()
-      : '';
-
-    if (isGuest && order.shippingAddress?.streetLine1) {
-      const addressCountry = order.shippingAddress.country;
-      const countryName = typeof addressCountry === 'string' ? addressCountry : addressCountry?.name;
-      return {
-        fullName: order.shippingAddress.fullName || customerFullName,
-        streetLine1: order.shippingAddress.streetLine1 || '',
-        streetLine2: order.shippingAddress.streetLine2 || '',
-        city: order.shippingAddress.city || '',
-        province: order.shippingAddress.province || '',
-        postalCode: order.shippingAddress.postalCode || '',
-        countryCode: countries.find(c => c.name === countryName)?.code || countries[0]?.code || 'US',
-        phoneNumber: order.shippingAddress.phoneNumber || order.customer?.phoneNumber || '',
-        company: order.shippingAddress.company || '',
-      };
-    }
     return {
-      fullName: customerFullName,
-      countryCode: countries[0]?.code || 'US',
-      phoneNumber: order.customer?.phoneNumber || '',
+      country: 'México',
     };
   };
 
-  const { register, handleSubmit, formState: { errors }, reset, control } = useForm<AddressFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, control, watch, setValue } = useForm<AddressFormData>({
     defaultValues: getDefaultFormValues()
   });
+
+  const postalCode = watch('postal_code') || '';
+  const { fetchingZip, states, cities, suburbs } = useZipAutoComplete(postalCode);
 
   const handleSelectExistingAddress = async () => {
     if (!selectedAddressId) return;
@@ -91,17 +71,8 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
       const selectedAddress = addresses.find(a => a.id === selectedAddressId);
       if (!selectedAddress) return;
 
-      await setShippingAddress({
-        fullName: selectedAddress.fullName || '',
-        company: selectedAddress.company || '',
-        streetLine1: selectedAddress.streetLine1,
-        streetLine2: selectedAddress.streetLine2 || '',
-        city: selectedAddress.city || '',
-        province: selectedAddress.province || '',
-        postalCode: selectedAddress.postalCode || '',
-        countryCode: selectedAddress.country.code,
-        phoneNumber: selectedAddress.phoneNumber || '',
-      }, useSameForBilling);
+      // Update shipping address using server action
+      await updateShippingAddressForCart(selectedAddress.id);
 
       router.refresh();
       onComplete();
@@ -115,13 +86,20 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
   const onSaveNewAddress = async (data: AddressFormData) => {
     setSaving(true);
     try {
+        if(addresses.length === 0){
+            // if is the first address we create the customer info
+            await registerCustomerInfo(data);
+        }
       const response = await createCustomerAddress(data);
-      const addressData = (response as any)?.data;
+      const addressData = (response as any)?.data || (response as any);
       if (addressData?.id) {
+        // Update cart with new shipping address using server action
+        await updateShippingAddressForCart(addressData.id);
         setDialogOpen(false);
         reset();
         router.refresh();
         setSelectedAddressId(addressData.id);
+        onComplete();
       }
     } catch (error) {
       console.error('Error creating address:', error);
@@ -131,138 +109,11 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
     }
   };
 
-  const onSubmitGuestAddress = async (data: AddressFormData) => {
-    setLoading(true);
-    try {
-      await setShippingAddress(data, useSameForBilling);
-      router.refresh();
-      onComplete();
-    } catch (error) {
-      console.error('Error setting address:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (isGuest) {
-    return (
-      <div className="space-y-6">
-        <form onSubmit={handleSubmit(onSubmitGuestAddress)}>
-          <FieldGroup>
-            <div className="grid grid-cols-2 gap-4">
-              <Field className="col-span-2">
-                <FieldLabel htmlFor="fullName">Full Name *</FieldLabel>
-                <Input
-                  id="fullName"
-                  {...register('fullName', { required: 'Full name is required' })}
-                />
-                <FieldError>{errors.fullName?.message}</FieldError>
-              </Field>
-
-              <Field className="col-span-2">
-                <FieldLabel htmlFor="company">Company</FieldLabel>
-                <Input id="company" {...register('company')} />
-              </Field>
-
-              <Field className="col-span-2">
-                <FieldLabel htmlFor="streetLine1">Street Address *</FieldLabel>
-                <Input
-                  id="streetLine1"
-                  {...register('streetLine1', { required: 'Street address is required' })}
-                />
-                <FieldError>{errors.streetLine1?.message}</FieldError>
-              </Field>
-
-              <Field className="col-span-2">
-                <FieldLabel htmlFor="streetLine2">Apartment, suite, etc.</FieldLabel>
-                <Input id="streetLine2" {...register('streetLine2')} />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="city">City *</FieldLabel>
-                <Input
-                  id="city"
-                  {...register('city', { required: 'City is required' })}
-                />
-                <FieldError>{errors.city?.message}</FieldError>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="province">State/Province</FieldLabel>
-                <Input
-                  id="province"
-                  {...register('province')}
-                />
-                <FieldError>{errors.province?.message}</FieldError>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="postalCode">Postal Code *</FieldLabel>
-                <Input
-                  id="postalCode"
-                  {...register('postalCode', { required: 'Postal code is required' })}
-                />
-                <FieldError>{errors.postalCode?.message}</FieldError>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="countryCode">Country *</FieldLabel>
-                <Controller
-                  name="countryCode"
-                  control={control}
-                  rules={{ required: 'Country is required' }}
-                  render={({ field }) => (
-                    <CountrySelect
-                      countries={countries}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={loading}
-                    />
-                  )}
-                />
-                <FieldError>{errors.countryCode?.message}</FieldError>
-              </Field>
-
-              <Field className="col-span-2">
-                <FieldLabel htmlFor="phoneNumber">Phone Number *</FieldLabel>
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  {...register('phoneNumber', { required: 'Phone number is required' })}
-                />
-                <FieldError>{errors.phoneNumber?.message}</FieldError>
-              </Field>
-            </div>
-
-            <div className="flex items-center space-x-2 mt-4">
-              <Checkbox
-                id="same-billing-guest"
-                checked={useSameForBilling}
-                onCheckedChange={(checked) => setUseSameForBilling(checked === true)}
-              />
-              <label
-                htmlFor="same-billing-guest"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Use same address for billing
-              </label>
-            </div>
-
-            <Button type="submit" disabled={loading} className="w-full mt-4">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Continue
-            </Button>
-          </FieldGroup>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {addresses.length > 0 && (
         <div className="space-y-4">
-          <h3 className="font-semibold">Select a saved address</h3>
+          <h3 className="font-semibold">Selecciona una dirección guardada</h3>
           <RadioGroup value={selectedAddressId || ''} onValueChange={setSelectedAddressId}>
             {addresses.map((address) => (
               <div key={address.id} className="flex items-start space-x-3">
@@ -270,17 +121,17 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
                 <Label htmlFor={address.id} className="flex-1 cursor-pointer">
                   <Card className="p-4">
                     <div className="leading-tight space-y-0">
-                      <p className="font-medium">{address.fullName}</p>
-                      {address.company && <p className="text-sm text-muted-foreground">{address.company}</p>}
+                      <p className="font-medium">{address.receiver || 'Sin nombre'}</p>
                       <p className="text-sm text-muted-foreground">
-                        {address.streetLine1}
-                        {address.streetLine2 && `, ${address.streetLine2}`}
+                        {address.address}
+                        {address.suburb && `, ${address.suburb}`}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {address.city}, {address.province} {address.postalCode}
+                        {address.city}, {address.state} {address.postal_code}
                       </p>
-                      <p className="text-sm text-muted-foreground">{address.country.name}</p>
-                      <p className="text-sm text-muted-foreground">{address.phoneNumber}</p>
+                      <p className="text-sm text-muted-foreground">{address.country}</p>
+                      {address.mobile && <p className="text-sm text-muted-foreground">{address.mobile}</p>}
+                      {address.references && <p className="text-sm text-muted-foreground">Referencias: {address.references}</p>}
                     </div>
                   </Card>
                 </Label>
@@ -298,7 +149,7 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
               htmlFor="same-billing"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Use same address for billing
+              Usar la misma dirección para facturación
             </label>
           </div>
 
@@ -309,118 +160,175 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
               className="flex-1"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Continue with selected address
+              Continuar con la dirección seleccionada
             </Button>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button type="button" variant="outline">
-                  Add new address
+                  Agregar nueva dirección
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <form onSubmit={handleSubmit(onSaveNewAddress)}>
                   <DialogHeader>
-                    <DialogTitle>Add new address</DialogTitle>
+                    <DialogTitle>Agregar nueva dirección</DialogTitle>
                     <DialogDescription>
-                      Fill in the form below to add a new shipping address
+                      Completa el formulario a continuación para agregar una nueva dirección de envío
                     </DialogDescription>
                   </DialogHeader>
 
                   <FieldGroup className="my-6">
                     <div className="grid grid-cols-2 gap-4">
                       <Field className="col-span-2">
-                        <FieldLabel htmlFor="fullName">Full Name</FieldLabel>
+                        <FieldLabel htmlFor="receiver">Nombre del receptor</FieldLabel>
                         <Input
-                          id="fullName"
-                          {...register('fullName')}
+                          id="receiver"
+                          {...register('receiver')}
                         />
-                        <FieldError>{errors.fullName?.message}</FieldError>
+                        <FieldError>{errors.receiver?.message}</FieldError>
                       </Field>
 
                       <Field className="col-span-2">
-                        <FieldLabel htmlFor="company">Company</FieldLabel>
-                        <Input id="company" {...register('company')} />
-                      </Field>
-
-                      <Field className="col-span-2">
-                        <FieldLabel htmlFor="streetLine1">Street Address *</FieldLabel>
+                        <FieldLabel htmlFor="address">Dirección *</FieldLabel>
                         <Input
-                          id="streetLine1"
-                          {...register('streetLine1', { required: 'Street address is required' })}
+                          id="address"
+                          {...register('address', { required: 'La dirección es requerida' })}
                         />
-                        <FieldError>{errors.streetLine1?.message}</FieldError>
-                      </Field>
-
-                      <Field className="col-span-2">
-                        <FieldLabel htmlFor="streetLine2">Apartment, suite, etc.</FieldLabel>
-                        <Input id="streetLine2" {...register('streetLine2')} />
+                        <FieldError>{errors.address?.message}</FieldError>
                       </Field>
 
                       <Field>
-                        <FieldLabel htmlFor="city">City</FieldLabel>
+                        <FieldLabel htmlFor="postal_code">Código Postal *</FieldLabel>
                         <Input
-                          id="city"
-                          {...register('city')}
+                          id="postal_code"
+                          {...register('postal_code', { required: 'El código postal es requerido' })}
+                          maxLength={5}
+                          placeholder="12345"
+                        />
+                        <FieldError>{errors.postal_code?.message}</FieldError>
+                      </Field>
+
+                      <Field>
+                        <FieldLabel htmlFor="country">País</FieldLabel>
+                        <Input
+                          id="country"
+                          {...register('country')}
+                          disabled
+                        />
+                        <FieldError>{errors.country?.message}</FieldError>
+                      </Field>
+
+                      <Field className="col-span-2">
+                        <FieldLabel htmlFor="suburb">Localidad/Barrio</FieldLabel>
+                        <Controller
+                          name="suburb"
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              disabled={suburbs.length === 0 || fetchingZip}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder={fetchingZip ? "Cargando..." : "Selecciona una localidad"} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {suburbs.map((suburb: string, idx: number) => (
+                                  <SelectItem key={idx} value={suburb}>
+                                    {suburb}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        <FieldError>{errors.suburb?.message}</FieldError>
+                      </Field>
+
+                      <Field>
+                        <FieldLabel htmlFor="city">Ciudad</FieldLabel>
+                        <Controller
+                          name="city"
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              disabled={cities.length === 0 || fetchingZip}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder={fetchingZip ? "Cargando..." : "Selecciona una ciudad"} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {cities.map((city: string, idx: number) => (
+                                  <SelectItem key={idx} value={city}>
+                                    {city}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                         />
                         <FieldError>{errors.city?.message}</FieldError>
                       </Field>
 
                       <Field>
-                        <FieldLabel htmlFor="province">State/Province</FieldLabel>
-                        <Input
-                          id="province"
-                          {...register('province')}
-                        />
-                        <FieldError>{errors.province?.message}</FieldError>
-                      </Field>
-
-                      <Field>
-                        <FieldLabel htmlFor="postalCode">Postal Code</FieldLabel>
-                        <Input
-                          id="postalCode"
-                          {...register('postalCode')}
-                        />
-                        <FieldError>{errors.postalCode?.message}</FieldError>
-                      </Field>
-
-                      <Field>
-                        <FieldLabel htmlFor="countryCode">Country *</FieldLabel>
+                        <FieldLabel htmlFor="state">Estado</FieldLabel>
                         <Controller
-                          name="countryCode"
+                          name="state"
                           control={control}
-                          rules={{ required: 'Country is required' }}
                           render={({ field }) => (
-                            <CountrySelect
-                              countries={countries}
+                            <Select
                               value={field.value}
                               onValueChange={field.onChange}
-                              disabled={saving}
-                            />
+                              disabled={states.length === 0 || fetchingZip}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder={fetchingZip ? "Cargando..." : "Selecciona un estado"} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {states.map((state: string, idx: number) => (
+                                  <SelectItem key={idx} value={state}>
+                                    {state}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           )}
                         />
-                        <FieldError>{errors.countryCode?.message}</FieldError>
+                        <FieldError>{errors.state?.message}</FieldError>
                       </Field>
 
                       <Field className="col-span-2">
-                        <FieldLabel htmlFor="phoneNumber">Phone Number</FieldLabel>
+                        <FieldLabel htmlFor="mobile">Teléfono Móvil</FieldLabel>
                         <Input
-                          id="phoneNumber"
+                          id="mobile"
                           type="tel"
-                          {...register('phoneNumber')}
+                          {...register('mobile')}
                         />
-                        <FieldError>{errors.phoneNumber?.message}</FieldError>
+                        <FieldError>{errors.mobile?.message}</FieldError>
+                      </Field>
+
+                      <Field className="col-span-2">
+                        <FieldLabel htmlFor="references">Referencias adicionales</FieldLabel>
+                        <Input
+                          id="references"
+                          {...register('references')}
+                          placeholder="Ej: Cerca del banco, frente a la tienda..."
+                        />
+                        <FieldError>{errors.references?.message}</FieldError>
                       </Field>
                     </div>
                   </FieldGroup>
 
                   <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
-                      Cancel
+                      Cancelar
                     </Button>
                     <Button type="submit" disabled={saving}>
                       {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Save address
+                      Guardar dirección
                     </Button>
                   </DialogFooter>
                 </form>
@@ -435,95 +343,152 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSubmit(onSaveNewAddress)}>
               <DialogHeader>
-                <DialogTitle>Add shipping address</DialogTitle>
+                <DialogTitle>Agregar dirección de envío</DialogTitle>
                 <DialogDescription>
-                  Fill in the form below to add your shipping address
+                  Completa el formulario a continuación para agregar tu dirección de envío
                 </DialogDescription>
               </DialogHeader>
 
               <FieldGroup className="my-6">
                 <div className="grid grid-cols-2 gap-4">
                   <Field className="col-span-2">
-                    <FieldLabel htmlFor="fullName">Full Name</FieldLabel>
+                    <FieldLabel htmlFor="receiver">Nombre del receptor</FieldLabel>
                     <Input
-                      id="fullName"
-                      {...register('fullName')}
+                      id="receiver"
+                      {...register('receiver')}
                     />
-                    <FieldError>{errors.fullName?.message}</FieldError>
+                    <FieldError>{errors.receiver?.message}</FieldError>
                   </Field>
 
                   <Field className="col-span-2">
-                    <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Input id="company" {...register('company')} />
-                  </Field>
-
-                  <Field className="col-span-2">
-                    <FieldLabel htmlFor="streetLine1">Street Address *</FieldLabel>
+                    <FieldLabel htmlFor="address">Dirección *</FieldLabel>
                     <Input
-                      id="streetLine1"
-                      {...register('streetLine1', { required: 'Street address is required' })}
+                      id="address"
+                      {...register('address', { required: 'La dirección es requerida' })}
                     />
-                    <FieldError>{errors.streetLine1?.message}</FieldError>
-                  </Field>
-
-                  <Field className="col-span-2">
-                    <FieldLabel htmlFor="streetLine2">Apartment, suite, etc.</FieldLabel>
-                    <Input id="streetLine2" {...register('streetLine2')} />
+                    <FieldError>{errors.address?.message}</FieldError>
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="city">City</FieldLabel>
+                    <FieldLabel htmlFor="postal_code">Código Postal *</FieldLabel>
                     <Input
-                      id="city"
-                      {...register('city')}
+                      id="postal_code"
+                      {...register('postal_code', { required: 'El código postal es requerido' })}
+                      maxLength={5}
+                      placeholder="12345"
+                    />
+                    <FieldError>{errors.postal_code?.message}</FieldError>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="country">País</FieldLabel>
+                    <Input
+                      id="country"
+                      {...register('country')}
+                      disabled
+                    />
+                    <FieldError>{errors.country?.message}</FieldError>
+                  </Field>
+
+                  <Field className="col-span-2">
+                    <FieldLabel htmlFor="suburb">Localidad/Barrio</FieldLabel>
+                    <Controller
+                      name="suburb"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={suburbs.length === 0 || fetchingZip}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={fetchingZip ? "Cargando..." : "Selecciona una localidad"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {suburbs.map((suburb: string, idx: number) => (
+                              <SelectItem key={idx} value={suburb}>
+                                {suburb}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <FieldError>{errors.suburb?.message}</FieldError>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="city">Ciudad</FieldLabel>
+                    <Controller
+                      name="city"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={cities.length === 0 || fetchingZip}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={fetchingZip ? "Cargando..." : "Selecciona una ciudad"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {cities.map((city: string, idx: number) => (
+                              <SelectItem key={idx} value={city}>
+                                {city}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     />
                     <FieldError>{errors.city?.message}</FieldError>
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="province">State/Province</FieldLabel>
-                    <Input
-                      id="province"
-                      {...register('province')}
-                    />
-                    <FieldError>{errors.province?.message}</FieldError>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="postalCode">Postal Code</FieldLabel>
-                    <Input
-                      id="postalCode"
-                      {...register('postalCode')}
-                    />
-                    <FieldError>{errors.postalCode?.message}</FieldError>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="countryCode">Country *</FieldLabel>
+                    <FieldLabel htmlFor="state">Estado</FieldLabel>
                     <Controller
-                      name="countryCode"
+                      name="state"
                       control={control}
-                      rules={{ required: 'Country is required' }}
                       render={({ field }) => (
-                        <CountrySelect
-                          countries={countries}
+                        <Select
                           value={field.value}
                           onValueChange={field.onChange}
-                          disabled={saving}
-                        />
+                          disabled={states.length === 0 || fetchingZip}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={fetchingZip ? "Cargando..." : "Selecciona un estado"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {states.map((state: string, idx: number) => (
+                              <SelectItem key={idx} value={state}>
+                                {state}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
                     />
-                    <FieldError>{errors.countryCode?.message}</FieldError>
+                    <FieldError>{errors.state?.message}</FieldError>
                   </Field>
 
                   <Field className="col-span-2">
-                    <FieldLabel htmlFor="phoneNumber">Phone Number</FieldLabel>
+                    <FieldLabel htmlFor="mobile">Teléfono Móvil</FieldLabel>
                     <Input
-                      id="phoneNumber"
+                      id="mobile"
                       type="tel"
-                      {...register('phoneNumber')}
+                      {...register('mobile')}
                     />
-                    <FieldError>{errors.phoneNumber?.message}</FieldError>
+                    <FieldError>{errors.mobile?.message}</FieldError>
+                  </Field>
+
+                  <Field className="col-span-2">
+                    <FieldLabel htmlFor="references">Referencias adicionales</FieldLabel>
+                    <Input
+                      id="references"
+                      {...register('references')}
+                      placeholder="Ej: Cerca del banco, frente a la tienda..."
+                    />
+                    <FieldError>{errors.references?.message}</FieldError>
                   </Field>
                 </div>
               </FieldGroup>
@@ -531,7 +496,7 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
               <DialogFooter>
                 <Button type="submit" disabled={saving} className="w-full">
                   {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save address
+                  Guardar dirección
                 </Button>
               </DialogFooter>
             </form>

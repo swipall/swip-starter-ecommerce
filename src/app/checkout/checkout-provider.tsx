@@ -3,54 +3,29 @@
 import { createContext, useContext, ReactNode, useState } from 'react';
 import { CheckoutOrder } from './types';
 import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
-
-interface CustomerAddress {
-  id: string;
-  fullName?: string | null;
-  company?: string | null;
-  streetLine1: string;
-  streetLine2?: string | null;
-  city?: string | null;
-  province?: string | null;
-  postalCode?: string | null;
-  country: { id: string; code: string; name: string };
-  phoneNumber?: string | null;
-  defaultShippingAddress?: boolean | null;
-  defaultBillingAddress?: boolean | null;
-}
-
-interface Country {
-  id: string;
-  code: string;
-  name: string;
-}
+import { AddressInterface } from '@/lib/swipall/users/user.types';
 
 interface ShippingMethod {
   id: string;
   name: string;
-  code: string;
   description?: string | null;
-  priceWithTax: number;
 }
 
-interface PaymentMethod {
-  id: string;
-  name: string;
-  code: string;
-  description?: string | null;
-  isEligible: boolean;
-  eligibilityMessage?: string | null;
+export interface PaymentMethodsInterface {
+    id: string;
+    label: string;
+    description: string;
+    icon: string;
+    isEnabled: boolean;
 }
 
 interface CheckoutContextType {
   order: CheckoutOrder;
-  addresses: CustomerAddress[];
-  countries: Country[];
+  addresses: AddressInterface[];
   shippingMethods: ShippingMethod[];
-  paymentMethods: PaymentMethod[];
+  paymentMethods: PaymentMethodsInterface[];
   selectedPaymentMethodCode: string | null;
   setSelectedPaymentMethodCode: (code: string | null) => void;
-  isGuest: boolean;
   deliveryItem: InterfaceInventoryItem | null;
 }
 
@@ -59,11 +34,9 @@ const CheckoutContext = createContext<CheckoutContextType | null>(null);
 interface CheckoutProviderProps {
   children: ReactNode;
   order: CheckoutOrder;
-  addresses: CustomerAddress[];
-  countries: Country[];
+  addresses: AddressInterface[];
   shippingMethods: ShippingMethod[];
-  paymentMethods: PaymentMethod[];
-  isGuest: boolean;
+  paymentMethods: PaymentMethodsInterface[];
   deliveryItem: InterfaceInventoryItem | null;
 }
 
@@ -71,14 +44,12 @@ export function CheckoutProvider({
   children,
   order,
   addresses,
-  countries,
   shippingMethods,
   paymentMethods,
-  isGuest,
   deliveryItem,
 }: CheckoutProviderProps) {
   const [selectedPaymentMethodCode, setSelectedPaymentMethodCode] = useState<string | null>(
-    paymentMethods.length === 1 ? paymentMethods[0].code : null
+    paymentMethods.length === 1 ? paymentMethods[0].id : null
   );
 
   return (
@@ -86,12 +57,10 @@ export function CheckoutProvider({
       value={{
         order,
         addresses,
-        countries,
         shippingMethods,
         paymentMethods,
         selectedPaymentMethodCode,
         setSelectedPaymentMethodCode,
-        isGuest,
         deliveryItem,
       }}
     >

@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
             },
             {
                 hostname: 'mmcb.b-cdn.net'
+            },
+            {
+                hostname: 'swip-catalogs-443115567646.us-central1.run.app'
             }
         ],
     },
