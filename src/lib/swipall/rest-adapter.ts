@@ -181,9 +181,13 @@ export const itemExistsInCart = async (cartId: string, itemId: string): Promise<
     const response = await get<InterfaceApiListResponse<ShopCartItem>>(`/api/v1/shop/cart/${cartId}/items`, { item__id: itemId });
     return response;
 }
-
-export const createShopCart = async (): Promise<InterfaceApiDetailResponse<ShopCart>> => {
-    return post<InterfaceApiDetailResponse<ShopCart>>('/api/v1/shop/cart/', {});
+enum ORDER_SOURCE {
+    WEB = 1,
+    MOBILE_APP = 2,
+    POS = 3
+}
+export const createShopCart = async (): Promise<ShopCart> => {
+    return post<ShopCart>('/api/v1/shop/carts/', { source: ORDER_SOURCE.WEB });
 }
 
 export async function addToCart(input: AddToCartInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {

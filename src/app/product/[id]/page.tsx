@@ -29,7 +29,7 @@ async function getProductData(id: string) {
         const result = await getProduct(id);
         return result;
     } catch (error) {
-        throw error;
+        return null;
     }
 }
 
@@ -57,8 +57,8 @@ const onGroupMaterialsByTaxonomy = (materials: Material[]): ExtraMaterialsInterf
     return compoundMaterials;
 }
 
-async function fetchProductMaterials(product: InterfaceInventoryItem) {
-    if(!product){
+async function fetchProductMaterials(product: InterfaceInventoryItem | null) {
+    if (!product) {
         return null;
     }
     const token = await getAuthToken();

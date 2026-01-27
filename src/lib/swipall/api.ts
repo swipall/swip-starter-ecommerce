@@ -184,8 +184,7 @@ async function request<TResult>(
         }
 
         return emptyData;
-    }
-
+    }    
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const errorMessage = errorData?.error?.message || errorData?.message || `HTTP error! status: ${response.status}`;

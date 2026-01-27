@@ -1,20 +1,45 @@
 'use server';
 
+import useShopModel from '@/lib/models/shop.model';
+import { AddItemStrategyFactory } from '@/lib/strategies/shop/cart/add-item/add-item-strategy.factory';
 import { fetchCompoundMaterials, getGroupVariantByTaxonomies } from '@/lib/swipall/inventory';
-import { addToCart as apiAddToCart } from '@/lib/swipall/rest-adapter';
+import { getProduct } from '@/lib/swipall/rest-adapter';
+import { AddItemToCartParams } from '@/lib/swipall/types/types';
 import { updateTag } from 'next/cache';
 
 export { getGroupVariantByTaxonomies };
-export async function addToCart(productId: string, quantity: number = 1) {
-    try {
-        const result = await apiAddToCart({ variantId: productId, quantity }, { useAuthToken: true });
 
-        // Revalidate cart data across all pages
+/**
+ * Add an item to the shopping cart using the appropriate strategy based on product type.
+ * @param itemId - ID of the product or variant to add
+ * @param params - Additional parameters (quantity, extra materials, price)
+ * @returns Result of the operation
+ */
+export async function addToCart(
+    itemId: string,
+    params: AddItemToCartParams
+) {
+    try {
+        const shopModel = useShopModel();
+        let cartId = await shopModel.getCurrentCartId();
+        console.log('cartId', cartId);
+        if (!cartId) {
+            const newCart = await shopModel.onCreateNewCart();
+            cartId = newCart.id;
+        }
+
+
+        const product = await getProduct(itemId);
+        const strategyFactory = new AddItemStrategyFactory(shopModel);
+        const strategy = strategyFactory.getStrategy(product);
+        const result = await strategy.addItemToCart(cartId, itemId, params);
         updateTag('cart');
         updateTag('active-order');
-        return { success: true, order: result.data };
+
+        return { success: true, data: result.data };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Failed to add item to cart';
+        console.error('Error adding item to cart:', error);
         return { success: false, error: message };
     }
 }

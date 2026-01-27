@@ -150,9 +150,10 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
             });
             return;
         }
-        if(product.kind === ProductKind.Compound){
+        
+        if (product.kind === ProductKind.Compound) {
             // if the user is not logged in, redirect to login page
-            if(!redirectTo){
+            if (!redirectTo) {
                 toast.error('Error', {
                     description: 'Por favor inicia sesión para agregar productos compuestos',
                 });
@@ -160,11 +161,20 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
                 return;
             }
         }
+        
+        // Determine item ID: for groups use variant ID, otherwise use product ID
         const itemId = product.kind === ProductKind.Group ? selectedVariant?.id : product.id;
         if (!itemId) return;
 
         startTransition(async () => {
-            const result = await addToCart(itemId, 1);
+            // Prepare parameters based on product kind
+            const addToCartParams = {
+                quantity: 1,
+                extra_materials: product.kind === ProductKind.Compound ? selectedMaterials.map(m => m.id) : [],
+                price: itemPrice
+            };
+
+            const result = await addToCart(itemId, addToCartParams);
 
             if (result.success) {
                 setIsAdded(true);

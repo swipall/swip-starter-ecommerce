@@ -16,11 +16,13 @@ export default function useShopModel() {
 
     const onCreateNewCart = async (): Promise<ShopCart> => {
         const response = await createShopCart();
-        if(!response.data){
+        if(!response){
             throw new Error("Failed to create a new cart");
         }
-        await setCartId(response.data?.id);
-        return response.data;
+        console.log('New cart created:', response   );
+        
+        await setCartId(response.id);
+        return response;
     }
 
     const checkIfItemExistsInCart = async (itemId: string) => {
