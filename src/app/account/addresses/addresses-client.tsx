@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -14,7 +14,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,53 +21,31 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, MoreVertical, Home, CreditCard, Edit2, Trash2 } from 'lucide-react';
+import { Plus, MoreVertical, Edit2, Trash2 } from 'lucide-react';
 import { AddressForm } from './address-form';
-import { createAddress, updateAddress, deleteAddress, setDefaultShippingAddress, setDefaultBillingAddress } from './actions';
+import { createAddress, updateAddress, deleteAddress } from './actions';
 import { useRouter } from 'next/navigation';
-
-interface Country {
-    id: string;
-    code: string;
-    name: string;
-}
-
-interface CustomerAddress {
-    id: string;
-    fullName?: string | null;
-    company?: string | null;
-    streetLine1: string;
-    streetLine2?: string | null;
-    city?: string | null;
-    province?: string | null;
-    postalCode?: string | null;
-    country: { id: string; code: string; name: string };
-    phoneNumber?: string | null;
-    defaultShippingAddress?: boolean | null;
-    defaultBillingAddress?: boolean | null;
-}
+import { AddressInterface } from '@/lib/swipall/users/user.types';
 
 interface AddressesClientProps {
-    addresses: CustomerAddress[];
-    countries: Country[];
+    addresses: AddressInterface[];
 }
 
-export function AddressesClient({ addresses, countries }: AddressesClientProps) {
+export function AddressesClient({ addresses }: AddressesClientProps) {
     const router = useRouter();
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [editingAddress, setEditingAddress] = useState<CustomerAddress | null>(null);
+    const [editingAddress, setEditingAddress] = useState<AddressInterface | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [settingDefault, setSettingDefault] = useState<{ id: string; type: 'shipping' | 'billing' } | null>(null);
 
     const handleAddNew = () => {
         setEditingAddress(null);
         setDialogOpen(true);
     };
 
-    const handleEdit = (address: CustomerAddress) => {
+    const handleEdit = (address: AddressInterface) => {
         setEditingAddress(address);
         setDialogOpen(true);
     };
@@ -76,32 +53,6 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
     const handleDelete = (addressId: string) => {
         setAddressToDelete(addressId);
         setDeleteDialogOpen(true);
-    };
-
-    const handleSetDefaultShipping = async (addressId: string) => {
-        setSettingDefault({ id: addressId, type: 'shipping' });
-        try {
-            await setDefaultShippingAddress(addressId);
-            router.refresh();
-        } catch (error) {
-            console.error('Error setting default shipping address:', error);
-            alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        } finally {
-            setSettingDefault(null);
-        }
-    };
-
-    const handleSetDefaultBilling = async (addressId: string) => {
-        setSettingDefault({ id: addressId, type: 'billing' });
-        try {
-            await setDefaultBillingAddress(addressId);
-            router.refresh();
-        } catch (error) {
-            console.error('Error setting default billing address:', error);
-            alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        } finally {
-            setSettingDefault(null);
-        }
     };
 
     const confirmDelete = async () => {
@@ -115,26 +66,26 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
             setAddressToDelete(null);
         } catch (error) {
             console.error('Error deleting address:', error);
-            alert(`Error deleting address: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            alert(`Error eliminando dirección: ${error instanceof Error ? error.message : 'Error desconocido'}`);
         } finally {
             setIsDeleting(false);
         }
     };
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: Partial<AddressInterface>) => {
         setIsSubmitting(true);
         try {
             if (editingAddress) {
-                await updateAddress(data);
+                await updateAddress(data as AddressInterface);
             } else {
-                await createAddress(data);
+                await createAddress(data as AddressInterface);
             }
             router.refresh();
             setDialogOpen(false);
             setEditingAddress(null);
         } catch (error) {
             console.error('Error saving address:', error);
-            alert(`Error saving address: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            alert(`Error guardando dirección: ${error instanceof Error ? error.message : 'Error desconocido'}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -142,21 +93,21 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
 
     return (
         <>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-6">
                 <div></div>
                 <Button onClick={handleAddNew}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add new address
+                    Agregar nueva dirección
                 </Button>
             </div>
 
             {addresses.length === 0 ? (
                 <Card>
                     <CardContent className="py-12 text-center">
-                        <p className="text-muted-foreground mb-4">No addresses saved yet</p>
+                        <p className="text-muted-foreground mb-4">No tienes direcciones guardadas aún</p>
                         <Button onClick={handleAddNew}>
                             <Plus className="mr-2 h-4 w-4" />
-                            Add your first address
+                            Agregar tu primera dirección
                         </Button>
                     </CardContent>
                 </Card>
@@ -167,24 +118,14 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
                             <CardHeader>
                                 <div className="flex items-start justify-between">
                                     <div className="space-y-1 flex-1">
-                                        <CardTitle className="text-lg">{address.fullName}</CardTitle>
-                                        {(address.defaultShippingAddress || address.defaultBillingAddress) && (
-                                            <div className="flex gap-2">
-                                                {address.defaultShippingAddress && (
-                                                    <Badge variant="secondary">Default Shipping</Badge>
-                                                )}
-                                                {address.defaultBillingAddress && (
-                                                    <Badge variant="secondary">Default Billing</Badge>
-                                                )}
-                                            </div>
-                                        )}
+                                        <CardTitle className="text-lg">{address.receiver || 'Dirección'}</CardTitle>
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                aria-label="Address actions"
+                                                aria-label="Acciones de dirección"
                                             >
                                                 <MoreVertical className="h-4 w-4" />
                                             </Button>
@@ -192,28 +133,7 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem onClick={() => handleEdit(address)}>
                                                 <Edit2 className="mr-2 h-4 w-4" />
-                                                Edit
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                onClick={() => handleSetDefaultShipping(address.id)}
-                                                disabled={
-                                                    address.defaultShippingAddress ||
-                                                    (settingDefault?.id === address.id && settingDefault?.type === 'shipping')
-                                                }
-                                            >
-                                                <Home className="mr-2 h-4 w-4" />
-                                                {address.defaultShippingAddress ? 'Default Shipping' : 'Set as Shipping'}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => handleSetDefaultBilling(address.id)}
-                                                disabled={
-                                                    address.defaultBillingAddress ||
-                                                    (settingDefault?.id === address.id && settingDefault?.type === 'billing')
-                                                }
-                                            >
-                                                <CreditCard className="mr-2 h-4 w-4" />
-                                                {address.defaultBillingAddress ? 'Default Billing' : 'Set as Billing'}
+                                                Editar
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem
@@ -221,7 +141,7 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
                                                 className="text-destructive focus:text-destructive"
                                             >
                                                 <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                                                Delete
+                                                Eliminar
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -229,16 +149,14 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
                             </CardHeader>
                             <CardContent>
                                 <div className="text-sm text-muted-foreground space-y-1">
-                                    {address.company && <p>{address.company}</p>}
+                                    <p>{address.address}</p>
+                                    {address.suburb && <p>{address.suburb}</p>}
                                     <p>
-                                        {address.streetLine1}
-                                        {address.streetLine2 && `, ${address.streetLine2}`}
+                                        {address.city}, {address.state} {address.postal_code}
                                     </p>
-                                    <p>
-                                        {address.city}, {address.province} {address.postalCode}
-                                    </p>
-                                    <p>{address.country.name}</p>
-                                    <p>{address.phoneNumber}</p>
+                                    {address.country && <p>{address.country}</p>}
+                                    {address.mobile && <p className="pt-2 font-medium text-foreground">{address.mobile}</p>}
+                                    {address.references && <p className="text-xs">{address.references}</p>}
                                 </div>
                             </CardContent>
                         </Card>
@@ -249,15 +167,14 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>{editingAddress ? 'Edit address' : 'Add new address'}</DialogTitle>
+                        <DialogTitle>{editingAddress ? 'Editar dirección' : 'Agregar nueva dirección'}</DialogTitle>
                         <DialogDescription>
                             {editingAddress
-                                ? 'Update the details of your address'
-                                : 'Fill in the form below to add a new address'}
+                                ? 'Actualiza los detalles de tu dirección'
+                                : 'Completa el formulario para agregar una nueva dirección'}
                         </DialogDescription>
                     </DialogHeader>
                     <AddressForm
-                        countries={countries}
                         address={editingAddress || undefined}
                         onSubmit={handleSubmit}
                         onCancel={() => {
@@ -272,15 +189,15 @@ export function AddressesClient({ addresses, countries }: AddressesClientProps) 
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete this address.
+                            Esta acción no se puede deshacer. Se eliminará permanentemente esta dirección.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmDelete} disabled={isDeleting}>
-                            {isDeleting ? 'Deleting...' : 'Delete'}
+                            {isDeleting ? 'Eliminando...' : 'Eliminar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
