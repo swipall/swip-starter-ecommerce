@@ -25,6 +25,7 @@ import type {
     UpdateCartDeliveryInfoBody,
     UpdateCustomerInput
 } from './types/types';
+import { OrderDetailInterface } from './users/user.types';
 
 
 // ============================================================================
@@ -42,10 +43,6 @@ export async function logout(options?: { useAuthToken?: boolean }): Promise<Inte
 // ============================================================================
 // Customer/User Endpoints
 // ============================================================================
-
-export async function getActiveCustomer(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<CurrentUser>> {
-    return get<InterfaceApiDetailResponse<CurrentUser>>('/auth/me', { useAuthToken: options?.useAuthToken });
-}
 
 export async function updateCustomer(input: UpdateCustomerInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<CurrentUser>> {
     return patch<InterfaceApiDetailResponse<CurrentUser>>('/customers/me', input, { useAuthToken: options?.useAuthToken });
@@ -271,8 +268,8 @@ export async function getCustomerOrders(params?: { take?: number; skip?: number 
     return get<InterfaceApiListResponse<Order>>(`/orders${query}`, { useAuthToken: options?.useAuthToken });
 }
 
-export async function getOrderDetail(code: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return get<InterfaceApiDetailResponse<Order>>(`/orders/${code}`, { useAuthToken: options?.useAuthToken });
+export async function getOrderDetail(code: string, options?: { useAuthToken?: boolean }): Promise<OrderDetailInterface> {
+    return get<OrderDetailInterface>(`/api/v1/shop/me/order/${code}`, { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================

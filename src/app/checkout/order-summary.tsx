@@ -12,7 +12,7 @@ export default function OrderSummary() {
     return (
         <Card className="sticky top-4">
             <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+                <CardTitle>Resumen de Pedido</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-3">

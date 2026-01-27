@@ -1,14 +1,13 @@
 'use server';
 
+import { getAuthToken } from '@/lib/auth';
+import useShopModel from '@/lib/models/shop.model';
 import {
-    removeFromCart as apiRemoveFromCart,
     applyPromotionCode as apiApplyPromotion,
-    removePromotionCode as apiRemovePromotion,
-    getActiveCustomer
+    removeFromCart as apiRemoveFromCart,
+    removePromotionCode as apiRemovePromotion
 } from '@/lib/swipall/rest-adapter';
 import { updateTag } from 'next/cache';
-import useShopModel from '@/lib/models/shop.model';
-import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
 
 export async function removeFromCart(lineId: string) {
     try {
@@ -65,8 +64,8 @@ export async function removePromotionCode(formData: FormData) {
 
 export async function isUserAuthenticated(): Promise<boolean> {
     try {
-        const user = await getActiveCustomer({ useAuthToken: true });
-        return Boolean(user?.data?.id);
+        const token = await getAuthToken();
+        return Boolean(token);
     } catch (error) {
         return false;
     }
