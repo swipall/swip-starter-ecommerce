@@ -5,11 +5,6 @@ import { CheckoutOrder } from './types';
 import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
 import { AddressInterface } from '@/lib/swipall/users/user.types';
 
-interface ShippingMethod {
-  id: string;
-  name: string;
-  description?: string | null;
-}
 
 export interface PaymentMethodsInterface {
     id: string;
@@ -22,7 +17,6 @@ export interface PaymentMethodsInterface {
 interface CheckoutContextType {
   order: CheckoutOrder;
   addresses: AddressInterface[];
-  shippingMethods: ShippingMethod[];
   paymentMethods: PaymentMethodsInterface[];
   selectedPaymentMethodCode: string | null;
   setSelectedPaymentMethodCode: (code: string | null) => void;
@@ -35,7 +29,6 @@ interface CheckoutProviderProps {
   children: ReactNode;
   order: CheckoutOrder;
   addresses: AddressInterface[];
-  shippingMethods: ShippingMethod[];
   paymentMethods: PaymentMethodsInterface[];
   deliveryItem: InterfaceInventoryItem | null;
 }
@@ -44,7 +37,6 @@ export function CheckoutProvider({
   children,
   order,
   addresses,
-  shippingMethods,
   paymentMethods,
   deliveryItem,
 }: CheckoutProviderProps) {
@@ -57,7 +49,6 @@ export function CheckoutProvider({
       value={{
         order,
         addresses,
-        shippingMethods,
         paymentMethods,
         selectedPaymentMethodCode,
         setSelectedPaymentMethodCode,

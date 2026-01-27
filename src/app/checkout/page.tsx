@@ -1,13 +1,11 @@
+import { noIndexRobots } from '@/lib/metadata';
+import { getActiveOrder } from '@/lib/swipall/rest-adapter';
+import { ShopCart } from '@/lib/swipall/types/types';
 import type { Metadata } from 'next';
-import { getActiveOrder, getEligibleShippingMethods, getEligiblePaymentMethods } from '@/lib/swipall/rest-adapter';
 import { redirect } from 'next/navigation';
+import { fetchAddresses, fetchDeliveryItem } from './actions';
 import CheckoutFlow from './checkout-flow';
 import { CheckoutProvider, PaymentMethodsInterface } from './checkout-provider';
-import type { CheckoutOrder } from './types';
-import { noIndexRobots } from '@/lib/metadata';
-import { getAvailableCountriesCached } from '@/lib/swipall/cached';
-import { fetchAddresses, fetchDeliveryItem } from './actions';
-import { ShopCart } from '@/lib/swipall/types/types';
 
 export const metadata: Metadata = {
     title: 'Checkout',
@@ -27,9 +25,6 @@ const defineAvailablePaymentMethods = (cart: ShopCart): PaymentMethodsInterface[
 export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
     const [orderRes, deliveryItem, addresses] = await Promise.all([
         getActiveOrder({ useAuthToken: true, mutateCookies: false }),
-        // getAvailableCountriesCached(),
-        // getEligibleShippingMethods({ useAuthToken: true }),
-        // getEligiblePaymentMethods({ useAuthToken: true }),
         fetchDeliveryItem(),
         fetchAddresses(),
     ]);
@@ -44,21 +39,7 @@ export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
     //     return redirect(`/order-confirmation/${activeOrder.code}`);
     // }
 
-    const shippingMethods = [{
-        id: 'pickup',
-        name: 'Pickup',
-        description: 'Recoge tu pedido en nuestra tienda.'
-    }];
-    if (deliveryItem) {
-        shippingMethods.push({
-            id: 'delivery',
-            name: 'Entrega a domicilio',
-            description: 'Recibe tu pedido en la dirección que elijas.'
-        });
-    }
     const paymentMethods = defineAvailablePaymentMethods(activeOrder);
-    // const countryList = Array.isArray(countries) ? countries : (countries?.results || []);
-    // const deliveryItem = Array.isArray(deliveryItems) && deliveryItems.length > 0 ? deliveryItems[0] : null;
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -66,7 +47,6 @@ export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
             <CheckoutProvider
                 order={activeOrder}
                 addresses={addresses.results || []}
-                shippingMethods={shippingMethods}
                 paymentMethods={paymentMethods}
                 deliveryItem={deliveryItem}
             >

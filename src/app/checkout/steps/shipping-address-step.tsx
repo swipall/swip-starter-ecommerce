@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -48,7 +47,6 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
   const [dialogOpen, setDialogOpen] = useState(addresses.length === 0);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [useSameForBilling, setUseSameForBilling] = useState(true);
 
   const getDefaultFormValues = (): Partial<AddressFormData> => {
     return {
@@ -138,21 +136,6 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
               </div>
             ))}
           </RadioGroup>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="same-billing"
-              checked={useSameForBilling}
-              onCheckedChange={(checked) => setUseSameForBilling(checked === true)}
-            />
-            <label
-              htmlFor="same-billing"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Usar la misma dirección para facturación
-            </label>
-          </div>
-
           <div className="flex gap-3">
             <Button
               onClick={handleSelectExistingAddress}

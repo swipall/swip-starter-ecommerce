@@ -259,28 +259,6 @@ export async function setShippingAddress(input: CreateAddressInput, options?: { 
     return patch<InterfaceApiDetailResponse<Order>>('/cart/shipping-address', input, { useAuthToken: options?.useAuthToken });
 }
 
-export async function setBillingAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return patch<InterfaceApiDetailResponse<Order>>('/cart/billing-address', input, { useAuthToken: options?.useAuthToken });
-}
-
-export async function getEligibleShippingMethods(options?: { useAuthToken?: boolean }): Promise<InterfaceApiListResponse<ShippingMethod>> {
-    return get<InterfaceApiListResponse<ShippingMethod>>('/cart/shipping-methods', { useAuthToken: options?.useAuthToken });
-}
-export async function getEligiblePaymentMethods(options?: { useAuthToken?: boolean }): Promise<InterfaceApiListResponse<PaymentMethod>> {
-    return get<InterfaceApiListResponse<PaymentMethod>>('/payment-methods', { useAuthToken: options?.useAuthToken });
-}
-export async function setShippingMethod(shippingMethodId: string[], options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return post<InterfaceApiDetailResponse<Order>>('/cart/shipping-method', { shippingMethodId }, { useAuthToken: options?.useAuthToken });
-}
-
-export async function addPaymentToOrder(input: PaymentInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return post<InterfaceApiDetailResponse<Order>>('/cart/payment', input, { useAuthToken: options?.useAuthToken });
-}
-
-export async function transitionOrderToState(state: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
-    return post<InterfaceApiDetailResponse<Order>>('/cart/transition', { state }, { useAuthToken: options?.useAuthToken });
-}
-
 // ============================================================================
 // Order History Endpoints
 // ============================================================================

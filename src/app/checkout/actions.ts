@@ -4,10 +4,6 @@ import useShopModel from '@/lib/models/shop.model';
 import useUserModel from '@/lib/models/user.model';
 import {
     setShippingAddress as apiSetShippingAddress,
-    setBillingAddress as apiSetBillingAddress,
-    setShippingMethod as apiSetShippingMethod,
-    addPaymentToOrder as apiAddPayment,
-    transitionOrderToState,
 } from '@/lib/swipall/rest-adapter';
 import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
 import { createAddress, createCustomerInfo } from '@/lib/swipall/users';
@@ -29,27 +25,12 @@ interface AddressInput {
 
 export async function setShippingAddress(
     shippingAddress: AddressInput,
-    useSameForBilling: boolean
 ) {
     try {
         await apiSetShippingAddress(shippingAddress, { useAuthToken: true });
-
-        if (useSameForBilling) {
-            await apiSetBillingAddress(shippingAddress, { useAuthToken: true });
-        }
-
         revalidatePath('/checkout');
     } catch (error) {
         throw new Error('Failed to set shipping address');
-    }
-}
-
-export async function setShippingMethod(shippingMethodId: string) {
-    try {
-        await apiSetShippingMethod([shippingMethodId], { useAuthToken: true });
-        revalidatePath('/checkout');
-    } catch (error) {
-        throw new Error('Failed to set shipping method');
     }
 }
 
@@ -88,20 +69,7 @@ export async function updateShippingAddressForCart(addressId: string) {
     }
 }
 
-export async function transitionToArrangingPayment() {
-    try {
-        await transitionOrderToState('ArrangingPayment', { useAuthToken: true });
-        revalidatePath('/checkout');
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Failed to transition order state';
-        throw new Error(message);
-    }
-}
-
 export async function placeOrder(paymentMethodCode: string) {
-    // First, transition the order to ArrangingPayment state
-    await transitionToArrangingPayment();
-
     // Prepare metadata based on payment method
     const metadata: Record<string, any> = {};
 
