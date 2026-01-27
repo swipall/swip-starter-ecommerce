@@ -1,6 +1,7 @@
 'use client';
 
 import {useState, useTransition} from 'react';
+import {Eye, EyeOff} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -35,6 +36,7 @@ export function LoginForm({redirectTo}: LoginFormProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     const form = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -51,10 +53,6 @@ export function LoginForm({redirectTo}: LoginFormProps) {
             const formData = new FormData();
             formData.append('email', data.email);
             formData.append('password', data.password);
-            if (redirectTo) {
-                formData.append('redirectTo', redirectTo);
-            }
-
             try {
                 const result = await loginAction(undefined, formData);                
                 if (result?.error) {
@@ -63,7 +61,7 @@ export function LoginForm({redirectTo}: LoginFormProps) {
                     // Save user to localStorage
                     setAuthUser(result.user);
                     // Redirect after successful login and user saved
-                    router.push(result.redirectTo || '/');
+                    router.push(redirectTo || '/');
                     router.refresh();
                 }
             } catch (error) {
@@ -117,12 +115,27 @@ export function LoginForm({redirectTo}: LoginFormProps) {
                                     </div>
 
                                     <FormControl>
-                                        <Input
-                                            type="password"
-                                            placeholder="••••••••"
-                                            disabled={isPending}
-                                            {...field}
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="••••••••"
+                                                disabled={isPending}
+                                                className="pr-10"
+                                                {...field}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                                                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                            >
+                                                {showPassword ? (
+                                                    <EyeOff className="h-4 w-4" aria-hidden />
+                                                ) : (
+                                                    <Eye className="h-4 w-4" aria-hidden />
+                                                )}
+                                            </button>
+                                        </div>
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>

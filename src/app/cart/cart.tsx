@@ -1,7 +1,7 @@
-import {CartItems} from "@/app/cart/cart-items";
-import {OrderSummary} from "@/app/cart/order-summary";
-import {PromotionCode} from "@/app/cart/promotion-code";
+import { CartItems } from "@/app/cart/cart-items";
+import { OrderSummary } from "@/app/cart/order-summary";
 import { getActiveOrder } from '@/lib/swipall/rest-adapter';
+import {PromotionCode} from '@/app/cart/promotion-code';
 
 export async function Cart() {
     "use cache: private"

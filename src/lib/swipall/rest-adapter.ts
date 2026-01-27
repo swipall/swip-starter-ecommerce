@@ -165,8 +165,7 @@ export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?
             ? (itemsResponse as InterfaceApiDetailResponse<ShopCartItem[]>)?.data || []
             : Array.isArray((itemsResponse as InterfaceApiListResponse<ShopCartItem>)?.results)
                 ? (itemsResponse as InterfaceApiListResponse<ShopCartItem>).results
-                : [];
-
+                : [];        
         const orderWithLines = cartData ? { ...cartData, lines: itemLines } as Order : null;        
         if (orderWithLines?.id && mutateCookies) {
             await setCartId(orderWithLines.id);

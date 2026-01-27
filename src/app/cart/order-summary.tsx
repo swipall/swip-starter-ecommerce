@@ -1,9 +1,32 @@
+"use client";
+
+import {useTransition} from 'react';
+import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {Button} from '@/components/ui/button';
 import {Price} from '@/components/commerce/price';
 import { Order } from '@/lib/swipall/types/types';
+import { isUserAuthenticated } from './actions';
 
-export async function OrderSummary({activeOrder}: { activeOrder: Order }) {
+export function OrderSummary({activeOrder}: { activeOrder: Order }) {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+
+    const handleProceedCheckout = () => {
+        startTransition(async () => {
+            try {
+                const isAuthenticated = await isUserAuthenticated();
+                if (!isAuthenticated) {
+                    router.push(`/sign-in?redirectTo=/checkout`);
+                    return;
+                }
+                router.push('/checkout');
+            } catch (error) {
+                console.error('Error al verificar autenticación:', error);
+            }
+        });
+    };
+
     return (
         <div className="border rounded-lg p-6 bg-card sticky top-4">
             <h2 className="text-xl font-bold mb-4">Resumen de pedido</h2>
@@ -40,8 +63,8 @@ export async function OrderSummary({activeOrder}: { activeOrder: Order }) {
                 </div>
             </div>
 
-            <Button className="w-full" size="lg" asChild>
-                <Link href="/checkout">Proceder al pago</Link>
+            <Button className="w-full" size="lg" onClick={handleProceedCheckout} disabled={isPending}>
+                {isPending ? 'Verificando...' : 'Proceder al pago'}
             </Button>
 
             <Button variant="outline" className="w-full mt-2" asChild>

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, ReactNode, useState } from 'react';
 import { CheckoutOrder } from './types';
+import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
 
 interface CustomerAddress {
   id: string;
@@ -50,6 +51,7 @@ interface CheckoutContextType {
   selectedPaymentMethodCode: string | null;
   setSelectedPaymentMethodCode: (code: string | null) => void;
   isGuest: boolean;
+  deliveryItem: InterfaceInventoryItem | null;
 }
 
 const CheckoutContext = createContext<CheckoutContextType | null>(null);
@@ -62,6 +64,7 @@ interface CheckoutProviderProps {
   shippingMethods: ShippingMethod[];
   paymentMethods: PaymentMethod[];
   isGuest: boolean;
+  deliveryItem: InterfaceInventoryItem | null;
 }
 
 export function CheckoutProvider({
@@ -72,6 +75,7 @@ export function CheckoutProvider({
   shippingMethods,
   paymentMethods,
   isGuest,
+  deliveryItem,
 }: CheckoutProviderProps) {
   const [selectedPaymentMethodCode, setSelectedPaymentMethodCode] = useState<string | null>(
     paymentMethods.length === 1 ? paymentMethods[0].code : null
@@ -88,6 +92,7 @@ export function CheckoutProvider({
         selectedPaymentMethodCode,
         setSelectedPaymentMethodCode,
         isGuest,
+        deliveryItem,
       }}
     >
       {children}

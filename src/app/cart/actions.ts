@@ -3,14 +3,16 @@
 import {
     removeFromCart as apiRemoveFromCart,
     applyPromotionCode as apiApplyPromotion,
-    removePromotionCode as apiRemovePromotion
+    removePromotionCode as apiRemovePromotion,
+    getActiveCustomer
 } from '@/lib/swipall/rest-adapter';
-import {updateTag} from 'next/cache';
+import { updateTag } from 'next/cache';
 import useShopModel from '@/lib/models/shop.model';
+import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
 
 export async function removeFromCart(lineId: string) {
     try {
-        await apiRemoveFromCart(lineId, {useAuthToken: true});
+        await apiRemoveFromCart(lineId, { useAuthToken: true });
         updateTag('cart');
     } catch (error) {
         console.error('Error removing from cart:', error);
@@ -27,7 +29,7 @@ export async function adjustQuantity(lineId: string, quantity: number) {
             throw new Error('No cart ID found while adjusting quantity');
         }
 
-        await shopModel.updateItemInCart(cartId, lineId, {quantity});
+        await shopModel.updateItemInCart(cartId, lineId, { quantity });
         updateTag('cart');
     } catch (error) {
         console.error('Error adjusting quantity:', error);
@@ -40,7 +42,7 @@ export async function applyPromotionCode(formData: FormData) {
     if (!code) return;
 
     try {
-        const res = await apiApplyPromotion(code, {useAuthToken: true});
+        const res = await apiApplyPromotion(code, { useAuthToken: true });
         updateTag('cart');
     } catch (error) {
         console.error('Error applying promotion:', error);
@@ -53,10 +55,19 @@ export async function removePromotionCode(formData: FormData) {
     if (!code) return;
 
     try {
-        const res = await apiRemovePromotion(code, {useAuthToken: true});
+        const res = await apiRemovePromotion(code, { useAuthToken: true });
         updateTag('cart');
     } catch (error) {
         console.error('Error removing promotion:', error);
         throw error;
+    }
+}
+
+export async function isUserAuthenticated(): Promise<boolean> {
+    try {
+        const user = await getActiveCustomer({ useAuthToken: true });
+        return Boolean(user?.data?.id);
+    } catch (error) {
+        return false;
     }
 }

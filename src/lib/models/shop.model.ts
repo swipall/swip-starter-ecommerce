@@ -91,7 +91,7 @@ export default function useShopModel() {
             const exists = await itemExistsInCart(cartId, deliveryServiceItem.id);
             if (exists.count === 0) {
                 //we add the delivery service item to the cart
-                await insertItemInCart(cartId, deliveryServiceItem.id, { quantity: 1, extra_materials: [], price: parseFloat(deliveryServiceItem.app_price || "0") });
+                await insertItemInCart(cartId, deliveryServiceItem.id, { quantity: 1, extra_materials: [], price: parseFloat(deliveryServiceItem.web_price || "0") });
             }
             return await updateCartDeliveryInfo(cartId, { for_delivery: true, for_pickup: false });
         } catch (error) {
@@ -100,7 +100,7 @@ export default function useShopModel() {
         }
     }
 
-    const onUpdateCartForPickup = async (cartId: string, deliveryServiceItem: InterfaceInventoryItem) => {
+    const onUpdateCartForPickup = async (cartId: string, deliveryServiceItem?: InterfaceInventoryItem | null) => {
         try {
             if (deliveryServiceItem) {
                 const exists = await itemExistsInCart(cartId, deliveryServiceItem.id);

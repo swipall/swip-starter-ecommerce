@@ -1,5 +1,6 @@
 'use server';
 
+import useShopModel from '@/lib/models/shop.model';
 import {
     setShippingAddress as apiSetShippingAddress,
     setBillingAddress as apiSetBillingAddress,
@@ -8,8 +9,9 @@ import {
     createCustomerAddress as apiCreateAddress,
     transitionOrderToState,
 } from '@/lib/swipall/rest-adapter';
-import {revalidatePath, updateTag} from 'next/cache';
-import {redirect} from "next/navigation";
+import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
+import { revalidatePath, updateTag } from 'next/cache';
+import { redirect } from "next/navigation";
 
 interface AddressInput {
     fullName: string;
@@ -28,10 +30,10 @@ export async function setShippingAddress(
     useSameForBilling: boolean
 ) {
     try {
-        await apiSetShippingAddress(shippingAddress, {useAuthToken: true});
+        await apiSetShippingAddress(shippingAddress, { useAuthToken: true });
 
         if (useSameForBilling) {
-            await apiSetBillingAddress(shippingAddress, {useAuthToken: true});
+            await apiSetBillingAddress(shippingAddress, { useAuthToken: true });
         }
 
         revalidatePath('/checkout');
@@ -42,7 +44,7 @@ export async function setShippingAddress(
 
 export async function setShippingMethod(shippingMethodId: string) {
     try {
-        await apiSetShippingMethod([shippingMethodId], {useAuthToken: true});
+        await apiSetShippingMethod([shippingMethodId], { useAuthToken: true });
         revalidatePath('/checkout');
     } catch (error) {
         throw new Error('Failed to set shipping method');
@@ -51,7 +53,7 @@ export async function setShippingMethod(shippingMethodId: string) {
 
 export async function createCustomerAddress(address: AddressInput) {
     try {
-        const result = await apiCreateAddress(address, {useAuthToken: true});
+        const result = await apiCreateAddress(address, { useAuthToken: true });
         revalidatePath('/checkout');
         return result.data;
     } catch (error) {
@@ -61,7 +63,7 @@ export async function createCustomerAddress(address: AddressInput) {
 
 export async function transitionToArrangingPayment() {
     try {
-        await transitionOrderToState('ArrangingPayment', {useAuthToken: true});
+        await transitionOrderToState('ArrangingPayment', { useAuthToken: true });
         revalidatePath('/checkout');
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Failed to transition order state';
@@ -90,7 +92,7 @@ export async function placeOrder(paymentMethodCode: string) {
                 method: paymentMethodCode,
                 metadata,
             },
-            {useAuthToken: true}
+            { useAuthToken: true }
         );
 
         const orderCode = result.data?.code;
@@ -130,5 +132,46 @@ export async function setCustomerForOrder(
         return { success: true };
     } catch (error: unknown) {
         return { success: false, errorCode: 'UNKNOWN', message: 'Failed to set customer' };
+    }
+}
+
+
+export async function fetchDeliveryItem(): Promise<InterfaceInventoryItem[]> {
+    try {
+        const shopModel = useShopModel();
+        return await shopModel.fetchDeliveryConcept();
+    } catch (error) {
+        console.error('Error fetching delivery item:', error);
+        throw error;
+    }
+}
+
+export async function updateCartForDelivery(deliveryServiceItem: InterfaceInventoryItem) {
+    try {
+        const shopModel = useShopModel();
+        const cartId = await shopModel.getCurrentCartId();
+
+        if (!cartId) {
+            throw new Error('No cart ID found while updating cart for delivery');
+        }
+        return await shopModel.onUpdateCartForDelivery(cartId, deliveryServiceItem);
+    } catch (error) {
+        console.error('Error fetching delivery item:', error);
+        throw error;
+    }
+}
+
+export async function updateCartForPickup(deliveryServiceItem?: InterfaceInventoryItem | null) {
+    try {
+        const shopModel = useShopModel();
+        const cartId = await shopModel.getCurrentCartId();
+
+        if (!cartId) {
+            throw new Error('No cart ID found while updating cart for pickup');
+        }
+        return await shopModel.onUpdateCartForPickup(cartId, deliveryServiceItem as InterfaceInventoryItem);
+    } catch (error) {
+        console.error('Error fetching delivery item:', error);
+        throw error;
     }
 }

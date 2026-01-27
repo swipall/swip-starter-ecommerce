@@ -52,7 +52,7 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
                                 SKU: {line.item.sku}
                             </p>
                             <p className="text-sm text-muted-foreground mt-2 sm:hidden">
-                                <Price value={unitPrice} /> c/u
+                                <Price value={unitPrice} />xU
                             </p>
 
                             <div className="flex items-center gap-3 mt-4">
@@ -122,7 +122,7 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
                                 <Price value={parseFloat(line.total)} />
                             </p>
                             <p className="text-sm text-muted-foreground mt-1">
-                                <Price value={unitPrice} /> c/u
+                                <Price value={unitPrice} />xU
                             </p>
                         </div>
                     </div>

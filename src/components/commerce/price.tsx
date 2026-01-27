@@ -5,13 +5,13 @@ interface PriceProps {
     currencyCode?: string;
 }
 
-export function Price({value, currencyCode = 'USD'}: PriceProps) {
+export function Price({value, currencyCode = 'MXN'}: PriceProps) {
     return (
         <>
             {new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: currencyCode,
-            }).format(value / 100)}
+            }).format(value)}
         </>
     );
 }
