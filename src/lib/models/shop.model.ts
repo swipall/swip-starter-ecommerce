@@ -18,9 +18,7 @@ export default function useShopModel() {
         const response = await createShopCart();
         if(!response){
             throw new Error("Failed to create a new cart");
-        }
-        console.log('New cart created:', response   );
-        
+        }        
         await setCartId(response.id);
         return response;
     }
@@ -30,8 +28,8 @@ export default function useShopModel() {
             const cartId = await getCurrentCartId();
             if (!cartId) {
                 throw new Error("No cart ID found");
-            }
-            const itemExists = await itemExistsInCart(cartId, itemId);
+            }            
+            const itemExists = await itemExistsInCart(cartId, itemId);            
             return itemExists;
         } catch (error) {
             console.error("Error checking if item exists in cart:", error);

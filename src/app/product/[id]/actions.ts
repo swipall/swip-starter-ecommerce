@@ -22,14 +22,13 @@ export async function addToCart(
     try {
         const shopModel = useShopModel();
         let cartId = await shopModel.getCurrentCartId();
-        console.log('cartId', cartId);
         if (!cartId) {
             const newCart = await shopModel.onCreateNewCart();
             cartId = newCart.id;
         }
 
 
-        const product = await getProduct(itemId);
+        const product = await getProduct(itemId);        
         const strategyFactory = new AddItemStrategyFactory(shopModel);
         const strategy = strategyFactory.getStrategy(product);
         const result = await strategy.addItemToCart(cartId, itemId, params);

@@ -211,7 +211,7 @@ export interface AddProductToCartBody {
 }
 
 export const addProductToCart = async (cartId: string, body: AddProductToCartBody): Promise<InterfaceApiDetailResponse<ShopCartItem>> => {
-    return post<InterfaceApiDetailResponse<ShopCartItem>>(`/api/v1/shop/cart/${cartId}/items`, body);
+    return post<InterfaceApiDetailResponse<ShopCartItem>>(`/api/v1/shop/cart/${cartId}/item/add/`, body);
 }
 
 export const updateProductInCart = async (itemId: string, body: { quantity: number }): Promise<InterfaceApiDetailResponse<ShopCartItem>> => {

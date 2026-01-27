@@ -11,7 +11,7 @@ export async function FeaturedBannersDisplay() {
         parent__slug: "mmcb-ecommerce-banners",
     };
     const collections = await getCatalogs(params);
-    const banners = collections.results.filter((banner: CatalogInterface) => banner.settings?.url);
+    const banners = collections.results?.filter((banner: CatalogInterface) => banner.settings?.url);
 
     return <BannerCarousel banners={banners} />;
 }

@@ -9,14 +9,14 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import { CatalogInterface } from "@/lib/swipall/rest-adapter";
+import { CatalogInterface } from "@/lib/swipall/types/types";
 
 interface HeroCarouselProps {
     banners: CatalogInterface[];
 }
 
 export function BannerCarousel({ banners }: HeroCarouselProps) {
-    if (banners.length === 0) {
+    if (banners?.length === 0 || !banners) {
         return null;
     }
 

@@ -24,7 +24,7 @@ async function getFeaturedCollectionProducts() {
 
 export async function FeaturedProducts() {
     const products = await getFeaturedCollectionProducts();    
-    if (products.length === 0) {
+    if (products?.length === 0) {
         return null;
     }
 
