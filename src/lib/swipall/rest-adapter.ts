@@ -101,6 +101,10 @@ export async function getCollection(slug: string): Promise<InterfaceApiDetailRes
     return get<InterfaceApiDetailResponse<Collection>>(`/collections/${slug}`);
 }
 
+export async function getPosts(params:any): Promise<InterfaceApiListResponse<any>> {
+    return get<InterfaceApiListResponse<any>>('/api/v1/cms/posts', params);
+}
+
 export async function getTaxonomies(params: any): Promise<InterfaceApiListResponse<TaxonomyInterface>> {
     return get<InterfaceApiListResponse<TaxonomyInterface>>('/api/v1/shop/taxonomies', params);
 }

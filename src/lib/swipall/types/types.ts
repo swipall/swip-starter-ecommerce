@@ -258,6 +258,26 @@ export interface TaxonomyInterface {
 }
 
 // ============================================================================
+// CMS/Content Types
+// ============================================================================
+
+export interface CmsPost {
+    slug: string;
+    title: string;
+    excerpt: string | null;
+    body: string;
+    categories: any[];
+    link: string | null;
+    updated_at: string;
+    featured_image: string | null;
+    ordering: number;
+    author: string | null;
+    modified_by: string | null;
+    version: number;
+    parent: CmsPost | null;
+}
+
+// ============================================================================
 // Search Types
 // ============================================================================
 
