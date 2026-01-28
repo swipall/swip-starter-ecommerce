@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, Truck, CreditCard, Edit } from 'lucide-react';
-import { useCheckout } from '../checkout-provider';
-import { placeOrder as placeOrderAction } from '../actions';
 import { Price } from '@/components/commerce/price';
+import { Button } from '@/components/ui/button';
+import { CreditCard, Edit, Loader2, MapPin, Truck } from 'lucide-react';
+import { useState } from 'react';
+import { processPayment } from '../actions';
+import { useCheckout } from '../checkout-provider';
 
 interface ReviewStepProps {
   onEditStep: (step: 'shipping' | 'delivery' | 'payment') => void;
@@ -26,7 +26,7 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
 
     setLoading(true);
     try {
-      await placeOrderAction(selectedPaymentMethodCode);
+      await processPayment(selectedPaymentMethodCode);
     } catch (error) {
       if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
         throw error;

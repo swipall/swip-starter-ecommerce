@@ -40,8 +40,10 @@ export function CheckoutProvider({
   paymentMethods,
   deliveryItem,
 }: CheckoutProviderProps) {
+    console.log('paymentMethods',paymentMethods);
+    
   const [selectedPaymentMethodCode, setSelectedPaymentMethodCode] = useState<string | null>(
-    paymentMethods.length === 1 ? paymentMethods[0].id : null
+    paymentMethods.length > 0 ? paymentMethods[0].id : null
   );
 
   return (

@@ -3,7 +3,7 @@ import { getActiveOrder } from '@/lib/swipall/rest-adapter';
 import { ShopCart } from '@/lib/swipall/types/types';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { fetchAddresses, fetchDeliveryItem } from './actions';
+import { fetchAddresses, fetchDeliveryItem, setCustomerForOrder } from './actions';
 import CheckoutFlow from './checkout-flow';
 import { CheckoutProvider, PaymentMethodsInterface } from './checkout-provider';
 
@@ -27,6 +27,7 @@ export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
         getActiveOrder({ useAuthToken: true, mutateCookies: false }),
         fetchDeliveryItem(),
         fetchAddresses(),
+        setCustomerForOrder(),
     ]);
 
     const activeOrder = orderRes;
@@ -34,10 +35,6 @@ export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
     if (!activeOrder || activeOrder.lines.length === 0) {
         return redirect('/cart');
     }
-
-    // if (activeOrder.state !== 'AddingItems' && activeOrder.state !== 'ArrangingPayment') {
-    //     return redirect(`/order-confirmation/${activeOrder.code}`);
-    // }
 
     const paymentMethods = defineAvailablePaymentMethods(activeOrder);
 

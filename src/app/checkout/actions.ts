@@ -4,8 +4,10 @@ import useShopModel from '@/lib/models/shop.model';
 import useUserModel from '@/lib/models/user.model';
 import {
     setShippingAddress as apiSetShippingAddress,
+    createMpPreference,
+    updateCartDeliveryInfo,
 } from '@/lib/swipall/rest-adapter';
-import { InterfaceInventoryItem } from '@/lib/swipall/types/types';
+import { InterfaceInventoryItem, ShopCart } from '@/lib/swipall/types/types';
 import { createAddress, createCustomerInfo } from '@/lib/swipall/users';
 import { AddressInterface } from '@/lib/swipall/users/user.types';
 import { revalidatePath, updateTag } from 'next/cache';
@@ -69,64 +71,91 @@ export async function updateShippingAddressForCart(addressId: string) {
     }
 }
 
-export async function placeOrder(paymentMethodCode: string) {
-    // Prepare metadata based on payment method
-    const metadata: Record<string, any> = {};
+const handleBrowserCheckout = (initPoint: string) => {
+    if (typeof window !== 'undefined') {
+        window.location.href = initPoint;
+    } else {
+        throw new Error('Browser environment is required for redirecting to payment gateway.');
+    }
+};
 
-    // For standard payment, include the required fields
-    if (paymentMethodCode === 'standard-payment') {
-        metadata.shouldDecline = false;
-        metadata.shouldError = false;
-        metadata.shouldErrorOnSettle = false;
+const onProcessCardPayment = async () => {
+    try {
+        const shopModel = useShopModel();
+        const cartId = await shopModel.getCurrentCartId();
+        if (!cartId) {
+            throw new Error('No cart ID found while processing upon delivery payment');
+        }
+        const response = await createMpPreference(cartId);
+        if (!response) {
+            throw new Error('No se pudo crear la preferencia de pago de Mercado Pago.');
+        }
+        if (!response.mp_preference) {
+            throw new Error('La respuesta de Mercado Pago es inválida.');
+        }
+
+        if (!response.mp_preference.preference) {
+            throw new Error('La preferencia de pago de Mercado Pago es inválida.');
+        }
+        if (response.mp_preference.preference.status) {
+            if (response.mp_preference.preference.status !== 200) {
+                throw new Error('No se pudo crear la preferencia de pago de Mercado Pago.' + response.mp_preference.preference.message);
+            }
+        }
+        console.log(response);
+
+        const initPoint = response.mp_preference.preference.init_point;
+        handleBrowserCheckout(initPoint);
+
+    } catch (error) {
+        throw error;
     }
 
-    // Add payment to the order
+}
+
+const onProcessUponDeliveryPayment = async () => {
     try {
-        const result = await apiAddPayment(
-            {
-                method: paymentMethodCode,
-                metadata,
-            },
-            { useAuthToken: true }
-        );
-
-        const orderCode = result.data?.id;
-
-        // Update the cart tag to immediately invalidate cached cart data
-        updateTag('cart');
-        updateTag('active-order');
-
-        redirect(`/order-confirmation/${orderCode}`);
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Failed to place order';
-        throw new Error(message);
+        const shopModel = useShopModel();
+        const cartId = await shopModel.getCurrentCartId();
+        if (!cartId) {
+            throw new Error('No cart ID found while processing upon delivery payment');
+        }
+        const response = await updateCartDeliveryInfo(cartId, { status: 3 });
+        if (!response) {
+            throw new Error('No se pudo actualizar el estado del carrito para pago contraentrega.');
+        }
+        const updatedCart = response;
+        redirect(`/order-confirmation/${cartId}`);
+    } catch (error) {
+        throw error;
     }
 }
 
-interface GuestCustomerInput {
-    emailAddress: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber?: string;
+export const processPayment = async (selectedPaymentMethod: string) => {
+    try {
+        console.log('selectedPaymentMethod',selectedPaymentMethod);
+        
+        if (selectedPaymentMethod === 'card') {
+            await onProcessCardPayment();
+            return;
+        }
+        await onProcessUponDeliveryPayment();
+    } catch (error) {
+        throw error;
+    }
 }
 
-export type SetCustomerForOrderResult =
-    | { success: true }
-    | { success: false; errorCode: 'EMAIL_CONFLICT'; message: string }
-    | { success: false; errorCode: 'GUEST_CHECKOUT_DISABLED'; message: string }
-    | { success: false; errorCode: 'NO_ACTIVE_ORDER'; message: string }
-    | { success: false; errorCode: 'UNKNOWN'; message: string };
-
-export async function setCustomerForOrder(
-    input: GuestCustomerInput
-): Promise<SetCustomerForOrderResult> {
-    // TODO: Implementar en REST API si es necesario para guest checkout
-    // Por ahora, retornamos éxito ya que el checkout puede funcionar sin esto
+export async function setCustomerForOrder(): Promise<ShopCart> {
     try {
-        revalidatePath('/checkout');
-        return { success: true };
+        const shopModel = useShopModel();
+        const cartId = await shopModel.getCurrentCartId();
+        if (!cartId) {
+            throw new Error('No cart ID found while updating cart for delivery');
+        }
+        const response = await shopModel.onSetCustomerToCart(cartId);
+        return response;
     } catch (error: unknown) {
-        return { success: false, errorCode: 'UNKNOWN', message: 'Failed to set customer' };
+        throw error;
     }
 }
 

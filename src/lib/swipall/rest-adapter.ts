@@ -235,8 +235,8 @@ export const updateCartDeliveryInfo = async (cartId: string, body: UpdateCartDel
     return patch<InterfaceApiDetailResponse<ShopCart>>(`/api/v1/shop/cart/${cartId}/set/shipping/`, body);
 }
 
-export const setCustomerToCart = async (cartId: string): Promise<InterfaceApiDetailResponse<any>> => {
-    return put<InterfaceApiDetailResponse<any>>(`/api/v1/shop/me/order/${cartId}/set/customer/`, {});
+export const setCustomerToCart = async (cartId: string): Promise<ShopCart> => {
+    return put<ShopCart>(`/api/v1/shop/me/order/${cartId}/set/customer/`, {}, { useAuthToken: true });
 }
 
 
@@ -252,8 +252,29 @@ export async function removePromotionCode(couponCode: string, options?: { useAut
 // Checkout Endpoints
 // ============================================================================
 
+
+export interface MercadoPagoPreferenceResponse {
+    mp_preference: {
+        preference:{
+            init_point: string;
+            sandbox_init_point: string;
+            status: number;
+            message?: string;
+            id: string;
+        }
+    }
+}
+
 export async function setShippingAddress(input: CreateAddressInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
     return patch<InterfaceApiDetailResponse<Order>>('/cart/shipping-address', input, { useAuthToken: options?.useAuthToken });
+}
+
+export async function createMpPreference(cartId: string): Promise<MercadoPagoPreferenceResponse> {
+    return put<MercadoPagoPreferenceResponse>(`/api/v1/shop/me/order/${cartId}/mp/preference/`, {}, { useAuthToken: true });
+}
+
+export async function validateOrderStatus(orderId: string): Promise<ShopCart | OrderDetailInterface> {
+    return get<ShopCart | OrderDetailInterface>(`/api/v1/shop/me/order/${orderId}/status`, undefined, { useAuthToken: true });
 }
 
 // ============================================================================
