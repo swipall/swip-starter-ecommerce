@@ -165,8 +165,8 @@ async function request<TResult>(
         // Return appropriate empty data based on endpoint pattern
         let emptyData: TResult;
         if (endpoint.includes('/search') || 
-            endpoint.includes('/collections') || 
-            endpoint.includes('/countries') || 
+            endpoint.includes('/posts') || 
+            endpoint.includes('/taxonomies') || 
             endpoint.includes('/addresses') || 
             endpoint.includes('/shipping-methods') || 
             endpoint.includes('/payment-methods') ||
@@ -186,8 +186,8 @@ async function request<TResult>(
         return emptyData;
     }    
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData?.error?.message || errorData?.message || `HTTP error! status: ${response.status}`;
+        const errorData = await response.json().catch(() => ({}));        
+        const errorMessage = transformError(errorData) || `API request failed with status ${response.status} for ${method} ${endpoint}`;
         throw new Error(errorMessage);
     }
 
@@ -225,5 +225,25 @@ export async function mutate<TResult>(
 ): Promise<TResult> {
     // For REST, mutations are POST/PUT/PATCH requests
     return post<TResult>(endpoint, params, options);
+}
+
+function transformError(error: any): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    if(typeof error === 'object' && error !== null) {
+        if ('message' in error && typeof error.message === 'string') {
+            return error.message;
+        }
+        if ('errors' in error && Array.isArray(error.errors)) {
+            return error.errors.map((e: any) => (typeof e === 'string' ? e : JSON.stringify(e))).join(', ');
+        }
+        const firstKey = Object.keys(error)[0];        
+        if (Array.isArray(error[firstKey])) {
+            return error[firstKey].map((e: any) => (typeof e === 'string' ? e : JSON.stringify(e))).join(', ');
+        }
+        return JSON.stringify(error);
+    }
+    return String(error);
 }
 

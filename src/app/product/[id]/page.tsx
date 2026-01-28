@@ -111,10 +111,9 @@ export async function generateMetadata({
 export default async function ProductDetailPage({ params, searchParams }: PageProps<'/product/[id]'>) {
     const { id: encodedId } = await params;
     const searchParamsResolved = await searchParams;
-    const id = decodeURIComponent(encodedId);
+    const id = decodeURIComponent(encodedId);    
     const result = await getProductData(id);
     const product = await fetchProductMaterials(result);
-
     if (!product) {
         notFound();
     }

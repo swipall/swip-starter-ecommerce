@@ -30,6 +30,8 @@ export async function loginAction(prevState: { error?: string } | undefined, for
             return { error: 'No se recibió token de autenticación' };
         }
     } catch (error: unknown) {
+        console.log('login',Object.keys(error));
+        
         const message = error instanceof Error ? error.message : 'Correo electrónico o contraseña inválidos';
         return { error: message };
     }

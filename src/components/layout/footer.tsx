@@ -47,7 +47,7 @@ export async function Footer() {
                     <div>
                         <p className="text-sm font-semibold mb-4">Categorías</p>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            {collections?.results.map((collection: TaxonomyInterface) => (
+                            {collections.results.map((collection: TaxonomyInterface) => (
                                 <li key={collection.id}>
                                     <Link
                                         href={`/collection/${collection.slug}`}
