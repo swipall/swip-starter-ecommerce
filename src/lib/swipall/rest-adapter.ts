@@ -186,6 +186,10 @@ enum ORDER_SOURCE {
 export const createShopCart = async (): Promise<ShopCart> => {
     return post<ShopCart>('/api/v1/shop/carts/', { source: ORDER_SOURCE.WEB });
 }
+// TODO: Remove this. For testing POS cart creation
+export const testCreatePosCart = async (body: { store: string; customer: string }): Promise<ShopCart> => {
+    return post<ShopCart>('/api/v1/pos/cart/', { source: ORDER_SOURCE.POS, ...body }, { useAuthToken: true, token: 'pos_auth_token' });
+}
 
 export async function addToCart(input: AddToCartInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<Order>> {
     const cartId = await getCartId();
@@ -255,7 +259,7 @@ export async function removePromotionCode(couponCode: string, options?: { useAut
 
 export interface MercadoPagoPreferenceResponse {
     mp_preference: {
-        preference:{
+        preference: {
             init_point: string;
             sandbox_init_point: string;
             status: number;

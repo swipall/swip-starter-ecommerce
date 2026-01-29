@@ -1,11 +1,11 @@
 'use client';
 
-import { addToCart, getGroupVariant } from '@/app/product/[id]/actions';
+import { addToCart, getGroupVariant, testApiMiddleWare } from '@/app/product/[id]/actions';
 import { Price } from '@/components/commerce/price';
 import { Button } from '@/components/ui/button';
 import { InterfaceInventoryItem, Material, ProductKind, ProductVariant, VariantOption } from '@/lib/swipall/types/types';
 import { CheckCircle2, ShoppingCart } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import ProductVariants from './product-variants';
@@ -22,21 +22,42 @@ export type ExtraMaterialsInterface = {
     materials: Material[]
 }[];
 
+const VARIANT_LABELS: Record<string, string> = {
+    size: 'Tamaño',
+    color: 'Color',
+};
+
+const AUTO_RESET_DELAY = 2000;
+
 export function ProductInfo({ product, searchParams }: ProductInfoProps) {
     const router = useRouter();
-    const currentSearchParams = useSearchParams();
-    const redirectTo = currentSearchParams?.get('redirectTo') as string | undefined;
     const { user } = useAuthUser();
     const [isPending, startTransition] = useTransition();
     const [isAdded, setIsAdded] = useState(false);
-    const [itemPrice, setItemPrice] = useState<number>(product.web_price ? parseFloat(product.web_price) : 0);
-    // States for selected variant and attributes when product is of 'group' kind
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
     const [variants, setVariants] = useState<VariantOption[]>([]);
     const [selectedSizeId, setSelectedSizeId] = useState<string>('');
     const [selectedColorId, setSelectedColorId] = useState<string>('');
-    //States for selected materiales when product is of 'compound' kind
+    
     const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
+    
+    const itemPrice = useMemo(() => {
+        let basePrice = product.web_price ? parseFloat(product.web_price) : 0;
+        
+        if (product.kind === ProductKind.Group && selectedVariant) {
+            basePrice = parseFloat(selectedVariant.web_price);
+        }
+        
+        if (product.kind === ProductKind.Compound) {
+            const materialsPrice = selectedMaterials.reduce(
+                (sum, material) => sum + (parseFloat(material.price) || 0),
+                0
+            );
+            return basePrice + materialsPrice;
+        }
+        
+        return basePrice;
+    }, [product, selectedVariant, selectedMaterials]);
     
     const materialIdToTaxonomy = useMemo(() => {
         const map = new Map<string, string>();
@@ -48,69 +69,62 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
         return map;
     }, [product.extra_materials]);
 
-    const generateVariantLabel = (kind: string) => {
-        if (kind === 'size') return 'Tamaño';
-        if (kind === 'color') return 'Color';
-        return kind.charAt(0).toUpperCase() + kind.slice(1);
-    }
+    const generateVariantLabel = useCallback((kind: string): string => {
+        return VARIANT_LABELS[kind] || kind.charAt(0).toUpperCase() + kind.slice(1);
+    }, []);
 
-    const formatVariants = (product: InterfaceInventoryItem) => {
-        let variantsArray: VariantOption[] = [];
+    const formatVariants = useCallback((product: InterfaceInventoryItem) => {
+        const variantsMap = new Map<string, VariantOption>();
 
         product.attribute_combinations?.forEach((attr) => {
-            const existingVariant = variantsArray.find(v => v.kind === attr.kind);
+            const existingVariant = variantsMap.get(attr.kind);
+            const value = {
+                key: attr.id,
+                name: attr.name,
+                value: attr.value
+            };
+
             if (existingVariant) {
-                existingVariant.values.push({
-                    key: attr.id,
-                    name: attr.name,
-                    value: attr.value
-                });
+                existingVariant.values.push(value);
             } else {
-                variantsArray.push({
+                variantsMap.set(attr.kind, {
                     label: generateVariantLabel(attr.kind),
                     kind: attr.kind,
-                    values: [{
-                        key: attr.id,
-                        name: attr.name,
-                        value: attr.value
-                    }]
+                    values: [value]
                 });
             }
         });
-        setVariants(variantsArray);
-    }
+
+        return Array.from(variantsMap.values());
+    }, [generateVariantLabel]);
 
     useEffect(() => {
         if (product.kind === ProductKind.Group) {
-            formatVariants(product);
+            setVariants(formatVariants(product));
         }
+
         return () => {
             setVariants([]);
             setSelectedMaterials([]);
             setSelectedVariant(null);
             setSelectedColorId('');
             setSelectedSizeId('');
-            setItemPrice(product.web_price ? parseFloat(product.web_price) : 0);
-        }
-    }, [product]);
+        };
+    }, [product, formatVariants]);
 
     useEffect(() => {
         const fetchVariant = async () => {
-            if (selectedColorId && selectedSizeId) {
-                try {
-                    const params = {
-                        color: selectedColorId,
-                        size: selectedSizeId
-                    };
-                    const variant: ProductVariant = await getGroupVariant(product.id, params);
-                    setSelectedVariant(variant);
-                    setItemPrice(parseFloat(variant.web_price));
-                } catch (error) {
-                    console.error('Error fetching variant:', error);
-                    toast.error('Error', {
-                        description: 'No se pudo cargar la variante seleccionada',
-                    });
-                }
+            if (!selectedColorId || !selectedSizeId) return;
+
+            try {
+                const params = { color: selectedColorId, size: selectedSizeId };
+                const variant = await getGroupVariant(product.id, params);
+                setSelectedVariant(variant);
+            } catch (error) {
+                console.error('Error fetching variant:', error);
+                toast.error('Error', {
+                    description: 'No se pudo cargar la variante seleccionada',
+                });
             }
         };
 
@@ -130,30 +144,28 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
     }, [selectedMaterials, materialIdToTaxonomy]);
 
     const onRemoveMaterial = useCallback((materialId: string) => {
-        const materialToRemove = selectedMaterials.find(m => m.id === materialId);
-        if (materialToRemove) {
-            setItemPrice(prev => prev - (parseFloat(materialToRemove.price) || 0));
-        }
         setSelectedMaterials(prev => prev.filter(m => m.id !== materialId));
-    }, [selectedMaterials]);
+    }, []);
 
     const onSelectMaterial = useCallback((material: Material) => {
         const materialTaxonomy = materialIdToTaxonomy.get(material.id);
 
-        if (materialTaxonomy) {
-            const existingMaterial = getSelectedMaterialFromTaxonomy(materialTaxonomy);
-            if (existingMaterial) {
-                setItemPrice(prev => prev - (parseFloat(existingMaterial.price) || 0));
-                setSelectedMaterials(prev => prev.filter(m => m.id !== existingMaterial.id));
+        setSelectedMaterials(prev => {
+            if (materialTaxonomy) {
+                const existingMaterial = prev.find(
+                    m => materialIdToTaxonomy.get(m.id) === materialTaxonomy
+                );
+                
+                if (existingMaterial) {
+                    return prev.map(m => m.id === existingMaterial.id ? material : m);
+                }
             }
-        }
+            
+            return [...prev, material];
+        });
+    }, [materialIdToTaxonomy]);
 
-        setItemPrice(prev => prev + (parseFloat(material.price) || 0));
-        setSelectedMaterials(prev => [...prev, material]);
-    }, [materialIdToTaxonomy, getSelectedMaterialFromTaxonomy]);
-
-    const handleAddToCart = async () => {
-        // For 'group' kind, require a selected variant
+    const handleAddToCart = useCallback(async () => {
         if (product.kind === ProductKind.Group && !selectedVariant) {
             toast.error('Error', {
                 description: 'Por favor selecciona color y tamaño',
@@ -161,26 +173,23 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
             return;
         }
         
-        if (product.kind === ProductKind.Compound) {
-            // if the user is not logged in, redirect to login page
-            if (!user) {
-                toast.error('Error', {
-                    description: 'Por favor inicia sesión para agregar productos compuestos',
-                });
-                router.push(`/sign-in?redirectTo=/product/${product.id}`);
-                return;
-            }
+        if (product.kind === ProductKind.Compound && !user) {
+            toast.error('Error', {
+                description: 'Por favor inicia sesión para agregar productos compuestos',
+            });
+            router.push(`/sign-in?redirectTo=/product/${product.id}`);
+            return;
         }
         
-        // Determine item ID: for groups use variant ID, otherwise use product ID
         const itemId = product.kind === ProductKind.Group ? selectedVariant?.id : product.id;
         if (!itemId) return;
 
         startTransition(async () => {
-            // Prepare parameters based on product kind
             const addToCartParams = {
                 quantity: 1,
-                extra_materials: product.kind === ProductKind.Compound ? selectedMaterials.map(mat => ({ material_id: mat.id, name: mat.name })) : [],
+                extra_materials: product.kind === ProductKind.Compound 
+                    ? selectedMaterials.map(mat => ({ material_id: mat.id, name: mat.name })) 
+                    : [],
                 price: itemPrice,
                 item: itemId
             };
@@ -193,15 +202,14 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
                     description: `${product.name} ha sido agregado a tu carrito`,
                 });
 
-                // Reset the added state after 2 seconds
-                setTimeout(() => setIsAdded(false), 2000);
+                setTimeout(() => setIsAdded(false), AUTO_RESET_DELAY);
             } else {
                 toast.error('Error', {
                     description: result.error || 'Ocurrió un error al agregar al carrito',
                 });
             }
         });
-    };
+    }, [product, selectedVariant, selectedMaterials, user, router, itemPrice]);
 
     const isInStock = useMemo(() => 
         product.kind === ProductKind.Group
@@ -221,39 +229,56 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
             : isInStock
     , [product.kind, selectedVariant, isInStock]);
 
+    const buttonText = useMemo(() => {
+        if (isAdded) return 'Se agregó al carrito';
+        if (isPending) return 'Agregando...';
+        if (!selectedVariant && product.kind === ProductKind.Group && variants.length > 0) {
+            return 'Seleccionar Variante';
+        }
+        if (!isInStock) return 'Agotado';
+        return 'Agregar al Carrito';
+    }, [isAdded, isPending, selectedVariant, product.kind, variants.length, isInStock]);
+
     return (
         <div className="space-y-6">
-            {/* Product Title */}
             <div>
                 <p className="text-2xl font-bold mt-2">
-                    <Price value={itemPrice || 0} />
+                    <Price value={itemPrice} />
                 </p>
             </div>
 
-            {/* Product Description */}
             <div className="prose prose-sm max-w-none">
                 <div dangerouslySetInnerHTML={{ __html: product.description || '' }} />
             </div>
 
-            {/* Variants Selection - only for group kind */}
             {product.kind === ProductKind.Group && variants.length > 0 && (
-                <ProductVariants variants={variants} handleAttributeChange={handleAttributeChange} selectedSizeId={selectedSizeId} selectedColorId={selectedColorId} />
+                <ProductVariants 
+                    variants={variants} 
+                    handleAttributeChange={handleAttributeChange} 
+                    selectedSizeId={selectedSizeId} 
+                    selectedColorId={selectedColorId} 
+                />
             )}
 
             {product.kind === ProductKind.Compound && product.extra_materials && product.extra_materials.length > 0 && (
-                <CompoundMaterialsSelector extraMaterials={product.extra_materials} selectedMaterials={selectedMaterials} onSelectMaterial={onSelectMaterial} onRemoveMaterial={onRemoveMaterial} />
+                <CompoundMaterialsSelector 
+                    extraMaterials={product.extra_materials} 
+                    selectedMaterials={selectedMaterials} 
+                    onSelectMaterial={onSelectMaterial} 
+                    onRemoveMaterial={onRemoveMaterial} 
+                />
             )}
 
-            {/* Stock Status */}
             <div className="text-sm">
                 {isInStock ? (
-                    <span className="text-green-600 font-medium">{availableQuantity} en existencia</span>
+                    <span className="text-green-600 font-medium">
+                        {availableQuantity} en existencia
+                    </span>
                 ) : (
                     <span className="text-destructive font-medium">Agotado</span>
                 )}
             </div>
 
-            {/* Add to Cart Button */}
             <div className="pt-4">
                 <Button
                     size="lg"
@@ -264,26 +289,35 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
                     {isAdded ? (
                         <>
                             <CheckCircle2 className="mr-2 h-5 w-5" />
-                            Se agregó al carrito
+                            {buttonText}
                         </>
                     ) : (
                         <>
                             <ShoppingCart className="mr-2 h-5 w-5" />
-                            {isPending
-                                ? 'Agregando...'
-                                : !selectedVariant && product.kind === ProductKind.Group && variants.length > 0
-                                    ? 'Seleccionar Variante'
-                                    : !isInStock
-                                        ? 'Agotado'
-                                        : 'Agregar al Carrito'}
+                            {buttonText}
                         </>
                     )}
                 </Button>
             </div>
+            {/* TODO: Remove this after testing */}
+            <div id="TEST_BUTTON">
+                    <Button
+                        size="lg"
+                        className="w-full"
+                        onClick={() => {
+                            testApiMiddleWare().then((res) => {
+                                console.log('TEST BUTTON - API Permissions', res);
+                            }).catch((error) => {
+                                console.error('TEST BUTTON - API Permissions Error', error);
+                            });
+                        }}
+                    >
+                        TEST BUTTON - API Permissions
+                    </Button>
+            </div>
 
-            {/* SKU */}
             {product.kind === ProductKind.Group ? (
-                selectedVariant && (
+                selectedVariant?.sku && (
                     <div className="text-xs text-muted-foreground">
                         SKU: {selectedVariant.sku}
                     </div>

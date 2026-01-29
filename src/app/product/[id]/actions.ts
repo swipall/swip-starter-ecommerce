@@ -3,7 +3,7 @@
 import useShopModel from '@/lib/models/shop.model';
 import { AddItemStrategyFactory } from '@/lib/strategies/shop/cart/add-item/add-item-strategy.factory';
 import { fetchCompoundMaterials, getGroupVariantByTaxonomies } from '@/lib/swipall/inventory';
-import { AddProductToCartBody, getProduct } from '@/lib/swipall/rest-adapter';
+import { AddProductToCartBody, getProduct, testCreatePosCart } from '@/lib/swipall/rest-adapter';
 import { updateTag } from 'next/cache';
 
 export { getGroupVariantByTaxonomies };
@@ -53,6 +53,16 @@ export async function getCompoundMaterials(itemId: string, params?: any) {
     try {
         const res = await fetchCompoundMaterials(itemId, params, true);// this always require auth token
         return res;
+    } catch (error: unknown) {
+        throw error;
+    }
+}
+
+//TODO: Remove this after testing
+export async function testApiMiddleWare() {
+    try {
+        const product = await testCreatePosCart({ store: 'store_123', customer: 'customer_456' });
+        return product;
     } catch (error: unknown) {
         throw error;
     }
