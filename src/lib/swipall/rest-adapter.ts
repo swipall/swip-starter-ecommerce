@@ -49,7 +49,7 @@ export async function updateCustomer(input: UpdateCustomerInput, options?: { use
 }
 
 export async function updateCustomerPassword(
-    body:{new_password1: string; new_password2: string, token: string | number},
+    body: { new_password1: string; new_password2: string, token: string | number },
     options?: { useAuthToken?: boolean }
 ): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
     return post<InterfaceApiDetailResponse<{ success: boolean }>>('/api/v1/auth/password/change/', body, { useAuthToken: options?.useAuthToken });
@@ -301,7 +301,7 @@ export async function registerCustomer(input: RegisterInput): Promise<InterfaceA
 }
 
 export async function requestPasswordReset(emailAddress: string): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
-    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/auth/reset-password/request', { emailAddress });
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/api/v1/auth/password/reset/', { email: emailAddress });
 }
 
 export async function resetPassword(token: string, password: string): Promise<InterfaceApiDetailResponse<{ user: CurrentUser }>> {

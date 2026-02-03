@@ -13,15 +13,15 @@ export async function updatePasswordAction(prevState: { error?: string; success?
     const userToken = formData.get('userToken') as string;
 
     if (!newPassword || !confirmPassword) {
-        return { error: 'All fields are required' };
+        return { error: 'Todos los campos son obligatorios' };
     }
 
     if (!userToken) {
-        return { error: 'User token is missing. Please sign in again.' };
+        return { error: 'El token de usuario falta. Por favor, inicia sesión de nuevo.' };
     }
 
     if (newPassword !== confirmPassword) {
-        return { error: 'New passwords do not match' };
+        return { error: 'Las nuevas contraseñas no coinciden' };
     }
 
 
@@ -34,7 +34,7 @@ export async function updatePasswordAction(prevState: { error?: string; success?
         await updateCustomerPassword(body, { useAuthToken: true });
         return { success: true };
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+        const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
         return { error: message };
     }
 }

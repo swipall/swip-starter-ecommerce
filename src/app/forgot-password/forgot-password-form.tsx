@@ -56,15 +56,15 @@ export function ForgotPasswordForm() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Check your email</CardTitle>
+                    <CardTitle>Revisa tu correo</CardTitle>
                     <CardDescription>
-                        If an account exists with that email, we&apos;ve sent password reset instructions.
+                        Si existe una cuenta con ese correo, hemos enviado instrucciones para restablecer la contraseña.
                     </CardDescription>
                 </CardHeader>
                 <CardFooter>
                     <Link href="/sign-in">
                         <Button variant="outline" className="w-full">
-                            Back to Sign In
+                            Volver a Iniciar Sesión
                         </Button>
                     </Link>
                 </CardFooter>
@@ -75,9 +75,9 @@ export function ForgotPasswordForm() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Forgot password?</CardTitle>
+                <CardTitle>Recuperar contraseña</CardTitle>
                 <CardDescription>
-                    Enter your email address and we&apos;ll send you a link to reset your password.
+                    Ingresa tu correo electrónico y recibe las instrucciones para recuperar tu contraseña
                 </CardDescription>
             </CardHeader>
             <Form {...form}>
@@ -110,13 +110,13 @@ export function ForgotPasswordForm() {
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4 mt-4">
                         <Button type="submit" className="w-full" disabled={isPending}>
-                            {isPending ? 'Sending...' : 'Send reset link'}
+                            {isPending ? 'Enviando...' : 'Recuperar contraseña'}
                         </Button>
                         <Link
                             href="/sign-in"
                             className="text-sm text-center text-muted-foreground hover:text-primary"
                         >
-                            Back to Sign In
+                            Volver a Iniciar Sesión
                         </Link>
                     </CardFooter>
                 </form>
