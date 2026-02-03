@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getAuthUser } from '@/lib/auth-client';
+import { CurrentUser } from '@/lib/swipall/types/types';
 
 export function ChangePasswordForm() {
+    const storedUser: CurrentUser | null = getAuthUser();
     const [state, formAction, isPending] = useActionState(updatePasswordAction, undefined);
 
     useEffect(() => {
@@ -20,26 +23,16 @@ export function ChangePasswordForm() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Change Password</CardTitle>
+                <CardTitle>Cambiar Contraseña</CardTitle>
                 <CardDescription>
-                    Update your password to keep your account secure.
+                    Actualiza tu contraseña para mantener tu cuenta segura.
                 </CardDescription>
             </CardHeader>
             <form id="change-password-form" action={formAction}>
                 <CardContent className="space-y-4">
+                    <input type="hidden" name="userToken" value={storedUser?.pk ?? ''} />
                     <div className="space-y-2">
-                        <Label htmlFor="currentPassword">Current Password</Label>
-                        <Input
-                            id="currentPassword"
-                            name="currentPassword"
-                            type="password"
-                            placeholder="••••••••"
-                            required
-                            disabled={isPending}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="newPassword">New Password</Label>
+                        <Label htmlFor="newPassword">Nueva Contraseña</Label>
                         <Input
                             id="newPassword"
                             name="newPassword"
@@ -50,7 +43,7 @@ export function ChangePasswordForm() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                        <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
                         <Input
                             id="confirmPassword"
                             name="confirmPassword"
@@ -67,11 +60,11 @@ export function ChangePasswordForm() {
                     )}
                     {state?.success && (
                         <div className="text-sm text-green-600">
-                            Password updated successfully!
+                            ¡Contraseña actualizada con éxito!
                         </div>
                     )}
                     <Button type="submit" disabled={isPending}>
-                        {isPending ? 'Updating...' : 'Update Password'}
+                        {isPending ? 'Actualizando...' : 'Actualizar Contraseña'}
                     </Button>
                 </CardContent>
             </form>

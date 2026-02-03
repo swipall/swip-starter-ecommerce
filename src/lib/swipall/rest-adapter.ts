@@ -49,11 +49,10 @@ export async function updateCustomer(input: UpdateCustomerInput, options?: { use
 }
 
 export async function updateCustomerPassword(
-    currentPassword: string,
-    newPassword: string,
+    body:{new_password1: string; new_password2: string, token: string | number},
     options?: { useAuthToken?: boolean }
 ): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
-    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/customers/me/password', { currentPassword, newPassword }, { useAuthToken: options?.useAuthToken });
+    return post<InterfaceApiDetailResponse<{ success: boolean }>>('/api/v1/auth/password/change/', body, { useAuthToken: options?.useAuthToken });
 }
 
 // ============================================================================
