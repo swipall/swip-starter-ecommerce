@@ -50,6 +50,14 @@ export function removeAuthUser() {
 }
 
 /**
+ * Get the customer_id from the authenticated user if available
+ */
+export function getAuthUserCustomerId(): string | undefined {
+    const user = getAuthUser();
+    return user?.id;
+}
+
+/**
  * Event name for auth user changes
  */
 export const AUTH_USER_CHANGED_EVENT = AUTH_USER_EVENT;

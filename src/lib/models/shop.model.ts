@@ -82,9 +82,9 @@ export default function useShopModel() {
         }
     }
 
-    const fetchDeliveryConcept = async () => {
+    const fetchDeliveryConcept = async (customerId?: string) => {
         try {
-            return (await fetchDeliveryItem()).results || [];
+            return (await fetchDeliveryItem(customerId)).results || [];
         } catch (error) {
             throw error;
         }

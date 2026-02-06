@@ -11,7 +11,7 @@ import { InterfaceInventoryItem, ShopCart } from '@/lib/swipall/types/types';
 import { createAddress, createCustomerInfo } from '@/lib/swipall/users';
 import { AddressInterface } from '@/lib/swipall/users/user.types';
 import { revalidatePath } from 'next/cache';
-
+import { getAuthUserCustomerId } from '@/lib/auth';
 
 interface AddressInput {
     fullName: string;
@@ -159,8 +159,9 @@ export async function setCustomerForOrder(): Promise<ShopCart | null> {
 
 export async function fetchDeliveryItem(): Promise<InterfaceInventoryItem | null> {
     try {
+        const customerId = await getAuthUserCustomerId();
         const shopModel = useShopModel();
-        const results = await shopModel.fetchDeliveryConcept();
+        const results = await shopModel.fetchDeliveryConcept(customerId);
         return results.length > 0 ? results[0] : null;
     } catch (error) {
         console.error('Error fetching delivery item:', error);

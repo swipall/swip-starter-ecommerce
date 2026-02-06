@@ -12,10 +12,7 @@ import type {
     InterfaceApiDetailResponse,
     InterfaceApiListResponse,
     InterfaceInventoryItem,
-    LoginInput,
-    LoginResponse,
     Order,
-    RegisterInput,
     SearchInput,
     ShopCart,
     ShopCartItem,
@@ -68,9 +65,10 @@ export async function setDefaultBillingAddress(id: string, options?: { useAuthTo
 // Product Endpoints
 // ============================================================================
 
-export async function getProduct(id: string): Promise<InterfaceInventoryItem> {
+export async function getProduct(id: string, customerId?: string): Promise<InterfaceInventoryItem> {
     const endpoint = `/api/v1/shop/item/${id}`;
-    return get<InterfaceInventoryItem>(endpoint);
+    const params = customerId ? { customer_id: customerId } : undefined;
+    return get<InterfaceInventoryItem>(endpoint, params);
 }
 
 export async function getGroupVariants(groupId: string): Promise<InterfaceApiListResponse<InterfaceInventoryItem>> {
@@ -118,7 +116,7 @@ export async function getCustomerAddresses(options?: { useAuthToken?: boolean })
 // Search Endpoints
 // ============================================================================
 export type SearchResult = InterfaceApiListResponse<InterfaceInventoryItem>;
-export async function searchProducts(input: SearchInput): Promise<SearchResult> {
+export async function searchProducts(input: SearchInput, customerId?: string): Promise<SearchResult> {
     const params = new URLSearchParams();
     if (input.search) params.append('search', input.search);
     if (input.offset) params.append('offset', String(input.offset));
@@ -126,8 +124,10 @@ export async function searchProducts(input: SearchInput): Promise<SearchResult> 
     if (input.ordering) params.append('ordering', input.ordering);
     if (input.taxonomy) params.append('taxonomy', input.taxonomy);
     if (input.taxonomies__slug__and) params.append('taxonomies__slug__and', input.taxonomies__slug__and);
+    if (customerId) params.append('customer_id', customerId);
     const endpoint = `/api/v1/shop/items`;
-    return get<InterfaceApiListResponse<InterfaceInventoryItem>>(endpoint, params);
+    const parsedParams = Object.fromEntries(params.entries());
+    return get<InterfaceApiListResponse<InterfaceInventoryItem>>(endpoint, parsedParams);
 }
 
 // ============================================================================
@@ -251,12 +251,15 @@ export async function removeFromCart(lineId: string, options?: { useAuthToken?: 
     return remove<InterfaceApiDetailResponse<Order>>(endpoint, { useAuthToken: options?.useAuthToken });
 }
 
-export const fetchDeliveryItem = async (): Promise<InterfaceApiListResponse<InterfaceInventoryItem>> => {
-    const params = {
+export const fetchDeliveryItem = async (customerId?: string): Promise<InterfaceApiListResponse<InterfaceInventoryItem>> => {
+    const params: Record<string, any> = {
         limit: 1,
         offset: 0,
         search: 'DOMICILIO',
         kind: 'service'
+    };
+    if (customerId) {
+        params.customer_id = customerId;
     }
     const uri = `/api/v1/shop/items`;
     return get<InterfaceApiListResponse<InterfaceInventoryItem>>(uri, params);

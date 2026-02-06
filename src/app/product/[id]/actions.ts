@@ -5,6 +5,7 @@ import { AddItemStrategyFactory } from '@/lib/strategies/shop/cart/add-item/add-
 import { fetchCompoundMaterials, getGroupVariantByTaxonomies } from '@/lib/swipall/inventory';
 import { AddProductToCartBody, getProduct, testCreatePosCart } from '@/lib/swipall/rest-adapter';
 import { updateTag } from 'next/cache';
+import { getAuthUserCustomerId } from '@/lib/auth';
 
 export { getGroupVariantByTaxonomies };
 
@@ -25,7 +26,8 @@ export async function addToCart(
             const newCart = await shopModel.onCreateNewCart();
             cartId = newCart.id;
         }        
-        const product = await getProduct(itemId);        
+        const customerId = await getAuthUserCustomerId();
+        const product = await getProduct(itemId, customerId);        
         const strategyFactory = new AddItemStrategyFactory(shopModel);
         const strategy = strategyFactory.getStrategy(product);
         const result = await strategy.addItemToCart(cartId, itemId, params);

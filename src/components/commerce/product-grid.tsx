@@ -13,9 +13,9 @@ interface ProductGridProps {
 }
 
 export async function ProductGrid({productDataPromise, currentPage, take}: ProductGridProps) {
-    const [searchResult, channel] = await Promise.all([
+    const [searchResult] = await Promise.all([
         productDataPromise,
-        getActiveChannelCached(),
+        // getActiveChannelCached(),
     ]);
 
     const totalPages = Math.ceil((searchResult?.count || 0) / take);

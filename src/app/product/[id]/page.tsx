@@ -18,15 +18,15 @@ import type { Metadata } from 'next';
 import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { getCompoundMaterials } from './actions';
-import { getAuthToken } from '@/lib/auth';
+import { getAuthToken, getAuthUserCustomerId } from '@/lib/auth';
 
-async function getProductData(id: string) {
+async function getProductData(id: string, customerId?: string) {
     'use cache';
     cacheLife('hours');
     cacheTag(`product-${id}`);
 
     try {
-        const result = await getProduct(id);
+        const result = await getProduct(id, customerId);
         return result;
     } catch (error) {
         return null;
@@ -74,7 +74,8 @@ export async function generateMetadata({
 }: PageProps<'/product/[id]'>): Promise<Metadata> {
     const { id: encodedId } = await params;
     const id = decodeURIComponent(encodedId);
-    const result = await getProductData(id);
+    const customerId = await getAuthUserCustomerId();
+    const result = await getProductData(id, customerId);
 
     const product = result;
     if (!product) {
@@ -112,7 +113,8 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
     const { id: encodedId } = await params;
     const searchParamsResolved = await searchParams;
     const id = decodeURIComponent(encodedId);    
-    const result = await getProductData(id);
+    const customerId = await getAuthUserCustomerId();
+    const result = await getProductData(id, customerId);
     const product = await fetchProductMaterials(result);
     if (!product) {
         notFound();

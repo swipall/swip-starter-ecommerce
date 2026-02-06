@@ -2,13 +2,14 @@ import { ProductCarousel } from "@/components/commerce/product-carousel";
 import { cacheLife, cacheTag } from "next/cache";
 import { searchProducts } from '@/lib/swipall/rest-adapter';
 import { InterfaceInventoryItem } from "@/lib/swipall/types/types";
+import { getAuthUserCustomerId } from '@/lib/auth';
 
 interface RelatedProductsProps {
     collectionSlug: string;
     currentProductId: string;
 }
 
-async function getRelatedProducts(collectionSlug: string, currentProductId: string) {
+async function getRelatedProducts(collectionSlug: string, currentProductId: string, customerId?: string) {
     'use cache'
     cacheLife('hours')
     cacheTag(`related-products-${collectionSlug}`)
@@ -17,7 +18,7 @@ async function getRelatedProducts(collectionSlug: string, currentProductId: stri
         search: collectionSlug,
         limit: 13, // Fetch extra to account for filtering out current product
         offset: 0
-    });
+    }, customerId);
 
     // Filter out the current product and limit to 12
     return result.results
@@ -26,7 +27,8 @@ async function getRelatedProducts(collectionSlug: string, currentProductId: stri
 }
 
 export async function RelatedProducts({ collectionSlug, currentProductId }: RelatedProductsProps) {
-    const products = await getRelatedProducts(collectionSlug, currentProductId);
+    const customerId = await getAuthUserCustomerId();
+    const products = await getRelatedProducts(collectionSlug, currentProductId, customerId);
 
     if (products.length === 0) {
         return null;

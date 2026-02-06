@@ -12,8 +12,9 @@ import {
     buildCanonicalUrl,
     buildOgImages,
 } from '@/lib/metadata';
+import { getAuthUserCustomerId } from '@/lib/auth';
 
-async function getCollectionProducts(slug: string, searchParams: { [key: string]: string | string[] | undefined }) {
+async function getCollectionProducts(slug: string, searchParams: { [key: string]: string | string[] | undefined }, customerId?: string) {
     'use cache';
     cacheLife('hours');
     cacheTag(`collection-${slug}`);
@@ -23,7 +24,7 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
         taxonomies__slug__and: slug,
     });
 
-    const results = await searchProducts(params);
+    const results = await searchProducts(params, customerId);
     return results;
 }
 
@@ -77,7 +78,8 @@ export default async function CollectionPage({ params, searchParams }: PageProps
     const searchParamsResolved = await searchParams;
     const page = getCurrentPage(searchParamsResolved);
 
-    const productDataPromise = getCollectionProducts(slug, searchParamsResolved);
+    const customerId = await getAuthUserCustomerId();
+    const productDataPromise = getCollectionProducts(slug, searchParamsResolved, customerId);
 
     return (
         <div className="container mx-auto px-4 py-8 mt-16">
