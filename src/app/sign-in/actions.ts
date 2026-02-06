@@ -1,9 +1,11 @@
 'use server';
 
-import { login, logout } from '@/lib/swipall/rest-adapter';
+
 import { removeAuthToken, setAuthToken } from '@/lib/auth';
-import { redirect } from "next/navigation";
+import { login, logout } from '@/lib/swipall/auth';
+import { getCustomerInfo } from '@/lib/swipall/users';
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export async function loginAction(prevState: { error?: string } | undefined, formData: FormData) {
     const email = formData.get('email') as string;
@@ -15,21 +17,23 @@ export async function loginAction(prevState: { error?: string } | undefined, for
             email,
             password,
         });
+
         // Store the token in a cookie if returned
         if (result?.access_token) {
             await setAuthToken(result.access_token);
+            const userData = await getCustomerInfo({ useAuthToken: true });
             revalidatePath('/', 'layout');
-
+            const user = { ...result.user, ...userData };
             // Return user data to be stored in localStorage from client
-            return { 
+            return {
                 success: true,
-                user: result.user,
+                user,
                 redirectTo: (redirectTo?.startsWith('/') && !redirectTo.startsWith('//')) ? redirectTo : '/'
             };
         } else {
             return { error: 'No se recibió token de autenticación' };
         }
-    } catch (error: unknown) {        
+    } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Correo electrónico o contraseña inválidos';
         return { error: message };
     }

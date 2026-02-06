@@ -16,7 +16,13 @@ export interface AddressInterface {
 
 export interface CustomerInfoInterface {
     id: string;
+    business_name: string;
+    mobile: string;
+    email: string;
+    extra_fields: any[];
+    properties: any[];
     address: AddressInterface
+    price_list?: string;
 }
 
 export interface OrderInterface {
