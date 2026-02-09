@@ -160,7 +160,7 @@ Este es un bloque **contenedor** que agrupa múltiples items tipo banner que se 
 
 ---
 
-### 4.1️⃣ Items del Slider - Banner Completo
+### 4.1 Items del Slider - Banner Completo
 
 **Slug:** Personalizado | **Parent:** `ecommerce-home-banner-slider-main` | **Ordering:** 1, 2, 3...
 
@@ -196,7 +196,7 @@ Reutiliza la estructura de `home-banner` pero como child del slider:
 
 ---
 
-### 4.2️⃣ Items del Slider - Imagen Simple
+### 4.2 Items del Slider - Imagen Simple
 
 **Slug:** Personalizado | **Parent:** `ecommerce-home-banner-slider-main` | **Ordering:** 1, 2, 3...
 
