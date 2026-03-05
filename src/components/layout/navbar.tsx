@@ -15,14 +15,17 @@ export function Navbar() {
                 <div className="flex items-center justify-between h-16">
                     <div className="flex flex-row-reverse md:flex-row items-center gap-8">
                         <Link href="/" className="text-xl font-bold">
-                            <Image src="/swipall-icon.svg" alt="Swipall" width={40} height={27} className="h-6 w-auto dark:invert" />
+                            <Image src="/hanny-pulido logo-black.svg" alt="Hanny Pulido Cosméticos" width={40} height={27} className="w-40 dark:hidden" />
+                            <Image src="/hanny-pulido logo-white.svg" alt="Hanny Pulido Cosméticos" width={40} height={27} className="w-40 hidden dark:flex" />
                         </Link>
-                        <Suspense>
-                            <NavbarCollections />
-                        </Suspense>
+                        <div className="py-2 border-t flex md:hidden">
+                            <Suspense>
+                                <NavbarCollections />
+                            </Suspense>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="hidden lg:flex">
+                    <div className="flex items-center gap-4 w-full pl-8 justify-end">
+                        <div className="hidden lg:flex w-full">
                             <Suspense fallback={<SearchInputSkeleton />}>
                                 <SearchInput />
                             </Suspense>
@@ -35,6 +38,13 @@ export function Navbar() {
                     </div>
                 </div>
             </div>
+            <div className="py-2 border-t hidden md:flex">
+                <div className="container mx-auto">
+                    <Suspense>
+                        <NavbarCollections />
+                    </Suspense>
+                </div>
+            </div>
             <div className="md:hidden container mx-auto border-t border-muted bg-background py-2">
                 <div className="flex md:hidden ">
                     <Suspense fallback={<SearchInputSkeleton />}>
@@ -44,7 +54,7 @@ export function Navbar() {
                         <Suspense>
                             <NavbarCollections />
                         </Suspense>
-                    </nav> 
+                    </nav>
                 </div>
             </div>
         </header>

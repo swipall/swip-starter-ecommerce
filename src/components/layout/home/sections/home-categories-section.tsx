@@ -33,7 +33,7 @@ export function HomeCategoriesSection({ post }: HomeCategoriesSectionProps) {
         <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
                 {post.title && (
-                    <h2 className="text-3xl md:text-4xl font-bold mb-8 hidden">
+                    <h2 className="text-2xl md:text-2xl font-bold mb-8 hidden uppercase">
                         {post.title}
                     </h2>
                 )}

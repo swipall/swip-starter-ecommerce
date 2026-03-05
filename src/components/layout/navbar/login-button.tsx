@@ -16,39 +16,41 @@ export function LoginButton({ isLoggedIn, ...props }: LoginButtonProps) {
 
     return (
         <div>
-            <div className="hidden">
-                <button className=" md:block" {...props} aria-disabled={isPending}
-                onClick={() => {
-                    if (isLoggedIn) {
-                        startTransition(async () => {
-                            // Clear user from localStorage
-                            removeAuthUser();
-                            // Call logout action
-                            await logoutAction();
-                        })
-                    } else {
-                        router.push('/sign-in')
-                    }
-                }}>
-                {isLoggedIn ? 'Cerrar sesión' : 'Iniciar sesión'}
-            </button>
+            <div className="hidden md:block">
+                <button className="" {...props} aria-disabled={isPending}
+                    onClick={() => {
+                        if (isLoggedIn) {
+                            startTransition(async () => {
+                                // Clear user from localStorage
+                                removeAuthUser();
+                                // Call logout action
+                                await logoutAction();
+                            })
+                        } else {
+                            router.push('/sign-in')
+                        }
+                    }}>
+                    {isLoggedIn ? 'Cerrar sesión' : 'Iniciar sesión'}
+                </button>
             </div>
-            
-            <button className="flex md:hidden" {...props} aria-disabled={isPending}
-                onClick={() => {
-                    if (isLoggedIn) {
-                        startTransition(async () => {
-                            // Clear user from localStorage
-                            removeAuthUser();
-                            // Call logout action
-                            await logoutAction();
-                        })
-                    } else {
-                        router.push('/sign-in')
-                    }
-                }}>
-            {isLoggedIn ? 'Cerrar sesión' : <User />}
-        </button>
+
+            <div className="flex md:hidden">
+                <button  {...props} aria-disabled={isPending}
+                    onClick={() => {
+                        if (isLoggedIn) {
+                            startTransition(async () => {
+                                // Clear user from localStorage
+                                removeAuthUser();
+                                // Call logout action
+                                await logoutAction();
+                            })
+                        } else {
+                            router.push('/sign-in')
+                        }
+                    }}>
+                    {isLoggedIn ? 'Cerrar sesión' : <User />}
+                </button>
+            </div>
         </div>
 
     )
