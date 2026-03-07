@@ -1,8 +1,8 @@
-import type {Metadata} from 'next';
-import {Cart} from "@/app/cart/cart";
-import {Suspense} from "react";
-import {CartSkeleton} from "@/components/shared/skeletons/cart-skeleton";
-import {noIndexRobots} from '@/lib/metadata';
+import type { Metadata } from 'next';
+import { Cart } from "@/app/cart/cart";
+import { Suspense } from "react";
+import { CartSkeleton } from "@/components/shared/skeletons/cart-skeleton";
+import { noIndexRobots } from '@/lib/metadata';
 
 export const metadata: Metadata = {
     title: 'Carrito de compras',
@@ -16,7 +16,7 @@ export default function CartPage(_props: PageProps<'/cart'>) {
             <h1 className="text-3xl font-bold mb-8">Carrito de compras</h1>
 
             <Suspense fallback={<CartSkeleton />}>
-                <Cart/>
+                <Cart />
             </Suspense>
         </div>
     );
