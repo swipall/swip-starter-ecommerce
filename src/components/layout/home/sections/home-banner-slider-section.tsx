@@ -151,7 +151,7 @@ function BannerSliderItemSimple({ item }: { item: CmsPost }) {
     if (item.link) {
         return (
             <Link href={item.link}>
-                <div className="relative w-full aspect-[21/9] md:aspect-[21/7] lg:aspect-[21/6] cursor-pointer group">
+                <div className="relative w-full aspect-[21/9] md:aspect-[21/7] lg:aspect-[16/6] cursor-pointer group">
                     <Image
                         src={item.featured_image}
                         alt="Banner"
@@ -167,7 +167,7 @@ function BannerSliderItemSimple({ item }: { item: CmsPost }) {
 
     // Sin link, solo la imagen
     return (
-        <div className="relative w-full aspect-[21/9] md:aspect-[21/7] lg:aspect-[21/6]">
+        <div className="relative w-full aspect-[21/9] md:aspect-[21/7] lg:aspect-[16/6]">
             <Image
                 src={item.featured_image}
                 alt="Banner"

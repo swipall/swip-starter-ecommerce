@@ -147,7 +147,7 @@ export function LoginForm({redirectTo}: LoginFormProps) {
                                 {serverError}
                             </div>
                         )}
-                        <Button type="submit" className="w-full" disabled={isPending}>
+                        <Button type="submit" className="w-full bg-pink-400 hover:bg-pink-600 dark:bg-pink-900 dark:text-white  hover:bg-pink-600 font-bold" disabled={isPending}>
                             {isPending ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                         </Button>
                     </CardContent>

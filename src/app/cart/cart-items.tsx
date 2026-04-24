@@ -16,7 +16,7 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
                     <p className="text-muted-foreground mb-8">
                         Añade algunos artículos a tu carrito para comenzar
                     </p>
-                    <Button asChild>
+                    <Button className='bg-pink-400 hover:bg-pink-600 dark:bg-pink-900 dark:text-white  font-bold hover:bg-pink-600' asChild>
                         <Link href="/">Continuar comprando</Link>
                     </Button>
                 </div>
@@ -31,7 +31,7 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
                 return (
                     <div
                         key={line.id}
-                        className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg bg-card"
+                        className="flex flex-col flex-row gap-4 p-4 border rounded-lg bg-card"
                     >
                         {line.item.featured_image && (
                             <div className="flex-shrink-0">
@@ -40,7 +40,7 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
                                     alt={line.item.name}
                                     width={120}
                                     height={120}
-                                    className="rounded-md object-cover w-full sm:w-[120px] h-[120px]"
+                                    className="rounded-md object-cover w-12 h-12 sm:w-[120px] h-[120px]"
                                 />
                             </div>
                         )}

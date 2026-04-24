@@ -3,7 +3,6 @@ import { searchProducts } from "@/lib/swipall/rest-adapter";
 import { ProductKind } from "@/lib/swipall/types/types";
 import type { CmsPost } from "@/lib/swipall/types/types";
 import { parsePostBody } from "../home-section-types";
-import { getAuthUserCustomerId } from '@/lib/auth';
 
 interface HomeProductsByCategoryBody {
     category_slug?: string;
@@ -32,13 +31,12 @@ export async function HomeProductsByCategorySection({ post }: HomeProductsByCate
         return null;
     }
 
-    const customerId = await getAuthUserCustomerId();
     const result = await searchProducts({
         limit,
         offset: 0,
         ordering,
         taxonomies__slug__and: categorySlug,
-    }, customerId);
+    });
 
     const products = result.results.filter((product) => product.kind !== ProductKind.Service);
 

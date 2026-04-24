@@ -60,7 +60,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
     return (
         <html lang="en" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+                className={`${geistSans.variable} ${geistMono.variable} antialiased bg-muted/50 flex flex-col min-h-screen`}
             >
                 <ThemeProvider>
                     <Navbar />
