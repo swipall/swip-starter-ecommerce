@@ -44,8 +44,9 @@ export async function Footer() {
                         </p>
                     </div>
 
-                    <div>
+                    {/* <div>
                         <p className="text-sm font-semibold mb-4">Categorías</p>
+                    
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             {collections.results.map((collection: TaxonomyInterface) => (
                                 <li key={collection.id}>
@@ -58,7 +59,7 @@ export async function Footer() {
                                 </li>
                             ))}
                         </ul>
-                    </div>
+                    </div> */}
 
                     <div>
                         <h4 className="text-sm font-semibold mb-4">Vendure</h4>

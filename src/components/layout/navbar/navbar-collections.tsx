@@ -22,7 +22,7 @@ export async function NavbarCollections() {
     return (
         <NavigationMenu>
             <NavigationMenuList>
-                {taxonomies.results.map((collection: CmsPost) => (
+                {(taxonomies?.results ?? []).map((collection: CmsPost) => (
                     <NavigationMenuItem key={collection.slug}>
                         <NavbarLink href={redirectUrl(collection)}>
                             {collection.title}
