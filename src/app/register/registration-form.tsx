@@ -490,7 +490,7 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                             </div>
                         )}
 
-                        <Button type="submit" className="w-full" disabled={isPending}>
+                        <Button type="submit" className="w-full bg-pink-400 hover:bg-pink-600 dark:bg-pink-900 dark:text-white  hover:bg-pink-600 dark:bg-pink-900 dark:text-white font-bold" disabled={isPending}>
                             {isPending ? 'Creando cuenta...' : 'Crear Cuenta'}
                         </Button>
                     </CardContent>

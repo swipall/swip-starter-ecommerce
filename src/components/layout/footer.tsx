@@ -11,7 +11,7 @@ async function Copyright() {
 
     return (
         <div>
-            © {new Date().getFullYear()} Vendure Store. All rights reserved.
+            © {new Date().getFullYear()} Hanny Pulido Cosméticos. Todos los derechos reservados.
         </div>
     )
 }

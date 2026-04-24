@@ -123,16 +123,16 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
 
     return (
         <>
-            <div className="container mx-auto px-4 py-8 mt-16">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            <div className="container mx-auto px-4 py-8 mt-[118px]">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
                     {/* Left Column: Image Carousel */}
-                    <div className="lg:sticky lg:top-20 lg:self-start">
+                    <div className="lg:sticky lg:top-20 lg:self-start col-span-2 pr-8">
                         <ProductImageCarousel images={product.featured_image ? [product.featured_image] : []} />
                     </div>
 
                     {/* Right Column: Product Info */}
-                    <div>
-                        <h1 className="text-2xl font-bold mb-4">{product.name}</h1>
+                    <div className=''>
+                        <h1 className="text-2xl font-normal mb-2">{product.name}</h1>
                         {product.description && (
                             <p className="text-muted-foreground mb-6">{product.description}</p>
                         )}
@@ -142,7 +142,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
             </div>
 
             {/* Product Benefits Section */}
-            <section className="py-16 bg-muted/30 mt-12">
+            <section className="py-16 bg-muted/30 mt-12 hidden">
                 <div className="container mx-auto px-4">
                     <h2 className="text-2xl font-bold text-center mb-8">Por qué elegirnos</h2>
                     <div className="grid md:grid-cols-3 gap-8 text-center">
@@ -178,7 +178,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
             </section>
 
             {/* Store FAQ Section */}
-            <section className="py-16 bg-muted/30">
+            <section className="py-16 bg-muted/30 hidden">
                 <div className="container mx-auto px-4 max-w-3xl">
                     <h2 className="text-2xl font-bold text-center mb-8">Preguntas Frecuentes</h2>
                     <Accordion type="single" collapsible className="w-full">

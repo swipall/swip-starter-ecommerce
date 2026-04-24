@@ -82,7 +82,7 @@ export default async function CollectionPage({ params, searchParams }: PageProps
     const productDataPromise = getCollectionProducts(slug, searchParamsResolved, customerId);
 
     return (
-        <div className="container mx-auto px-4 py-8 mt-16">
+        <div className="mt-[118px]mt-16">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Filters Sidebar */}
                 <aside className="lg:col-span-1">

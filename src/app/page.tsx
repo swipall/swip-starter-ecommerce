@@ -4,17 +4,17 @@ import {SITE_NAME, SITE_URL, buildCanonicalUrl} from "@/lib/metadata";
 
 export const metadata: Metadata = {
     title: {
-        absolute: `${SITE_NAME} - Your One-Stop Shop`,
+        absolute: `${SITE_NAME} - Distribuidores de Cosméticos Originales.`,
     },
     description:
-        "Discover high-quality products at competitive prices. Shop now for the best deals on electronics, fashion, home goods, and more.",
+        "Distribuidores de Cosméticos Originales. Las marcas más solicitadas, con novedades semanales y practicidad para tus pedidos.",
     alternates: {
         canonical: buildCanonicalUrl("/"),
     },
     openGraph: {
-        title: `${SITE_NAME} - Your One-Stop Shop`,
+        title: `${SITE_NAME} - Distribuidores de Cosméticos Originales.`,
         description:
-            "Discover high-quality products at competitive prices. Shop now for the best deals.",
+            "Las marcas más solicitadas, con novedades semanales y practicidad para tus pedidos.",
         type: "website",
         url: SITE_URL,
     },

@@ -63,7 +63,7 @@ export function ForgotPasswordForm() {
                 </CardHeader>
                 <CardFooter>
                     <Link href="/sign-in">
-                        <Button variant="outline" className="w-full">
+                        <Button variant="outline" className="w-full bg-pink-400 hover:bg-pink-600 dark:bg-pink-900 dark:text-white  hover:bg-pink-600 font-bold">
                             Volver a Iniciar Sesión
                         </Button>
                     </Link>
@@ -109,7 +109,7 @@ export function ForgotPasswordForm() {
                         )}
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4 mt-4">
-                        <Button type="submit" className="w-full" disabled={isPending}>
+                        <Button type="submit" className="w-full bg-pink-400 hover:bg-pink-600 dark:bg-pink-900 dark:text-white  hover:bg-pink-600 font-bold" disabled={isPending}>
                             {isPending ? 'Enviando...' : 'Recuperar contraseña'}
                         </Button>
                         <Link

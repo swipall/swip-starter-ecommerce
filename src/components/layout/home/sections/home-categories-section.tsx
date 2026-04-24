@@ -33,18 +33,18 @@ export function HomeCategoriesSection({ post }: HomeCategoriesSectionProps) {
         <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
                 {post.title && (
-                    <h2 className="text-3xl md:text-4xl font-bold mb-8">
+                    <h2 className="text-2xl md:text-2xl font-bold mb-8 hidden uppercase">
                         {post.title}
                     </h2>
                 )}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
                     {items.map((item) => {
                         const label = item.title ?? humanizeSlug(item.slug);
                         return (
                             <Link
                                 key={item.slug}
                                 href={`/collection/${item.slug}`}
-                                className="group rounded-2xl border bg-background/60 hover:bg-background transition-colors overflow-hidden"
+                                className="group rounded-2xl bg-background/60 hover:bg-background transition-colors overflow-hidden shadow-xs"
                             >
                                 <div className="relative aspect-square overflow-hidden">
                                     {item.image ? (
@@ -62,7 +62,7 @@ export function HomeCategoriesSection({ post }: HomeCategoriesSectionProps) {
                                     )}
                                 </div>
                                 <div className="p-4 text-center">
-                                    <p className="text-sm font-medium">{label}</p>
+                                    <p className="text-md font-medium">{label}</p>
                                 </div>
                             </Link>
                         );

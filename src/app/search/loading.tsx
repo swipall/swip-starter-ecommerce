@@ -3,9 +3,9 @@ import { SearchResultsSkeleton } from '@/components/shared/skeletons/search-resu
 
 export default function SearchLoading() {
     return (
-        <div className="container mx-auto px-4 py-8 mt-16">
+        <div className="container mx-auto px-4 py-8 mt-[118px]">
             <SearchTermSkeleton />
-            <SearchResultsSkeleton />
+            <SearchResultsSkeleton /> 
         </div>
     );
 }
