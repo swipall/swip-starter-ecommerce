@@ -151,7 +151,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                         <div className='mb-8 pb-8'>
                             <h2 className="text-2xl font-bold text-center mb-8">Por qué elegirnos</h2>
                         </div>
-                        <div className="grid md:grid-cols-3 gap-8 text-center">
+                        <div className="grid md:grid-cols-2 gap-8 text-center">
                             <div className="space-y-3">
                                 <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
                                     <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
