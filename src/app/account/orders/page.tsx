@@ -38,16 +38,22 @@ export default async function OrdersPage(props: PageProps<'/account/orders'>) {
     const currentPage = parseInt(Array.isArray(pageParam) ? pageParam[0] : pageParam || '1', 10);
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-    const result = await getCustomerOrders(
-        {
-            limit: ITEMS_PER_PAGE,
-            offset,
-            kind__in: 'order,requested',
-        },
-        { useAuthToken: true }
-    );
-    console.log(result);
-    
+    let result;
+    try {
+        result = await getCustomerOrders(
+            {
+                limit: ITEMS_PER_PAGE,
+                offset,
+                kind__in: 'order,requested',
+            },
+            { useAuthToken: true }
+        );
+    } catch (error: any) {
+        if (error?.status === 401) {
+            redirect('/sign-in');
+        }
+        throw error;
+    }
 
     const orders = result.results || [];
     const totalItems = result.count || 0;

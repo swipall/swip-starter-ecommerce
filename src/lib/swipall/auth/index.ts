@@ -5,6 +5,10 @@ export async function login(credentials: LoginInput): Promise<LoginResponse> {
     return post<LoginResponse>('/api/v1/shop/login/', credentials);
 }
 
+export async function refreshAccessToken(refreshToken: string): Promise<{ access: string }> {
+    return post<{ access: string }>('/api/v1/auth/token/refresh/', { refresh: refreshToken });
+}
+
 export async function logout(options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
     return post<InterfaceApiDetailResponse<{ success: boolean }>>('/auth/logout', undefined, { useAuthToken: options?.useAuthToken });
 }

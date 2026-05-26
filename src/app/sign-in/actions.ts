@@ -1,7 +1,7 @@
 'use server';
 
 
-import { removeAuthToken, setAuthToken } from '@/lib/auth';
+import { removeAuthToken, setAuthToken, setRefreshToken } from '@/lib/auth';
 import { login, logout } from '@/lib/swipall/auth';
 import { getCustomerInfo } from '@/lib/swipall/users';
 import { revalidatePath } from "next/cache";
@@ -21,6 +21,9 @@ export async function loginAction(prevState: { error?: string } | undefined, for
         // Store the token in a cookie if returned
         if (result?.access_token) {
             await setAuthToken(result.access_token);
+            if (result.refresh_token) {
+                await setRefreshToken(result.refresh_token);
+            }
             const userData = await getCustomerInfo({ useAuthToken: true });
             revalidatePath('/', 'layout');
             const user = { ...result.user, ...userData };

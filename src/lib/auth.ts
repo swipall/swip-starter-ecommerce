@@ -2,6 +2,7 @@ import {cookies} from 'next/headers';
 import { getCustomerInfo } from './swipall/users';
 
 const AUTH_TOKEN_COOKIE = process.env.SWIPALL_AUTH_TOKEN_COOKIE || 'swipall-auth-token';
+const REFRESH_TOKEN_COOKIE = process.env.SWIPALL_REFRESH_TOKEN_COOKIE || 'swipall-refresh-token';
 
 /**
  * Store JWT token in cookies for server-side authentication
@@ -24,12 +25,28 @@ export async function getAuthToken(): Promise<string | undefined> {
     return cookieStore.get(AUTH_TOKEN_COOKIE)?.value;
 }
 
+export async function setRefreshToken(token: string) {
+    const cookieStore = await cookies();
+    cookieStore.set(REFRESH_TOKEN_COOKIE, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+    });
+}
+
+export async function getRefreshToken(): Promise<string | undefined> {
+    const cookieStore = await cookies();
+    return cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
+}
+
 /**
  * Remove JWT token from cookies
  */
 export async function removeAuthToken() {
     const cookieStore = await cookies();
     cookieStore.delete(AUTH_TOKEN_COOKIE);
+    cookieStore.delete(REFRESH_TOKEN_COOKIE);
 }
 
 /**
