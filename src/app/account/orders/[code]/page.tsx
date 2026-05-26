@@ -53,7 +53,7 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">Orden {order.folio}</h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-foreground mt-1">
                             {formatDate(order.created_at)}
                         </p>
                     </div>
@@ -73,7 +73,7 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                                 {order.items.results.map((item) => (
                                     <div key={item.id} className="flex gap-4">
                                         <div
-                                            className="relative h-20 w-20 rounded-md overflow-hidden bg-gray-100 shrink-0">
+                                            className="relative h-20 w-20 rounded-md overflow-hidden bg-muted shrink-0">
                                             {item.item.featured_image && (
                                                 <Image
                                                     src={item.item.featured_image}
@@ -87,7 +87,7 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                                             <p className="font-medium">
                                                 {item.item.name}
                                             </p>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="text-sm text-foreground">
                                                 SKU: {item.item.sku}
                                             </p>
                                             <ProductExtraMaterialsComponent item={item} />
@@ -96,7 +96,7 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                                             <p className="font-medium">
                                                 <Price value={parseFloat(item.total)} currencyCode="MXN" />
                                             </p>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="text-sm text-foreground">
                                                 Cantidad: {item.quantity}
                                             </p>
                                         </div>
@@ -114,18 +114,18 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                         <CardContent>
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Subtotal</span>
+                                    <span className="text-foreground">Subtotal</span>
                                     <span><Price value={parseFloat(order.sub_total)} currencyCode="MXN" /></span>
                                 </div>
                                 {parseFloat(order.shipment_total) > 0 && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Envío</span>
+                                        <span className="text-foreground">Envío</span>
                                         <span><Price value={parseFloat(order.shipment_total)} currencyCode="MXN" /></span>
                                     </div>
                                 )}
                                 {parseFloat(order.discount_total) > 0 && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">
+                                        <span className="text-foreground">
                                             Descuento
                                         </span>
                                         <span className="text-green-600">
@@ -135,7 +135,7 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                                 )}
                                 {parseFloat(order.tax_total) > 0 && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Impuestos</span>
+                                        <span className="text-foreground">Impuestos</span>
                                         <span><Price value={parseFloat(order.tax_total)} currencyCode="MXN" /></span>
                                     </div>
                                 )}
@@ -174,21 +174,21 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                                     <p className="mt-2">Tel: {order.shipment_address.mobile}</p>
                                 )}
                                 {order.shipment_address.references && (
-                                    <p className="mt-2 text-xs text-muted-foreground">{order.shipment_address.references}</p>
+                                    <p className="mt-2 text-xs text-foreground">{order.shipment_address.references}</p>
                                 )}
                             </CardContent>
                         </Card>
                     )}
 
                     {/* Billing Address */}
-                    {order.shipment_address && (
+                    {order.shipment_address && order.kind !== "requested" && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Información de Pago</CardTitle>
                             </CardHeader>
                             <CardContent className="text-sm">
-                                <p className="text-muted-foreground">Tipo de pago: <PaymentTypeTextComponent paymentType={order.payment_type} /></p>
-                                <p className="text-muted-foreground mt-2">Estado: <OrderIsPaidComponent isPaid={order.is_paid} /></p>
+                                <p className="text-foreground ">Tipo de pago: <PaymentTypeTextComponent paymentType={order.payment_type} kind={order.kind} /></p>
+                                <p className="text-foreground  mt-2">Estado: <OrderIsPaidComponent isPaid={order.is_paid} kind={order.kind} /></p>
                             </CardContent>
                         </Card>
                     )}
@@ -210,7 +210,7 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                                     <span className="font-medium">Recoger en Tienda</span>
                                 </div>
                             )}
-                            <p className="text-muted-foreground mt-2">Estado de pedido: <OrderStatusComponent status={order.status} /></p>
+                            <p className="text-foreground mt-2">Estado de pedido: <OrderStatusComponent status={order.status} kind={order.kind} /></p>
                         </CardContent>
                     </Card>
                 </div>

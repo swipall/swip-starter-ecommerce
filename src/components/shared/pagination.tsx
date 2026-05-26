@@ -71,7 +71,7 @@ export function Pagination({currentPage, totalPages}: PaginationProps) {
             {pages.map((page, index) => {
                 if (page === '...') {
                     return (
-                        <span key={`dots-${index}`} className="px-2 text-muted-foreground">
+                        <span key={`dots-${index}`} className="px-2 text-foreground">
                             ...
                         </span>
                     );

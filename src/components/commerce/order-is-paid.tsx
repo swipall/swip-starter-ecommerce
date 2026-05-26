@@ -1,6 +1,7 @@
 import { OrderStatusPaid } from "@/app/account/orders/types";
 
-export default function OrderIsPaidComponent({ isPaid, className = "font-medium text-foreground" }: { isPaid: OrderStatusPaid, className?: string }) {
+export default function OrderIsPaidComponent({ isPaid, kind, className = "font-medium text-foreground" }: { isPaid: OrderStatusPaid; kind?: string; className?: string }) {
+    if (kind === "requested") return null;
     const orderPaidText = (isPaid: OrderStatusPaid): string => {
     switch (isPaid) {
         case OrderStatusPaid.paid:

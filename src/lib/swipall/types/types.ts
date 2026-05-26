@@ -235,6 +235,7 @@ export interface TaxonomyInterface {
     icon?: string;
     color?: string;
     imagen?: string;
+    products_count?: number;
 }
 
 // ============================================================================

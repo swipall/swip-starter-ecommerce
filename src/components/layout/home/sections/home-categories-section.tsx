@@ -56,7 +56,7 @@ export function HomeCategoriesSection({ post }: HomeCategoriesSectionProps) {
                                             sizes="(min-width: 768px) 25vw, 50vw"
                                         />
                                     ) : (
-                                        <div className="h-full w-full flex items-center justify-center bg-muted text-muted-foreground text-sm">
+                                        <div className="h-full w-full flex items-center justify-center bg-muted text-foreground text-sm">
                                             {label}
                                         </div>
                                     )}

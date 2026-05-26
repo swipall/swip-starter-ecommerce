@@ -1,18 +1,17 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { searchProducts, getCollection } from '@/lib/swipall/rest-adapter';
-import { ProductGrid } from '@/components/commerce/product-grid';
 import { FacetFilters } from '@/components/commerce/facet-filters';
+import { ProductGrid } from '@/components/commerce/product-grid';
 import { ProductGridSkeleton } from '@/components/shared/product-grid-skeleton';
-import { buildSearchInput, getCurrentPage } from '@/lib/search-helpers';
-import { cacheLife, cacheTag } from 'next/cache';
+import { getAuthUserCustomerId } from '@/lib/auth';
 import {
-    SITE_NAME,
-    truncateDescription,
     buildCanonicalUrl,
     buildOgImages,
+    SITE_NAME
 } from '@/lib/metadata';
-import { getAuthUserCustomerId } from '@/lib/auth';
+import { buildSearchInput, getCurrentPage } from '@/lib/search-helpers';
+import { getTaxonomies, searchProducts } from '@/lib/swipall/rest-adapter';
+import type { Metadata } from 'next';
+import { cacheLife, cacheTag } from 'next/cache';
+import { Suspense } from 'react';
 
 async function getCollectionProducts(slug: string, searchParams: { [key: string]: string | string[] | undefined }, customerId?: string) {
     'use cache';
@@ -28,13 +27,28 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
     return results;
 }
 
+async function getTaxonomyProductCounts(taxonomySlugs: string[]) {
+    'use cache';
+    cacheLife('hours');
+
+    const counts = await Promise.all(
+        taxonomySlugs.map(async (slug) => {
+            const result = await searchProducts({ taxonomies__slug__and: slug, limit: 1 });
+            return [slug, result.count] as [string, number];
+        })
+    );
+    return Object.fromEntries(counts);
+}
+
 async function getCollectionMetadata(slug: string) {
     'use cache';
     cacheLife('hours');
     cacheTag(`collection-meta-${slug}`);
 
     // return await getCollection(slug);
-    return { data: {name: '', slug: slug }}
+    // const taxonomies = await getTaxonomies({ parent__slug: slug });
+    // console.log('Taxonomies:', taxonomies);
+    return { data: { name: '', slug: slug } }
 }
 
 export async function generateMetadata({
@@ -80,18 +94,17 @@ export default async function CollectionPage({ params, searchParams }: PageProps
 
     const customerId = await getAuthUserCustomerId();
     const productDataPromise = getCollectionProducts(slug, searchParamsResolved, customerId);
-
+    const taxonomies = await getTaxonomies({ parent__slug: slug });
+    const taxonomyCounts = await getTaxonomyProductCounts(taxonomies.results.map(t => t.slug));
     return (
-        <div className="container mx-auto px-4 py-8 mt-16">
+        <div className="container mx-auto px-4 py-8 mt-[100] sm:mt-16">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Filters Sidebar */}
                 <aside className="lg:col-span-1">
+                    <div className='font-bold text-sm text-primary uppercase'>Categorías</div>
                     <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
-                        <FacetFilters productDataPromise={productDataPromise} />
+                        <FacetFilters taxonomies={taxonomies.results} searchParams={searchParamsResolved} counts={taxonomyCounts} />
                     </Suspense>
                 </aside>
-
-                {/* Product Grid */}
                 <div className="lg:col-span-3">
                     <Suspense fallback={<ProductGridSkeleton />}>
                         <ProductGrid productDataPromise={productDataPromise} currentPage={page} take={12} />

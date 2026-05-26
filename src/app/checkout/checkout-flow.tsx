@@ -87,7 +87,7 @@ export default function CheckoutFlow() {
                                         ? 'bg-green-500 text-white'
                                         : currentStep === 'delivery'
                                             ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground'
+                                            : 'bg-muted text-foreground'
                                     }`}>
                                     {completedSteps.has('delivery') ? '✓' : getStepNumber('delivery')}
                                 </div>
@@ -116,7 +116,7 @@ export default function CheckoutFlow() {
                                             ? 'bg-green-500 text-white'
                                             : currentStep === 'shipping'
                                                 ? 'bg-primary text-primary-foreground'
-                                                : 'bg-muted text-muted-foreground'
+                                                : 'bg-muted text-foreground'
                                         }`}>
                                         {completedSteps.has('shipping') ? '✓' : getStepNumber('shipping')}
                                     </div>
@@ -145,7 +145,7 @@ export default function CheckoutFlow() {
                                         ? 'bg-green-500 text-white'
                                         : currentStep === 'payment'
                                             ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground'
+                                            : 'bg-muted text-foreground'
                                     }`}>
                                     {completedSteps.has('payment') ? '✓' : getStepNumber('payment')}
                                 </div>
@@ -171,7 +171,7 @@ export default function CheckoutFlow() {
                             <div className="flex items-center gap-3">
                                 <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${currentStep === 'review'
                                         ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted text-muted-foreground'
+                                        : 'bg-muted text-foreground'
                                     }`}>
                                     {getStepNumber('review')}
                                 </div>

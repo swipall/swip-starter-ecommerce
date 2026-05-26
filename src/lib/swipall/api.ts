@@ -124,6 +124,14 @@ export async function remove<TResult>(
     return request<TResult>('DELETE', endpoint, undefined, options);
 }
 
+function emptyDataFor<TResult>(endpoint: string): TResult {
+    const listPatterns = ['/items', '/search', '/posts', '/taxonomies', '/addresses', '/shipping-methods', '/payment-methods'];
+    if (listPatterns.some(p => endpoint.includes(p))) {
+        return { results: [], count: 0, next: null, previous: null } as TResult;
+    }
+    return {} as TResult;
+}
+
 /**
  * Generic request function for Swipall REST API
  */
@@ -184,51 +192,21 @@ async function request<TResult>(
     try {
         response = await fetch(url, requestInit);
     } catch (fetchError: any) {
-        console.error(`[Swipall API] Network error for ${method} ${endpoint}:`, {
-            message: fetchError?.message,
-            cause: fetchError?.cause,
-        });
-
-        // Return appropriate empty data based on endpoint pattern
-        let emptyData: TResult;
-        if (endpoint.includes('/search') ||
-            endpoint.includes('/posts') ||
-            endpoint.includes('/taxonomies') ||
-            endpoint.includes('/addresses') ||
-            endpoint.includes('/shipping-methods') ||
-            endpoint.includes('/payment-methods') ||
-            endpoint.includes('/taxonomies')) {
-            emptyData = {
-                results: [],
-                count: 0,
-                next: null,
-                previous: null,
-            } as TResult;
-        } else {
-            emptyData = {} as TResult;
-        }
-
-        return emptyData;
+        console.warn(`[Swipall API] Network error for ${method} ${endpoint}:`, fetchError?.message);
+        return emptyDataFor<TResult>(endpoint);
     }
 
     let result: SwipallResponse<TResult>;
     try {
-        result = await response.json();
+        const text = await response.text();
+        if (!text || !text.trim()) {
+            return emptyDataFor<TResult>(endpoint);
+        }
+        result = JSON.parse(text);
     } catch (parseError: any) {
-        console.error(`[Swipall API] Failed to parse JSON response for ${method} ${endpoint}:`, {
-            status: response.status,
-            statusText: response.statusText,
-            message: parseError?.message,
-        });
-
-        const errorMessage = `Failed to parse API response (HTTP ${response.status}) for ${method} ${endpoint}`;
-        throw new SwipallAPIError({
-            status: response.status,
-            method,
-            endpoint,
-            message: errorMessage,
-            errorData: { statusText: response.statusText },
-        });
+        if (parseError instanceof SwipallAPIError) throw parseError;
+        console.warn(`[Swipall API] Could not parse response for ${method} ${endpoint} (HTTP ${response.status})`);
+        return emptyDataFor<TResult>(endpoint);
     }
 
     if (!response.ok) {

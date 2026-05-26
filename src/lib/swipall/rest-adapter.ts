@@ -29,6 +29,10 @@ export type { SearchInput } from './types/types';
 // Customer/User Endpoints
 // ============================================================================
 
+export async function getCurrentCustomer(options?: { useAuthToken?: boolean }): Promise<CurrentUser> {
+    return get<CurrentUser>('/customers/me', undefined, { useAuthToken: options?.useAuthToken });
+}
+
 export async function updateCustomer(input: UpdateCustomerInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<CurrentUser>> {
     return patch<InterfaceApiDetailResponse<CurrentUser>>('/customers/me', input, { useAuthToken: options?.useAuthToken });
 }
@@ -84,8 +88,22 @@ export async function getPosts(params: any): Promise<InterfaceApiListResponse<Cm
     return get<InterfaceApiListResponse<CmsPost>>('/api/v1/cms/posts', params);
 }
 
-export async function getPostDetail(slug: string): Promise<CmsPost> {
-    return get<CmsPost>(`/api/v1/cms/post/${slug}`);
+export async function getPostDetail(slug: string): Promise<CmsPost | null> {
+    try {
+        const response = await get<any>(`/api/v1/cms/post/${slug}`);
+        if (!response) return null;
+        // Handle wrapped response { data: CmsPost }
+        if (response.data && typeof response.data === 'object' && 'slug' in response.data) {
+            return response.data as CmsPost;
+        }
+        // Handle direct response
+        if ('slug' in response) {
+            return response as CmsPost;
+        }
+        return null;
+    } catch {
+        return null;
+    }
 }
 
 // ============================================================================
@@ -255,7 +273,7 @@ export const fetchDeliveryItem = async (customerId?: string): Promise<InterfaceA
     const params: Record<string, any> = {
         limit: 1,
         offset: 0,
-        search: 'DOMICILIO',
+        search: 'ENVIO',
         kind: 'service'
     };
     if (customerId) {
@@ -307,6 +325,10 @@ export async function createMpPreference(cartId: string): Promise<MercadoPagoPre
     return put<MercadoPagoPreferenceResponse>(`/api/v1/shop/me/order/${cartId}/mp/preference/`, {}, { useAuthToken: true });
 }
 
+export async function setOrderRequested(cartId: string, paymentType: string): Promise<InterfaceApiDetailResponse<any>> {
+    return put<InterfaceApiDetailResponse<any>>(`/api/v1/shop/me/order/${cartId}/set/requested/`, { payment_type: paymentType }, { useAuthToken: true });
+}
+
 export async function validateOrderStatus(orderId: string): Promise<ShopCart | OrderDetailInterface> {
     return get<ShopCart | OrderDetailInterface>(`/api/v1/shop/me/order/${orderId}/status`, undefined, { useAuthToken: true });
 }
@@ -315,7 +337,10 @@ export async function validateOrderStatus(orderId: string): Promise<ShopCart | O
 // Order History Endpoints
 // ============================================================================
 
-export async function getCustomerOrders(params?: { limit?: number; offset?: number }, options?: { useAuthToken?: boolean }): Promise<InterfaceApiListResponse<OrderInterface>> {
+export async function getCustomerOrders(
+    params?: { limit?: number; offset?: number; kind__in?: string; status__in?: number },
+    options?: { useAuthToken?: boolean }
+): Promise<InterfaceApiListResponse<OrderInterface>> {
     return get<InterfaceApiListResponse<OrderInterface>>(`/api/v1/shop/me/orders`, params, { useAuthToken: options?.useAuthToken });
 }
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { use, useActionState } from 'react';
+import { use, useActionState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { resetPasswordAction } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +18,10 @@ export function ResetPasswordForm({ searchParams }: ResetPasswordFormProps) {
     const token = params.token || null;
 
     const [state, formAction, isPending] = useActionState(resetPasswordAction, undefined);
+
+    useEffect(() => {
+        if (state?.error) toast.error('Error', { description: state.error });
+    }, [state]);
 
     if (!token) {
         return (
@@ -71,11 +76,6 @@ export function ResetPasswordForm({ searchParams }: ResetPasswordFormProps) {
                             disabled={isPending}
                         />
                     </div>
-                    {state?.error && (
-                        <div className="text-sm text-destructive">
-                            {state.error}
-                        </div>
-                    )}
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-4">
                     <Button type="submit" className="w-full" disabled={isPending}>
@@ -83,7 +83,7 @@ export function ResetPasswordForm({ searchParams }: ResetPasswordFormProps) {
                     </Button>
                     <Link
                         href="/sign-in"
-                        className="text-sm text-center text-muted-foreground hover:text-primary"
+                        className="text-sm text-center text-foreground hover:text-primary"
                     >
                         Back to Sign In
                     </Link>

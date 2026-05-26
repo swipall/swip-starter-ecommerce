@@ -42,6 +42,8 @@ export interface OrderInterface {
     created_at: string;
     for_pickup: boolean;
     for_delivery: boolean;
+    requires_payment_validation: boolean;
+    kind: string;
 }
 
 export interface OrderItemInterface {
@@ -83,6 +85,8 @@ export interface OrderDetailInterface {
     weight: number;
     balance: string;
     payment_type: OrderPaymentType;
+    requires_payment_validation: boolean;
+    kind: string;
     shipment_address: AddressInterface | null;
     items: {
         results: OrderItemDetailInterface[];

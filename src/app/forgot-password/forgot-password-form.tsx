@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { requestPasswordResetAction } from './actions';
@@ -26,7 +27,6 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export function ForgotPasswordForm() {
     const [isPending, startTransition] = useTransition();
-    const [serverError, setServerError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
     const form = useForm<ForgotPasswordFormData>({
@@ -37,15 +37,13 @@ export function ForgotPasswordForm() {
     });
 
     const onSubmit = (data: ForgotPasswordFormData) => {
-        setServerError(null);
-
         startTransition(async () => {
             const formData = new FormData();
             formData.append('emailAddress', data.emailAddress);
 
             const result = await requestPasswordResetAction(undefined, formData);
             if (result?.error) {
-                setServerError(result.error);
+                toast.error('Error', { description: result.error });
             } else if (result?.success) {
                 setSuccess(true);
             }
@@ -102,11 +100,6 @@ export function ForgotPasswordForm() {
                             )}
                         />
 
-                        {serverError && (
-                            <div className="text-sm text-destructive mt-4">
-                                {serverError}
-                            </div>
-                        )}
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4 mt-4">
                         <Button type="submit" className="w-full" disabled={isPending}>
@@ -114,7 +107,7 @@ export function ForgotPasswordForm() {
                         </Button>
                         <Link
                             href="/sign-in"
-                            className="text-sm text-center text-muted-foreground hover:text-primary"
+                            className="text-sm text-center text-foreground hover:text-primary"
                         >
                             Volver a Iniciar Sesión
                         </Link>

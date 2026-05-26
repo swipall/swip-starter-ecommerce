@@ -7,6 +7,7 @@ import {Button} from '@/components/ui/button';
 import {Price} from '@/components/commerce/price';
 import { Order } from '@/lib/swipall/types/types';
 import { isUserAuthenticated } from './actions';
+import { toast } from 'sonner';
 
 export function OrderSummary({activeOrder}: { activeOrder: Order }) {
     const router = useRouter();
@@ -23,6 +24,7 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
                 router.push('/checkout');
             } catch (error) {
                 console.error('Error al verificar autenticación:', error);
+                toast.error('Error', { description: 'No se pudo verificar tu sesión. Intenta de nuevo.' });
             }
         });
     };
@@ -33,7 +35,7 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
 
             <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="text-foreground">Subtotal</span>
                     <span>
                         <Price value={parseFloat(activeOrder.sub_total)}/>
                     </span>
@@ -47,7 +49,7 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
                     </div>
                 )}
                 <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Impuestos</span>
+                    <span className="text-foreground">Impuestos</span>
                     <span>
                         <Price value={parseFloat(activeOrder.tax_total)}/>
                     </span>

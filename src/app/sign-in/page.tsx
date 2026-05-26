@@ -46,7 +46,7 @@ export default async function SignInPage({searchParams}: PageProps<'/sign-in'>) 
             <div className="w-full max-w-md space-y-6">
                 <div className="space-y-2 text-center">
                     <h1 className="text-3xl font-bold">Iniciar Sesión</h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-foreground">
                         Ingresa tus credenciales para acceder a tu cuenta
                     </p>
                 </div>

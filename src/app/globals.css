@@ -1,11 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@source "../**/*.{ts,tsx,js,jsx}";
+@source inline("max-w-6xl w-7xl max-w-5xl bg-yellow-400 max-w-7xl max-w-4xl max-w-screen-xl -bottom-8 -left-8 w-28 h-28  bg-accent opacity-20 opacity-30 w-40 h-40  -top-10 -right-10 bg-slate-100 ");
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-nav-background: var(--nav-background);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -47,6 +50,7 @@
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
+  --nav-background: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
@@ -81,6 +85,7 @@
 .dark {
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
+  --nav-background: oklch(0.129 0.042 264.695);
   --card: oklch(0.208 0.042 265.755);
   --card-foreground: oklch(0.984 0.003 247.858);
   --popover: oklch(0.208 0.042 265.755);
@@ -112,11 +117,39 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  svg {
+    @apply text-primary;
+  }
+  a {
+    color: var(--foreground);
+    transition: color 0.2s ease;
+  }
+  a:hover,
+  a:focus-visible {
+    color: oklch(0.78 0.155 85);
+    outline: none;
+  }
+  /* text-white/X classes are invisible in light mode — remap to muted-foreground */
+  html:not(.dark) [class*="text-white/"] {
+    color: var(--muted-foreground);
+  }
+  p, span, li, h1, h2, h3, h4, h5, h6, label, td, th, dt, dd {
+    color: inherit;
+  }
+  input, textarea, select {
+    color: var(--color-muted-foreground);
+    border-color: var(--color-border);
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--color-muted-foreground);
+    opacity: 0.7;
   }
 }

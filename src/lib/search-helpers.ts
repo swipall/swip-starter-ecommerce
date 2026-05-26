@@ -12,7 +12,6 @@ export function buildSearchInput({ searchParams, taxonomy, taxonomies__slug__and
     const offset = (page - 1) * limit;
     const sortParam = (searchParams.ordering as string) || 'name-asc';
     const searchTerm = searchParams.q as string;
-    // Map sort parameter to a simple string for REST API
     const sortMapping: Record<string, string> = {
         'name-asc': 'name_asc',
         'name-desc': 'name_desc',
@@ -20,13 +19,16 @@ export function buildSearchInput({ searchParams, taxonomy, taxonomies__slug__and
         'price-desc': 'price_desc',
     };
 
+    // URL param takes priority over the hardcoded collection slug
+    const resolvedTaxonomiesSlugAnd = (searchParams.taxonomies__slug__and as string) || taxonomies__slug__and;
+
     return {
         ...(searchTerm && { search: searchTerm }),
         ...(taxonomy && { taxonomy }),
-        ...(taxonomies__slug__and && { taxonomies__slug__and }),
+        ...(resolvedTaxonomiesSlugAnd && { taxonomies__slug__and: resolvedTaxonomiesSlugAnd }),
         limit,
         offset,
-        ordering: sortMapping[sortParam] || sortMapping['name-asc']
+        ordering: sortMapping[sortParam] || sortMapping['name-asc'],
     };
 }
 

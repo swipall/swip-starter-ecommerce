@@ -118,16 +118,16 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
                                     <Card className="p-4">
                                         <div className="leading-tight space-y-0">
                                             <p className="font-medium">{address.receiver || 'Sin nombre'}</p>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="text-sm text-foreground">
                                                 {address.address}
                                                 {address.suburb && `, ${address.suburb}`}
                                             </p>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="text-sm text-foreground">
                                                 {address.city}, {address.state} {address.postal_code}
                                             </p>
-                                            <p className="text-sm text-muted-foreground">{address.country}</p>
-                                            {address.mobile && <p className="text-sm text-muted-foreground">{address.mobile}</p>}
-                                            {address.references && <p className="text-sm text-muted-foreground">Referencias: {address.references}</p>}
+                                            <p className="text-sm text-foreground">{address.country}</p>
+                                            {address.mobile && <p className="text-sm text-foreground">{address.mobile}</p>}
+                                            {address.references && <p className="text-sm text-foreground">Referencias: {address.references}</p>}
                                         </div>
                                     </Card>
                                 </Label>

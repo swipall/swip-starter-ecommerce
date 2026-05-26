@@ -47,7 +47,7 @@ export default function CompoundMaterialsSelector({ extraMaterials, selectedMate
 
                         {selectedByTaxonomy.has(materialGroup.taxonomy) ? (
                             <div className='flex items-center justify-between border px-2 rounded-md'>
-                                <span className='text-sm font-normal text-slate-600'>
+                                <span className='text-sm font-normal text-foreground'>
                                     {selectedByTaxonomy.get(materialGroup.taxonomy)?.name}
                                 </span>
                                 <button className='py-2 text-red-600 hover:text-red-800 hover:cursor-pointer' role='button' onClick={() => handleRemove(materialGroup.taxonomy)}>Quitar</button>

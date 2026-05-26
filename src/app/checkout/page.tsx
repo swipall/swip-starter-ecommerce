@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 const defineAvailablePaymentMethods = (cart: ShopCart): PaymentMethodsInterface[] => {
     return [
         { id: 'card', label: 'Pago con Tarjeta/Mercado Pago', description: 'Paga con tarjeta de crédito o débito.', icon: 'credit-card', isEnabled: true },
-        { id: 'uponDelivery', label: 'Pago contraentrega', description: 'Paga al recibir tu pedido.', icon: 'money', isEnabled: cart.for_pickup },
+        // { id: 'uponDelivery', label: 'Pago contraentrega', description: 'Paga al recibir tu pedido.', icon: 'money', isEnabled: cart.for_pickup },
     ];
 }
 

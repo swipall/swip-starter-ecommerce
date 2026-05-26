@@ -44,48 +44,50 @@ export function HomeBannerSliderSection({
     };
 
     return (
-        <section className="relative w-full overflow-hidden bg-muted">
-            <Carousel
-                opts={{
-                    align: "start",
-                    loop: true,
-                }}
-                plugins={
-                    autoplay
-                        ? [
-                              Autoplay({
-                                  delay: duration,
-                                  stopOnInteraction: true,
-                              }),
-                          ]
-                        : []
-                }
-                className="w-full"
-            >
-                <CarouselContent>
-                    {items.map((item) => {
-                        const itemType = getItemType(item);
+        <section className="container mx-auto px-3 py-3 md:px-6 md:py-6">
+            <div className="relative w-full overflow-hidden">
+                <Carousel
+                    opts={{
+                        align: "start",
+                        loop: true,
+                    }}
+                    plugins={
+                        autoplay
+                            ? [
+                                  Autoplay({
+                                      delay: duration,
+                                      stopOnInteraction: true,
+                                  }),
+                              ]
+                            : []
+                    }
+                    className="w-full"
+                >
+                    <CarouselContent>
+                        {items.map((item) => {
+                            const itemType = getItemType(item);
 
-                        if (itemType === "banner") {
-                            return (
-                                <CarouselItem key={item.slug}>
-                                    <BannerSliderItemFull item={item} />
-                                </CarouselItem>
-                            );
-                        } else {
-                            return (
-                                <CarouselItem key={item.slug}>
-                                    <BannerSliderItemSimple item={item} />
-                                </CarouselItem>
-                            );
-                        }
-                    })}
-                </CarouselContent>
-                <div className="hidden md:block">
-                    <CarouselPrevious className="left-4 size-10" />
-                    <CarouselNext className="right-4 size-10" />
-                </div>
-            </Carousel>
+                            if (itemType === "banner") {
+                                return (
+                                    <CarouselItem key={item.slug}>
+                                        <BannerSliderItemFull item={item} />
+                                    </CarouselItem>
+                                );
+                            } else {
+                                return (
+                                    <CarouselItem key={item.slug}>
+                                        <BannerSliderItemSimple item={item} />
+                                    </CarouselItem>
+                                );
+                            }
+                        })}
+                    </CarouselContent>
+                    <div className="hidden md:block">
+                        <CarouselPrevious className="left-4 size-10" />
+                        <CarouselNext className="right-4 size-10" />
+                    </div>
+                </Carousel>
+            </div>
         </section>
     );
 }
@@ -101,14 +103,15 @@ function BannerSliderItemFull({ item }: { item: CmsPost }) {
     const buttonText = itemBody?.buttonText ?? "Ver más";
 
     return (
-        <div className="relative w-full aspect-[21/9] md:aspect-[21/7] lg:aspect-[21/6]">
+        <div className="relative w-full">
             <Image
                 src={item.featured_image}
                 alt={item.title ?? "Banner"}
-                fill
-                className="object-cover"
-                priority
+                width={0}
+                height={0}
                 sizes="100vw"
+                className="w-full h-auto block rounded-2xl"
+                priority
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
             <div className="absolute inset-0 flex items-center">
@@ -147,35 +150,31 @@ function BannerSliderItemSimple({ item }: { item: CmsPost }) {
         return null;
     }
 
-    // Si tiene link, la imagen es clickeable
     if (item.link) {
         return (
-            <Link href={item.link}>
-                <div className="relative w-full aspect-[21/9] md:aspect-[21/7] lg:aspect-[21/6] cursor-pointer group">
-                    <Image
-                        src={item.featured_image}
-                        alt="Banner"
-                        fill
-                        className="object-cover group-hover:opacity-90 transition-opacity"
-                        priority
-                        sizes="100vw"
-                    />
-                </div>
+            <Link href={item.link} className="block w-full group">
+                <Image
+                    src={item.featured_image}
+                    alt="Banner"
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    className="w-full h-auto block group-hover:opacity-90 transition-opacity"
+                    priority
+                />
             </Link>
         );
     }
 
-    // Sin link, solo la imagen
     return (
-        <div className="relative w-full aspect-[21/9] md:aspect-[21/7] lg:aspect-[21/6]">
-            <Image
-                src={item.featured_image}
-                alt="Banner"
-                fill
-                className="object-cover"
-                priority
-                sizes="100vw"
-            />
-        </div>
+        <Image
+            src={item.featured_image}
+            alt="Banner"
+            width={0}
+            height={0}
+            sizes="100vw"
+            className="w-full h-auto block rounded-2xl"
+            priority
+        />
     );
 }

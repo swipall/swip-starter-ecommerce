@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -39,6 +40,7 @@ export default function DeliveryStep({ onComplete }: DeliveryStepProps) {
       onComplete();
     } catch (error) {
       console.error('Error setting delivery options:', error);
+      toast.error('Error', { description: error instanceof Error ? error.message : 'No se pudo guardar el método de entrega' });
     } finally {
       setIsSubmitting(false);
     }
@@ -68,7 +70,7 @@ export default function DeliveryStep({ onComplete }: DeliveryStepProps) {
                           })}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground">
                     Recibirás tu pedido en la dirección especificada
                   </p>
                 </Label>
@@ -81,7 +83,7 @@ export default function DeliveryStep({ onComplete }: DeliveryStepProps) {
                   <Store className="h-5 w-5" />
                   <span className="font-medium">Recoger en tienda</span>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground">
                   Retira tu pedido en el punto de entrega
                 </p>
               </Label>

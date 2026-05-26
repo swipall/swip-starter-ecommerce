@@ -33,7 +33,7 @@ export default function OrderSummary() {
                                 <p className="text-sm font-medium line-clamp-2">
                                     {line.item.name}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-foreground">
                                     Qty: {line.quantity}
                                 </p>
                             </div>
@@ -48,7 +48,7 @@ export default function OrderSummary() {
 
                 <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Subtotal</span>
+                        <span className="text-foreground">Subtotal</span>
                         <span>
                             <Price value={Number(order.sub_total)} />
                         </span>
@@ -56,7 +56,7 @@ export default function OrderSummary() {
 
                     {order.discount_total && (
                         <div className="flex justify-between text-sm text-green-600">
-                             <span className="text-muted-foreground">Descuento</span>
+                             <span className="text-foreground">Descuento</span>
                             <span>
                                 <Price value={Number(order.discount_total)} />
                             </span>

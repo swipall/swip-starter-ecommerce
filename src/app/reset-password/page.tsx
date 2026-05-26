@@ -14,7 +14,7 @@ export default function ResetPasswordPage({searchParams}: PageProps<'/reset-pass
             <div className="max-w-md mx-auto">
                 <Suspense fallback={
                     <div className="flex justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        <Loader2 className="h-8 w-8 animate-spin text-foreground" />
                     </div>
                 }>
                     <ResetPasswordForm searchParams={searchParams} />

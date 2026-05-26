@@ -3,7 +3,6 @@ import { searchProducts } from "@/lib/swipall/rest-adapter";
 import { ProductKind } from "@/lib/swipall/types/types";
 import type { CmsPost } from "@/lib/swipall/types/types";
 import { parsePostBody } from "../home-section-types";
-import { getAuthUserCustomerId } from '@/lib/auth';
 
 interface HomeProductsByCategoryBody {
     category_slug?: string;
