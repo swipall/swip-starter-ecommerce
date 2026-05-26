@@ -181,14 +181,14 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                     )}
 
                     {/* Billing Address */}
-                    {order.shipment_address && (
+                    {order.shipment_address && order.kind !== "requested" && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Información de Pago</CardTitle>
                             </CardHeader>
                             <CardContent className="text-sm">
-                                <p className="text-white/50">Tipo de pago: <PaymentTypeTextComponent paymentType={order.payment_type} /></p>
-                                <p className="text-white/50 mt-2">Estado: <OrderIsPaidComponent isPaid={order.is_paid} /></p>
+                                <p className="text-white/50">Tipo de pago: <PaymentTypeTextComponent paymentType={order.payment_type} kind={order.kind} /></p>
+                                <p className="text-white/50 mt-2">Estado: <OrderIsPaidComponent isPaid={order.is_paid} kind={order.kind} /></p>
                             </CardContent>
                         </Card>
                     )}
@@ -210,7 +210,7 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                                     <span className="font-medium">Recoger en Tienda</span>
                                 </div>
                             )}
-                            <p className="text-white/50 mt-2">Estado de pedido: <OrderStatusComponent status={order.status} /></p>
+                            <p className="text-white/50 mt-2">Estado de pedido: <OrderStatusComponent status={order.status} kind={order.kind} /></p>
                         </CardContent>
                     </Card>
                 </div>

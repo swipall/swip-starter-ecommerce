@@ -90,10 +90,10 @@ export default async function OrdersPage(props: PageProps<'/account/orders'>) {
                                             {formatDate(order.created_at)}
                                         </TableCell>
                                         <TableCell>
-                                            <OrderStatusComponent className="inline-block px-2 py-1 rounded-md text-xs font-medium bg-muted text-foreground" status={order.status} />
+                                            <OrderStatusComponent className="inline-block px-2 py-1 rounded-md text-xs font-medium bg-muted text-foreground" status={order.status} kind={order.kind} />
                                         </TableCell>
                                         <TableCell>
-                                            <OrderIsPaidComponent className="inline-block px-2 py-1 rounded-md text-xs font-medium bg-muted text-foreground" isPaid={order.is_paid} />
+                                            <OrderIsPaidComponent className="inline-block px-2 py-1 rounded-md text-xs font-medium bg-muted text-foreground" isPaid={order.is_paid} kind={order.kind} />
                                         </TableCell>
                                         <TableCell className="text-right font-medium">
                                             <Price value={parseFloat(order.grand_total)} currencyCode="MXN"/>
