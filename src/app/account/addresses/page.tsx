@@ -13,13 +13,6 @@ export default async function AddressesPage(_props: PageProps<'/account/addresse
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Mis Direcciones</h1>
-                <p className="text-foreground mt-2">
-                    Administra tus direcciones de envío guardadas
-                </p>
-            </div>
-
             <AddressesClient addresses={addresses} />
         </div>
     );

@@ -273,7 +273,7 @@ export const fetchDeliveryItem = async (customerId?: string): Promise<InterfaceA
     const params: Record<string, any> = {
         limit: 1,
         offset: 0,
-        search: 'DOMICILIO',
+        search: 'ENVIO',
         kind: 'service'
     };
     if (customerId) {

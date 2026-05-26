@@ -100,8 +100,8 @@ const onProcessCardPayment = async (): Promise<{ type: 'redirect' | 'navigate'; 
                 throw new Error('No se pudo crear la preferencia de pago de Mercado Pago.' + response.mp_preference.preference.message);
             }
         }
-        const initPoint = response.mp_preference.preference.sandbox_init_point;
-        // const initPoint = response.mp_preference.preference.init_point;
+        // const initPoint = response.mp_preference.preference.sandbox_init_point;
+        const initPoint = response.mp_preference.preference.init_point;
         await shopModel.cleanCurrentCart();
         
         return { type: 'redirect', url: initPoint };
