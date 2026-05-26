@@ -2,6 +2,9 @@ import { ORDER_STATUS } from "@/app/account/orders/types";
 
 export default function OrderStatusComponent({ status, kind, className = "font-medium text-foreground" }: { status: ORDER_STATUS; kind?: string; className?: string }) {
     if (kind === "requested") {
+        if (status === ORDER_STATUS.CANCELED) {
+            return <span className={className}>Cancelado</span>;
+        }
         return <span className={className}>En preparación</span>;
     }
 
