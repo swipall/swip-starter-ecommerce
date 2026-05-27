@@ -1,4 +1,4 @@
-import { getCurrentCart } from '@/lib/swipall/rest-adapter';
+import { getActiveOrder } from '@/lib/swipall/rest-adapter';
 import { cacheLife, cacheTag } from 'next/cache';
 import { CartIcon } from './cart-icon';
 
@@ -9,8 +9,8 @@ export async function NavbarCart() {
     cacheTag('active-order');
 
     try {
-        const order = await getCurrentCart({ useAuthToken: true });        
-        const cartItemCount = order?.count_items.count || 0;
+        const order = await getActiveOrder({ useAuthToken: true });
+        const cartItemCount = order?.lines.filter((line) => !line.item.name.toUpperCase().includes('ENVIO')).length ?? 0;
         return <CartIcon cartItemCount={cartItemCount} />;
     } catch (error) {
         // During build or when API is unavailable, show cart with 0 items

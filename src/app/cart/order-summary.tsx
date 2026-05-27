@@ -29,6 +29,8 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
         });
     };
 
+    const shippingLine = activeOrder.lines?.find((line) => line.item.name.toUpperCase().includes('ENVIO'));
+
     return (
         <div className="border rounded-lg p-6 bg-card sticky top-4">
             <h2 className="text-xl font-bold mb-4">Resumen de pedido</h2>
@@ -45,6 +47,14 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
                         <span>Descuento</span>
                         <span>
                             <Price value={parseFloat(activeOrder.discount_total)}/>
+                        </span>
+                    </div>
+                )}
+                {shippingLine && (
+                    <div className="flex justify-between text-sm">
+                        <span className="text-foreground">Envío</span>
+                        <span>
+                            <Price value={parseFloat(shippingLine.total)}/>
                         </span>
                     </div>
                 )}

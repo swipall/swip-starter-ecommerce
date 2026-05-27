@@ -24,9 +24,11 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
         );
     }
 
+    const visibleLines = activeOrder.lines.filter((line) => !line.item.name.toUpperCase().includes('ENVIO'));
+
     return (
         <div className="lg:col-span-2 space-y-4">
-            {activeOrder.lines.map((line) => {
+            {visibleLines.map((line) => {
                 const unitPrice = line.sub_total ? parseFloat(line.sub_total) / line.quantity : 0;
                 return (
                     <div
