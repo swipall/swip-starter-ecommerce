@@ -1,5 +1,5 @@
 import { clearCartId, getCartId, setCartId } from '@/lib/cart';
-import { get, patch, post, put, remove } from './api';
+import { get, patch, post, put, remove } from './api-server';
 import type {
     Address,
     AddToCartInput,
@@ -289,6 +289,10 @@ export const updateCartDeliveryInfo = async (cartId: string, body: UpdateCartDel
 
 export const setCustomerToCart = async (cartId: string): Promise<ShopCart> => {
     return put<ShopCart>(`/api/v1/shop/me/order/${cartId}/set/customer/`, {}, { useAuthToken: true });
+}
+
+export const repriceCart = async (cartId: string): Promise<ShopCart> => {
+    return post<ShopCart>(`/api/v1/shop/me/order/${cartId}/reprice/`, {}, { useAuthToken: true });
 }
 
 

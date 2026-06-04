@@ -1,5 +1,3 @@
-import { getAuthToken } from '@/lib/auth';
-
 const SWIPALL_API_URL = process.env.SWIPALL_SHOP_API_URL || process.env.NEXT_PUBLIC_SWIPALL_SHOP_API_URL;
 
 const SWIPALL_AUTH_TOKEN_HEADER = process.env.SWIPALL_AUTH_TOKEN_HEADER || 'Authorization';
@@ -163,11 +161,7 @@ async function request<TResult>(
         ...(fetchOptions?.headers as Record<string, string>),
     };
 
-    // Use the explicitly provided token, or fetch from cookies if useAuthToken is true
     let authToken = token;
-    if (useAuthToken && !authToken) {
-        authToken = await getAuthToken();
-    }
 
     if (authToken) {
         // Support both "Bearer token" and plain token formats
