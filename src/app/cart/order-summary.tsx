@@ -9,9 +9,12 @@ import { Order } from '@/lib/swipall/types/types';
 import { isUserAuthenticated } from './actions';
 import { toast } from 'sonner';
 
-export function OrderSummary({activeOrder}: { activeOrder: Order }) {
+export function OrderSummary({activeOrder, minimalAmount}: { activeOrder: Order; minimalAmount?: number | null }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+
+    const grandTotal = parseFloat(activeOrder.grand_total);
+    const belowMinimum = minimalAmount != null && grandTotal < minimalAmount;
 
     const handleProceedCheckout = () => {
         startTransition(async () => {
@@ -75,7 +78,13 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
                 </div>
             </div>
 
-            <Button className="w-full" size="lg" onClick={handleProceedCheckout} disabled={isPending}>
+            {belowMinimum && (
+                <p className="text-sm text-destructive mb-3">
+                    El monto mínimo de compra es <Price value={minimalAmount!} />. Te faltan <Price value={minimalAmount! - grandTotal} />.
+                </p>
+            )}
+
+            <Button className="w-full" size="lg" onClick={handleProceedCheckout} disabled={isPending || belowMinimum}>
                 {isPending ? 'Verificando...' : 'Proceder al pago'}
             </Button>
 

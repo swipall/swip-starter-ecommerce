@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { fetchAddresses, fetchDeliveryItem, setCustomerForOrder } from './actions';
 import CheckoutFlow from './checkout-flow';
 import { CheckoutProvider, PaymentMethodsInterface } from './checkout-provider';
+import { getCustomerInfoServer } from '@/lib/swipall/users/server';
 
 export const metadata: Metadata = {
     title: 'Checkout',
@@ -23,16 +24,22 @@ const defineAvailablePaymentMethods = (cart: ShopCart): PaymentMethodsInterface[
 
 
 export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
-    const [orderRes, deliveryItem, addresses] = await Promise.all([
+    const [orderRes, deliveryItem, addresses, customerInfo] = await Promise.all([
         getActiveOrder({ useAuthToken: true, mutateCookies: false }),
         fetchDeliveryItem(),
         fetchAddresses(),
+        getCustomerInfoServer().catch(() => null),
         setCustomerForOrder().catch(() => null),
     ]);
 
     const activeOrder = orderRes;
 
     if (!activeOrder || activeOrder.lines.length === 0) {
+        return redirect('/cart');
+    }
+
+    const minimalAmount = (customerInfo as any)?.price_list?.minimal_amount ?? null;
+    if (minimalAmount != null && parseFloat(activeOrder.grand_total) < minimalAmount) {
         return redirect('/cart');
     }
 
