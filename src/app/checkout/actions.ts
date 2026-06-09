@@ -7,8 +7,10 @@ import {
     createMpPreference,
     updateCartDeliveryInfo,
     setOrderRequested,
+    getShippingQuotes,
+    setShipmentRate,
 } from '@/lib/swipall/rest-adapter';
-import { InterfaceInventoryItem, ShopCart } from '@/lib/swipall/types/types';
+import { InterfaceApiShippingQuoteResponse, InterfaceInventoryItem, ShopCart, ShippingRate } from '@/lib/swipall/types/types';
 import { createAddressServer, createCustomerInfoServer } from '@/lib/swipall/users/server';
 import { AddressInterface } from '@/lib/swipall/users/user.types';
 import { revalidatePath } from 'next/cache';
@@ -215,7 +217,40 @@ export async function fetchAddresses() {
         console.error('Error fetching user addresses:', error);
         throw error;
     }
-
 }
 
+export async function getShippingQuotesAction(addressId: string): Promise<InterfaceApiShippingQuoteResponse> {
+    const shopModel = useShopModel();
+    const cartId = await shopModel.getCurrentCartId();
+    if (!cartId) {
+        throw new Error('No cart ID found while requesting shipping quotes');
+    }
+    return getShippingQuotes(cartId, addressId);
+}
+
+export async function setShipmentRatesAction(
+    shipments: { shipmentId: string; rate: ShippingRate }[]
+): Promise<void> {
+    await Promise.all(
+        shipments.map(({ shipmentId, rate }) => setShipmentRate(shipmentId, rate))
+    );
+}
+
+export async function injectShippingServiceItemAction(rateAmount: number, isFreeShipping: boolean): Promise<void> {
+    const customerId = await getAuthUserCustomerId();
+    const shopModel = useShopModel();
+    const cartId = await shopModel.getCurrentCartId();
+    if (!cartId) {
+        throw new Error('No cart ID found while injecting shipping service item');
+    }
+    const results = await shopModel.fetchDeliveryConcept(customerId);
+    if (results.length === 0) return;
+    const deliveryServiceItem = results[0];
+    const price = isFreeShipping ? 0 : rateAmount;
+    const { AddItemStrategyFactory } = await import('@/lib/strategies/shop/cart/add-item');
+    const factory = new AddItemStrategyFactory(shopModel);
+    const itemWithPrice = { ...deliveryServiceItem, web_price: String(price) };
+    const strategy = factory.getStrategy(itemWithPrice);
+    await strategy.addItemToCart(cartId, itemWithPrice.id, { item: itemWithPrice.id, quantity: 1, price }, itemWithPrice);
+}
 

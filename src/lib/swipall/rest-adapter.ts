@@ -11,9 +11,11 @@ import type {
     CurrentUser,
     InterfaceApiDetailResponse,
     InterfaceApiListResponse,
+    InterfaceApiShippingQuoteResponse,
     InterfaceInventoryItem,
     Order,
     SearchInput,
+    ShippingRate,
     ShopCart,
     ShopCartItem,
     TaxonomyInterface,
@@ -371,4 +373,24 @@ export async function requestUpdateCustomerEmailAddress(
 
 export async function updateCustomerEmailAddress(token: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
     return post<InterfaceApiDetailResponse<{ success: boolean }>>('/customers/me/email/update', { token }, { useAuthToken: options?.useAuthToken });
+}
+
+// ============================================================================
+// Shipping Quote Endpoints
+// ============================================================================
+
+export async function getShippingQuotes(cartId: string, addressId: string): Promise<InterfaceApiShippingQuoteResponse> {
+    return post<InterfaceApiShippingQuoteResponse>(
+        `/api/ecommerce/me/cart/${cartId}/shipping/quote/`,
+        { address_id: addressId },
+        { useAuthToken: true }
+    );
+}
+
+export async function setShipmentRate(shipmentId: string, rate: ShippingRate): Promise<void> {
+    await patch(
+        `/api/ecommerce/me/shipping/${shipmentId}/set/rate/`,
+        { rate },
+        { useAuthToken: true }
+    );
 }

@@ -444,3 +444,25 @@ export interface UpdateCartDeliveryInfoBody {
     status?: 3;
     external_reference?: string | null;
 }
+
+// ============================================================================
+// Shipping Quote Types
+// ============================================================================
+
+export interface ShippingRate {
+    provider: string;
+    amount: number;
+    object_id: number;
+    [key: string]: unknown;
+}
+
+export interface ShipmentQuote {
+    id: string;
+    weight: number;
+    rates: ShippingRate[];
+}
+
+export interface InterfaceApiShippingQuoteResponse {
+    shipments: ShipmentQuote[];
+    free_shipping: boolean;
+}
