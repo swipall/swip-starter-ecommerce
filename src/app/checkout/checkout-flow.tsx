@@ -15,11 +15,7 @@ export default function CheckoutFlow() {
     const { fulfillmentType } = useCheckout();   
 
     const getStepOrder = (): CheckoutStep[] => {
-        // If pickup is selected, skip shipping address
-        if (fulfillmentType === 'pickup') {
-            return ['delivery', 'payment', 'review'];
-        }
-        return ['delivery', 'shipping', 'payment', 'review'];
+        return ['shipping', 'delivery', 'payment', 'review'];
     };
 
     const stepOrder = getStepOrder();
@@ -48,7 +44,6 @@ export default function CheckoutFlow() {
 
         if (stepIndex === 0) return true;
         
-        // If step is not in current stepOrder (e.g., shipping when pickup), deny access
         if (stepIndex === -1) return false;
 
         const previousStep = stepOrder[stepIndex - 1];
@@ -73,35 +68,7 @@ export default function CheckoutFlow() {
                     }}
                     className="space-y-4"
                 >
-                    <AccordionItem
-                        value="delivery"
-                        className="border rounded-lg px-6"
-                        disabled={!canAccessStep('delivery')}
-                    >
-                        <AccordionTrigger
-                            className="hover:no-underline"
-                            disabled={!canAccessStep('delivery')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${completedSteps.has('delivery')
-                                        ? 'bg-green-500 text-white'
-                                        : currentStep === 'delivery'
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-foreground'
-                                    }`}>
-                                    {completedSteps.has('delivery') ? '✓' : getStepNumber('delivery')}
-                                </div>
-                                <span className="text-lg font-semibold">Método de Entrega</span>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pt-4">
-                            <DeliveryStep
-                                onComplete={() => handleStepComplete('delivery')}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    {fulfillmentType === 'delivery' && (
+                    {fulfillmentType !== 'pickup' && (
                         <AccordionItem
                             value="shipping"
                             className="border rounded-lg px-6"
@@ -130,6 +97,34 @@ export default function CheckoutFlow() {
                             </AccordionContent>
                         </AccordionItem>
                     )}
+
+                    <AccordionItem
+                        value="delivery"
+                        className="border rounded-lg px-6"
+                        disabled={!canAccessStep('delivery')}
+                    >
+                        <AccordionTrigger
+                            className="hover:no-underline"
+                            disabled={!canAccessStep('delivery')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${completedSteps.has('delivery')
+                                        ? 'bg-green-500 text-white'
+                                        : currentStep === 'delivery'
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'bg-muted text-foreground'
+                                    }`}>
+                                    {completedSteps.has('delivery') ? '✓' : getStepNumber('delivery')}
+                                </div>
+                                <span className="text-lg font-semibold">Método de Entrega</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-4">
+                            <DeliveryStep
+                                onComplete={() => handleStepComplete('delivery')}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
 
                     <AccordionItem
                         value="payment"

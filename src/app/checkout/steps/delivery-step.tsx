@@ -52,8 +52,9 @@ export default function DeliveryStep({ onComplete }: DeliveryStepProps) {
       setQuotesError(null);
       try {
         const response = await getShippingQuotesAction(addressId);
+        console.log('Shipping quotes response:', response);
         if (!cancelled) {
-          setShipments(response.shipments);
+          setShipments(response.shipments ?? []);
           setFreeShipping(response.free_shipping);
           setSelectedRates([]);
         }

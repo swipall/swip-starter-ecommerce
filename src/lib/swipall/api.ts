@@ -201,6 +201,14 @@ async function request<TResult>(
     } catch (parseError: any) {
         if (parseError instanceof SwipallAPIError) throw parseError;
         console.warn(`[Swipall API] Could not parse response for ${method} ${endpoint} (HTTP ${response.status})`);
+        if (!response.ok) {
+            throw new SwipallAPIError({
+                status: response.status,
+                method,
+                endpoint,
+                message: `API request failed with status ${response.status} for ${method} ${endpoint}`,
+            });
+        }
         return emptyDataFor<TResult>(endpoint);
     }
 
