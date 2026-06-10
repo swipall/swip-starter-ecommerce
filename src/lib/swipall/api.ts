@@ -214,7 +214,8 @@ async function request<TResult>(
 
     if (!response.ok) {
         const errorMessage = transformError(result) || `API request failed with status ${response.status} for ${method} ${endpoint}`;
-        console.error(`[Swipall API] Request failed - ${method} ${endpoint}:`, {
+        const logFn = response.status === 404 ? console.warn : console.error;
+        logFn(`[Swipall API] Request failed - ${method} ${endpoint}:`, {
             status: response.status,
             statusText: response.statusText,
             error: result.error || result.errors,
