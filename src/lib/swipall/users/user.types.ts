@@ -78,27 +78,17 @@ export interface OrderItemDetailInterface {
 
 export interface OrderShipmentRateInterface {
     provider: string;
-    provider_img: string;
     servicelevel: string;
-    amount: number;
-    currency: string;
-    eta: string;
     days: number;
     duration_terms: string;
-    trackable: boolean;
-    object_id: number;
+    collect_home: boolean;
 }
 
 export interface OrderShipmentInterface {
     id: string;
     kind: string;
     status: number;
-    description: string;
-    provider_reference: string;
     rate: OrderShipmentRateInterface | null;
-    rates: OrderShipmentRateInterface[];
-    label: { tracking_number: string; tracking_url: string } | null;
-    created_at: string;
 }
 
 export interface OrderDetailInterface {

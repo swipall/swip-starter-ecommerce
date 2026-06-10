@@ -5,7 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ShipmentTrackingResponse } from '@/lib/swipall/rest-adapter';
 import { OrderShipmentInterface } from '@/lib/swipall/users/user.types';
 import { CheckCircle, ChevronDown, ExternalLink, Home, Loader2, Package } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 function formatTrackingDate(dateTime: string): string {
     const date = new Date(dateTime.replace(' ', 'T'));
@@ -41,8 +41,29 @@ function StatusPill({ statusCode, statusDescription }: { statusCode: StatusCode;
     );
 }
 
+function ShipmentStatusPill({ status }: { status: number }) {
+    if (status === 2) {
+        return (
+            <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                Enviado
+            </span>
+        );
+    }
+    if (status === 1) {
+        return (
+            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+                En proceso
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            Pendiente
+        </span>
+    );
+}
+
 function ShipmentPending({ shipment, index }: { shipment: OrderShipmentInterface; index: number }) {
-    const rate = shipment.rate ?? shipment.rates?.[0] ?? null;
     return (
         <Card>
             <CardHeader>
@@ -53,12 +74,12 @@ function ShipmentPending({ shipment, index }: { shipment: OrderShipmentInterface
             </CardHeader>
             <CardContent className="space-y-3">
                 <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800">
-                    Pendiente de envío
+                    Pendiente
                 </span>
-                {rate && (
+                {shipment.rate && (
                     <div className="text-sm">
-                        <p className="font-medium">{rate.provider}</p>
-                        <p className="text-muted-foreground capitalize">{rate.servicelevel} · {rate.duration_terms}</p>
+                        <p className="font-medium">{shipment.rate.provider}</p>
+                        <p className="text-muted-foreground capitalize">{shipment.rate.servicelevel} · {shipment.rate.duration_terms}</p>
                     </div>
                 )}
             </CardContent>
@@ -69,7 +90,7 @@ function ShipmentPending({ shipment, index }: { shipment: OrderShipmentInterface
 function ShipmentTrackingActive({ shipment, index }: { shipment: OrderShipmentInterface; index: number }) {
     const shipmentId = shipment.id;
     const [data, setData] = useState<ShipmentTrackingResponse | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [open, setOpen] = useState(false);
     const fetchedRef = useRef(false);
@@ -89,30 +110,34 @@ function ShipmentTrackingActive({ shipment, index }: { shipment: OrderShipmentIn
         }
     }, [shipmentId]);
 
-    useEffect(() => {
-        if (fetchedRef.current) return;
-        fetchedRef.current = true;
-        fetchTracking();
+    const handleOpenChange = useCallback((next: boolean) => {
+        setOpen(next);
+        if (next && !fetchedRef.current) {
+            fetchedRef.current = true;
+            fetchTracking();
+        }
     }, [fetchTracking]);
 
     const tracking = data?.tracking;
 
     return (
         <Card>
-            <Collapsible open={open} onOpenChange={setOpen}>
+            <Collapsible open={open} onOpenChange={handleOpenChange}>
                 <CardHeader className="pb-3">
                     <CollapsibleTrigger className="flex w-full items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
-                            <Package className="h-4 w-4" />
-                            Envío #{index + 1}
-                            {!loading && tracking && (
-                                <StatusPill
-                                    statusCode={tracking.status_code}
-                                    statusDescription={tracking.status_description}
-                                />
+                        <div className="flex flex-col items-start gap-1">
+                            <CardTitle className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                Envío #{index + 1}
+                                <ShipmentStatusPill status={shipment.status} />
+                            </CardTitle>
+                            {shipment.rate && (
+                                <p className="text-sm text-muted-foreground font-normal">
+                                    {shipment.rate.provider} · <span className="capitalize">{shipment.rate.servicelevel}</span> · {shipment.rate.duration_terms}
+                                </p>
                             )}
-                        </CardTitle>
-                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                        </div>
+                        <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
                     </CollapsibleTrigger>
                 </CardHeader>
 
