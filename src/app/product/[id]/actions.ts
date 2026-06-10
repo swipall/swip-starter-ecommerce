@@ -19,15 +19,15 @@ export async function addToCart(
     itemId: string,
     params: AddProductToCartBody
 ) {
-    try {        
+    try {
         const shopModel = useShopModel();
         let cartId = await shopModel.getCurrentCartId();
         if (!cartId) {
             const newCart = await shopModel.onCreateNewCart();
             cartId = newCart.id;
-        }        
+        }
         const customerId = await getAuthUserCustomerId();
-        const product = await getProduct(itemId, customerId);        
+        const product = await getProduct(itemId, customerId);
         const strategyFactory = new AddItemStrategyFactory(shopModel);
         const strategy = strategyFactory.getStrategy(product);
         const result = await strategy.addItemToCart(cartId, itemId, params, product);
@@ -36,12 +36,24 @@ export async function addToCart(
 
         return { success: true, data: result.data };
     } catch (error: any) {
-        if(error.status === 404){
-            // Clear cartId if item not found
-            const shopModel = useShopModel();
-            await shopModel.removeCurrentCartId();
-            return { success: false, error: 'Ocurrió un error al añadir el producto al carrito, por favor inténtalo de nuevo.' };
-        }        
+        if (error.status === 404) {
+            // Cookie already cleared by rest-adapter. Retry with a fresh cart.
+            try {
+                const shopModel = useShopModel();
+                const newCart = await shopModel.onCreateNewCart();
+                const customerId = await getAuthUserCustomerId();
+                const product = await getProduct(itemId, customerId);
+                const strategyFactory = new AddItemStrategyFactory(shopModel);
+                const strategy = strategyFactory.getStrategy(product);
+                const result = await strategy.addItemToCart(newCart.id, itemId, params, product);
+                updateTag('cart');
+                updateTag('active-order');
+                return { success: true, data: result.data };
+            } catch (retryError: any) {
+                const message = retryError instanceof Error ? retryError.message : 'Failed to add item to cart';
+                return { success: false, error: message };
+            }
+        }
         const message = error instanceof Error ? error.message : 'Failed to add item to cart';
         return { success: false, error: message };
     }

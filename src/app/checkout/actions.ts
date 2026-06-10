@@ -63,7 +63,7 @@ export async function createCustomerAddress(address: Partial<AddressInterface>):
     }
 }
 
-export async function updateShippingAddressForCart(addressId: string) {
+export async function updateShippingAddressForCart(addressId: string): Promise<Order | null> {
     try {
         const shopModel = useShopModel();
         const cartId = await shopModel.getCurrentCartId();
@@ -73,6 +73,7 @@ export async function updateShippingAddressForCart(addressId: string) {
             });
         }
         revalidatePath('/checkout');
+        return getActiveOrder({ useAuthToken: true, mutateCookies: false });
     } catch (error) {
         throw new Error('Failed to update shipping address');
     }
