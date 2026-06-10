@@ -2,7 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShipmentTrackingResponse } from '@/lib/swipall/rest-adapter';
-import { CheckCircle, ExternalLink, Home, Loader2 } from 'lucide-react';
+import { OrderShipmentInterface } from '@/lib/swipall/users/user.types';
+import { CheckCircle, ExternalLink, Home, Loader2, Package } from 'lucide-react';
+import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 function formatTrackingDate(dateTime: string): string {
@@ -39,7 +41,45 @@ function StatusPill({ statusCode, statusDescription }: { statusCode: StatusCode;
     );
 }
 
-export default function ShipmentTracking({ shipmentId }: { shipmentId: string }) {
+function ShipmentPending({ shipment, index }: { shipment: OrderShipmentInterface; index: number }) {
+    const rate = shipment.rate ?? shipment.rates?.[0] ?? null;
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Envío #{index + 1}
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800">
+                    Pendiente de envío
+                </span>
+                {rate && (
+                    <div className="flex items-center gap-3 pt-1">
+                        {rate.provider_img && (
+                            <div className="relative h-8 w-16 shrink-0">
+                                <Image
+                                    src={rate.provider_img}
+                                    alt={rate.provider}
+                                    fill
+                                    className="object-contain"
+                                />
+                            </div>
+                        )}
+                        <div className="text-sm">
+                            <p className="font-medium">{rate.provider}</p>
+                            <p className="text-muted-foreground capitalize">{rate.servicelevel} · {rate.duration_terms}</p>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function ShipmentTrackingActive({ shipment, index }: { shipment: OrderShipmentInterface; index: number }) {
+    const shipmentId = shipment.id;
     const [data, setData] = useState<ShipmentTrackingResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -66,10 +106,19 @@ export default function ShipmentTracking({ shipmentId }: { shipmentId: string })
         fetchTracking();
     }, [fetchTracking]);
 
+    const rate = shipment.rate ?? shipment.rates?.[0] ?? null;
+
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Rastreo de Envío</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                    {rate?.provider_img && (
+                        <div className="relative h-6 w-12 shrink-0">
+                            <Image src={rate.provider_img} alt={rate.provider} fill className="object-contain" />
+                        </div>
+                    )}
+                    Envío #{index + 1}
+                </CardTitle>
             </CardHeader>
             <CardContent>
                 {loading && (
@@ -163,4 +212,11 @@ export default function ShipmentTracking({ shipmentId }: { shipmentId: string })
             </CardContent>
         </Card>
     );
+}
+
+export default function ShipmentTracking({ shipment, index }: { shipment: OrderShipmentInterface; index: number }) {
+    if (shipment.kind !== 'payment') {
+        return <ShipmentPending shipment={shipment} index={index} />;
+    }
+    return <ShipmentTrackingActive shipment={shipment} index={index} />;
 }

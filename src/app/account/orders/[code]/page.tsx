@@ -37,7 +37,6 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
     }
 
     const orderRes = await getOrderDetail(code, { useAuthToken: true });
-    console.log('Order Detail Response:', orderRes);
     const order: OrderDetailInterface = orderRes;
     if (!order) {
         return redirect('/account/orders');
@@ -196,9 +195,9 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                     )}
 
                     {/* Shipment Tracking */}
-                    {order.shipment_id && (
-                        <ShipmentTracking shipmentId={order.shipment_id} />
-                    )}
+                    {order.shipment?.map((s, i) => (
+                        <ShipmentTracking key={s.id} shipment={s} index={i} />
+                    ))}
 
                     {/* Delivery Type */}
                     <Card>
