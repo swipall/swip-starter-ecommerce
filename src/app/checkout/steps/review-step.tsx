@@ -20,8 +20,8 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
         (method) => method.id === selectedPaymentMethodCode
     );
 
-    const isForDelivery = order.for_delivery;
-    const isForPickup = order.for_pickup;
+    const isForDelivery = fulfillmentType === 'delivery';
+    const isForPickup = fulfillmentType === 'pickup';
     const handlePlaceOrder = async () => {        
         if (!selectedPaymentMethodCode) return;
 

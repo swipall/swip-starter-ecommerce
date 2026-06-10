@@ -76,8 +76,9 @@ export default function DeliveryStep({ onComplete }: DeliveryStepProps) {
     }
   };
 
-  const allShipmentsSelected = shipments.length > 0 &&
-    shipments.every(s => selectedRates.some(r => r.shipmentId === s.id));
+  const allShipmentsSelected = freeShipping
+    ? shipments.length > 0
+    : shipments.length > 0 && shipments.every(s => selectedRates.some(r => r.shipmentId === s.id));
 
   const handleContinue = async () => {
     setIsSubmitting(true);
@@ -87,7 +88,11 @@ export default function DeliveryStep({ onComplete }: DeliveryStepProps) {
           toast.error('Selecciona un método de envío para cada paquete');
           return;
         }
-        await setShipmentRatesAction(selectedRates);
+        if (freeShipping) {
+          await injectShippingServiceItemAction(0, true);
+        } else {
+          await setShipmentRatesAction(selectedRates);
+        }
         setFulfillmentType('delivery');
       } else {
         await updateCartForPickup(deliveryItem);
@@ -167,51 +172,59 @@ export default function DeliveryStep({ onComplete }: DeliveryStepProps) {
           )}
 
           {addressId && !quotesLoading && !quotesError && shipments.length > 0 && (
-            <div className="space-y-4">
-              {shipments.map((shipment, index) => (
-                <div key={shipment.id} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    <Package className="h-4 w-4" />
-                    <span>Paquete {index + 1} — {shipment.weight} kg</span>
-                  </div>
-
-                  <RadioGroup
-                    value={selectedRates.find(r => r.shipmentId === shipment.id)?.rate.object_id.toString() ?? ''}
-                    onValueChange={(value) => {
-                      const rate = shipment.rates.find(r => r.object_id.toString() === value);
-                      if (rate) handleRateSelect(shipment.id, rate);
-                    }}
-                  >
-                    <div className="space-y-2">
-                      {shipment.rates.map((rate) => (
-                        <label
-                          key={rate.object_id}
-                          className="flex items-center justify-between p-3 border rounded-md cursor-pointer hover:bg-muted/50 transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <RadioGroupItem
-                              value={rate.object_id.toString()}
-                              id={`rate-${shipment.id}-${rate.object_id}`}
-                            />
-                            <Label
-                              htmlFor={`rate-${shipment.id}-${rate.object_id}`}
-                              className="cursor-pointer font-medium"
-                            >
-                              {rate.provider}
-                            </Label>
-                          </div>
-                          <span className="text-sm font-semibold">
-                            {freeShipping
-                              ? 'Envío gratis'
-                              : rate.amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </RadioGroup>
+            freeShipping ? (
+              <div className="flex items-center gap-3 p-4 border rounded-lg bg-muted/30">
+                <Truck className="h-5 w-5 text-green-600 shrink-0" />
+                <div>
+                  <p className="font-medium text-sm">Envío gratis</p>
+                  <p className="text-sm text-muted-foreground">Tu pedido califica para envío sin costo</p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {shipments.map((shipment, index) => (
+                  <div key={shipment.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Package className="h-4 w-4" />
+                      <span>Paquete {index + 1} — {shipment.weight} kg</span>
+                    </div>
+
+                    <RadioGroup
+                      value={selectedRates.find(r => r.shipmentId === shipment.id)?.rate.object_id.toString() ?? ''}
+                      onValueChange={(value) => {
+                        const rate = shipment.rates.find(r => r.object_id.toString() === value);
+                        if (rate) handleRateSelect(shipment.id, rate);
+                      }}
+                    >
+                      <div className="space-y-2">
+                        {shipment.rates.map((rate) => (
+                          <label
+                            key={rate.object_id}
+                            className="flex items-center justify-between p-3 border rounded-md cursor-pointer hover:bg-muted/50 transition"
+                          >
+                            <div className="flex items-center gap-3">
+                              <RadioGroupItem
+                                value={rate.object_id.toString()}
+                                id={`rate-${shipment.id}-${rate.object_id}`}
+                              />
+                              <Label
+                                htmlFor={`rate-${shipment.id}-${rate.object_id}`}
+                                className="cursor-pointer font-medium"
+                              >
+                                {rate.provider}
+                              </Label>
+                            </div>
+                            <span className="text-sm font-semibold">
+                              {rate.amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </RadioGroup>
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       )}
