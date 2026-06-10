@@ -15,6 +15,7 @@ export async function GET(
 
     try {
         const data = await getShipmentTracking(shipmentId);
+        console.log('Shipment Tracking Response:', JSON.stringify(data, null, 2));
         return NextResponse.json(data);
     } catch {
         return NextResponse.json({ error: 'Failed to fetch tracking' }, { status: 502 });
