@@ -20,6 +20,7 @@ export function NavbarLink({href, ...rest}: ComponentProps<typeof Link>) {
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(navigationMenuTriggerStyle())}
                 href={href}
+                prefetch={false}
                 {...rest}
             />
         </NavigationMenuLink>
