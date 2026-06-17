@@ -32,6 +32,7 @@ export function NavbarDropdownItem({ title, href, items }: NavbarDropdownItemPro
                         <NavigationMenuLink asChild>
                             <Link
                                 href={href}
+                                prefetch={false}
                                 className={cn(
                                     "flex select-none bg-nav-background rounded-md px-3 py-2 text-sm font-semibold leading-none no-underline outline-none transition-colors",
                                     "text-primary hover:text-white hover:text-primary-foreground"
@@ -47,6 +48,7 @@ export function NavbarDropdownItem({ title, href, items }: NavbarDropdownItemPro
                             <NavigationMenuLink asChild>
                                 <Link
                                     href={item.link || `/collection/${item.slug}`}
+                                    prefetch={false}
                                     className={cn(
                                         "flex select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors",
                                         "hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"

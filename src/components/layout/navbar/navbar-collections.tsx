@@ -22,7 +22,6 @@ export async function NavbarCollections() {
             return { ...item, children: children?.results ?? [] };
         })
     );
-
     const redirectUrl = (item: CmsPost) => getMenuItemHref(item);
 
     return (

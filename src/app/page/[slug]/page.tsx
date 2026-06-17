@@ -14,19 +14,21 @@ async function getPagePost(slug: string) {
 	cacheLife('hours');
 	cacheTag(`page-${slug}`);
 
-	return getPostDetail(slug);
+	const post = await getPostDetail(slug);
+	// Don't cache null responses — the API may have been temporarily unavailable
+	if (!post) throw new Error(`Page not found: ${slug}`);
+	return post;
 }
 
 export async function generateMetadata({
 	params,
 }: PageProps<'/page/[slug]'>): Promise<Metadata> {
 	const { slug } = await params;
-	const post = await getPagePost(slug);
-
-	if (!post) {
-		return {
-			title: 'Page Not Found',
-		};
+	let post;
+	try {
+		post = await getPagePost(slug);
+	} catch {
+		return { title: 'Page Not Found' };
 	}
 
 	const descriptionSource = post.body;
@@ -55,7 +57,12 @@ export async function generateMetadata({
 
 export default async function CmsPage({ params }: PageProps<'/page/[slug]'>) {
 	const { slug } = await params;
-	const post = await getPagePost(slug);
+	let post;
+	try {
+		post = await getPagePost(slug);
+	} catch {
+		notFound();
+	}
 
 	if (!post) {
 		notFound();
