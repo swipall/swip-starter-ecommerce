@@ -26,14 +26,13 @@ const defineAvailablePaymentMethods = (cart: ShopCart): PaymentMethodsInterface[
 export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
     const [orderRes, deliveryItem, addresses, customerInfo] = await Promise.all([
         getActiveOrder({ useAuthToken: true, mutateCookies: false }),
-        fetchDeliveryItem(),
-        fetchAddresses(),
+        fetchDeliveryItem().catch(() => null),
+        fetchAddresses().catch(() => null),
         getCustomerInfoServer().catch(() => null),
         setCustomerForOrder().catch(() => null),
     ]);
 
     const activeOrder = orderRes;
-
     if (!activeOrder || activeOrder.lines.length === 0) {
         return redirect('/cart');
     }
@@ -50,7 +49,7 @@ export default async function CheckoutPage(_props: PageProps<'/checkout'>) {
             <h1 className="text-3xl font-bold mb-8">Checkout</h1>
             <CheckoutProvider
                 order={activeOrder}
-                addresses={addresses.results || []}
+                addresses={addresses?.results || []}
                 paymentMethods={paymentMethods}
                 deliveryItem={deliveryItem}
             >

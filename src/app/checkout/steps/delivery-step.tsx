@@ -36,13 +36,13 @@ export default function DeliveryStep({ onComplete }: DeliveryStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addressId = order.shipment_address?.id ?? null;
-
+ 
   const fetchQuotes = useCallback(async () => {
     if (!addressId) return;
     setQuotesLoading(true);
     setQuotesError(null);
     try {
-      const response = await getShippingQuotesAction(addressId);      
+      const response = await getShippingQuotesAction(addressId);
       setShipments(response.shipments ?? []);
       setFreeShipping(response.free_shipping);
       setSelectedRates([]);
