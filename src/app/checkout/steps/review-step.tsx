@@ -22,6 +22,8 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
 
     const isForDelivery = fulfillmentType === 'delivery';
     const isForPickup = fulfillmentType === 'pickup';
+    const shippingLine = order.lines.find(l => l.item.name.toUpperCase().includes('ENVIO'));
+    const shippingPrice = shippingLine ? parseFloat(shippingLine.total) : null;
     const handlePlaceOrder = async () => {        
         if (!selectedPaymentMethodCode) return;
 
@@ -95,12 +97,12 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
                     </div>
                     <div className="text-sm space-y-3">
                         <div>
-                            {isForDelivery && deliveryItem ? (
+                            {isForDelivery ? (
                                 <>
                                     <p className="font-medium">Entrega a domicilio</p>
                                     <p className="text-foreground">
-                                        {parseFloat(deliveryItem.price) > 0
-                                            ? <Price value={Number(deliveryItem.price)} />
+                                        {shippingPrice !== null && shippingPrice > 0
+                                            ? <Price value={shippingPrice} />
                                             : 'GRATIS'}
                                     </p>
                                 </>
