@@ -2,9 +2,7 @@ import {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
     cacheComponents: true,
-    turbopack: {
-        root: __dirname,
-    },
+
     images: {
         // This is necessary to display images from your Swipall instance
         dangerouslyAllowLocalIP: true,
