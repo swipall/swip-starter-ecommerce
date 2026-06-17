@@ -45,17 +45,7 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
         if (product.kind === ProductKind.Group && selectedVariant) {
             const variantPrice = parseFloat(selectedVariant.price) || 0;
             const variantWebPrice = parseFloat(selectedVariant.web_price) || 0;
-            const basePrice = variantPrice || variantWebPrice;
-
-            if (product.kind === ProductKind.Compound) {
-                const materialsPrice = selectedMaterials.reduce(
-                    (sum, material) => sum + (parseFloat(material.price) || 0),
-                    0
-                );
-                return basePrice + materialsPrice;
-            }
-
-            return basePrice;
+            return variantPrice || variantWebPrice;
         }
 
         const priceVal = parseFloat(product.price) || 0;
