@@ -106,8 +106,6 @@ const onProcessCardPayment = async (): Promise<{ type: 'redirect' | 'navigate'; 
         }
         // const initPoint = response.mp_preference.preference.sandbox_init_point;
         const initPoint = response.mp_preference.preference.init_point;
-        await shopModel.cleanCurrentCart();
-        
         return { type: 'redirect', url: initPoint };
     } catch (error) {
         throw error;
