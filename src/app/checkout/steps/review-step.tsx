@@ -99,8 +99,8 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
                                 <>
                                     <p className="font-medium">Entrega a domicilio</p>
                                     <p className="text-foreground">
-                                        {deliveryItem.web_price && parseFloat(deliveryItem.web_price) > 0
-                                            ? <Price value={Number(deliveryItem.web_price)} />
+                                        {parseFloat(deliveryItem.price) > 0
+                                            ? <Price value={Number(deliveryItem.price)} />
                                             : 'GRATIS'}
                                     </p>
                                 </>
