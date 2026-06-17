@@ -1,5 +1,6 @@
 import { connection } from 'next/server';
 import { getOrderDetail } from '@/lib/swipall/rest-adapter';
+import { clearCartId } from '@/lib/cart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
@@ -14,6 +15,8 @@ import ProductExtraMaterialsComponent from '@/components/commerce/product-extra-
 export async function OrderConfirmation({ params }: PageProps<'/order-confirmation/[code]'>) {
     const { code } = await params;
     let orderData: OrderDetailInterface | null = null;
+
+    await clearCartId();
 
     try {
         const result = await getOrderDetail(code, { useAuthToken: true });
