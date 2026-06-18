@@ -23,14 +23,25 @@ const SECTION_RENDERERS: Record<HomeBlockType, (props: { post: CmsPost; items?: 
 };
 
 
-export async function HomeSectionRenderer({ post }: HomeSectionRendererProps) {
+const USER_DEPENDENT_SECTIONS: HomeBlockType[] = ["home-products-by-category"];
+
+async function CachedSectionRenderer({ post }: HomeSectionRendererProps) {
     "use cache";
     cacheLife("hours");
     const type = getHomeBlockType(post);
-    if (!type) {
-        return null;
-    }
-
+    if (!type) return null;
     const Renderer = SECTION_RENDERERS[type];
     return <Renderer post={post} />;
+}
+
+export async function HomeSectionRenderer({ post }: HomeSectionRendererProps) {
+    const type = getHomeBlockType(post);
+    if (!type) return null;
+
+    if (USER_DEPENDENT_SECTIONS.includes(type)) {
+        const Renderer = SECTION_RENDERERS[type];
+        return <Renderer post={post} />;
+    }
+
+    return <CachedSectionRenderer post={post} />;
 }

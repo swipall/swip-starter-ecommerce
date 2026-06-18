@@ -238,7 +238,7 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword((prev) => !prev)}
-                                                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                                                className="absolute inset-y-0 right-0 flex items-center px-3 text-foreground hover:text-foreground"
                                                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                                             >
                                                 {showPassword ? (
@@ -272,7 +272,7 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword((prev) => !prev)}
-                                                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                                                className="absolute inset-y-0 right-0 flex items-center px-3 text-foreground hover:text-foreground"
                                                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                                             >
                                                 {showPassword ? (
@@ -485,7 +485,7 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4 mt-4">
 
-                        <div className="text-sm text-center text-muted-foreground">
+                        <div className="text-sm text-center text-foreground">
                             ¿Ya tienes una cuenta?{' '}
                             <Link href={signInHref} className="hover:text-primary underline">
                                 Inicia sesión

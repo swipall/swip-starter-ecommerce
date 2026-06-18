@@ -15,7 +15,7 @@ export interface AddItemToCartStrategy {
      * @param body - Parámetros del item (cantidad, materiales extra, precio)
      * @returns Respuesta con el item añadido al carrito
      */
-    addItemToCart(cartId: string, itemId: string, body: AddProductToCartBody): Promise<InterfaceApiDetailResponse<ShopCartItem>>;
+    addItemToCart(cartId: string, itemId: string, body: AddProductToCartBody, product?: InterfaceInventoryItem): Promise<InterfaceApiDetailResponse<ShopCartItem>>;
     
     /**
      * Determina si esta estrategia puede manejar el tipo de producto dado.

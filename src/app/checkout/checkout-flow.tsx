@@ -12,21 +12,26 @@ import ShippingAddressStep from './steps/shipping-address-step';
 type CheckoutStep = 'contact' | 'shipping' | 'delivery' | 'payment' | 'review';
 
 export default function CheckoutFlow() {
-    const { fulfillmentType } = useCheckout();   
+    const { fulfillmentType, order } = useCheckout();
 
-    const getStepOrder = (): CheckoutStep[] => {
-        // If pickup is selected, skip shipping address
-        if (fulfillmentType === 'pickup') {
-            return ['delivery', 'payment', 'review'];
-        }
-        return ['delivery', 'shipping', 'payment', 'review'];
-    };
-
-    const stepOrder = getStepOrder();
+    const stepOrder: CheckoutStep[] = ['shipping', 'delivery', 'payment', 'review'];
 
     const getInitialState = () => {
         const completed = new Set<CheckoutStep>();
+
+        const hasShippingAddress = !!order.shipment_address;
+        const hasShippingLine = order.lines.some(l => l.item.name.toUpperCase().includes('ENVIO'));
+
+        if (hasShippingAddress || order.for_pickup) completed.add('shipping');
+        if (hasShippingLine || order.for_pickup) completed.add('delivery');
+
         let current: CheckoutStep = stepOrder[0];
+        for (const step of stepOrder) {
+            if (!completed.has(step)) { current = step; break; }
+        }
+        // If all pre-completable steps are done, land on payment
+        if (completed.has('shipping') && completed.has('delivery')) current = 'payment';
+
         return { completed, current };
     };
 
@@ -48,7 +53,6 @@ export default function CheckoutFlow() {
 
         if (stepIndex === 0) return true;
         
-        // If step is not in current stepOrder (e.g., shipping when pickup), deny access
         if (stepIndex === -1) return false;
 
         const previousStep = stepOrder[stepIndex - 1];
@@ -73,35 +77,7 @@ export default function CheckoutFlow() {
                     }}
                     className="space-y-4"
                 >
-                    <AccordionItem
-                        value="delivery"
-                        className="border rounded-lg px-6"
-                        disabled={!canAccessStep('delivery')}
-                    >
-                        <AccordionTrigger
-                            className="hover:no-underline"
-                            disabled={!canAccessStep('delivery')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${completedSteps.has('delivery')
-                                        ? 'bg-green-500 text-white'
-                                        : currentStep === 'delivery'
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground'
-                                    }`}>
-                                    {completedSteps.has('delivery') ? '✓' : getStepNumber('delivery')}
-                                </div>
-                                <span className="text-lg font-semibold">Método de Entrega</span>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pt-4">
-                            <DeliveryStep
-                                onComplete={() => handleStepComplete('delivery')}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    {fulfillmentType === 'delivery' && (
+                    {fulfillmentType !== 'pickup' && (
                         <AccordionItem
                             value="shipping"
                             className="border rounded-lg px-6"
@@ -116,7 +92,7 @@ export default function CheckoutFlow() {
                                             ? 'bg-green-500 text-white'
                                             : currentStep === 'shipping'
                                                 ? 'bg-primary text-primary-foreground'
-                                                : 'bg-muted text-muted-foreground'
+                                                : 'bg-muted text-foreground'
                                         }`}>
                                         {completedSteps.has('shipping') ? '✓' : getStepNumber('shipping')}
                                     </div>
@@ -132,6 +108,34 @@ export default function CheckoutFlow() {
                     )}
 
                     <AccordionItem
+                        value="delivery"
+                        className="border rounded-lg px-6"
+                        disabled={!canAccessStep('delivery')}
+                    >
+                        <AccordionTrigger
+                            className="hover:no-underline"
+                            disabled={!canAccessStep('delivery')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${completedSteps.has('delivery')
+                                        ? 'bg-green-500 text-white'
+                                        : currentStep === 'delivery'
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'bg-muted text-foreground'
+                                    }`}>
+                                    {completedSteps.has('delivery') ? '✓' : getStepNumber('delivery')}
+                                </div>
+                                <span className="text-lg font-semibold">Método de Entrega</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-4">
+                            <DeliveryStep
+                                onComplete={() => handleStepComplete('delivery')}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+
+                    <AccordionItem
                         value="payment"
                         className="border rounded-lg px-6"
                         disabled={!canAccessStep('payment')}
@@ -145,7 +149,7 @@ export default function CheckoutFlow() {
                                         ? 'bg-green-500 text-white'
                                         : currentStep === 'payment'
                                             ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground'
+                                            : 'bg-muted text-foreground'
                                     }`}>
                                     {completedSteps.has('payment') ? '✓' : getStepNumber('payment')}
                                 </div>
@@ -171,7 +175,7 @@ export default function CheckoutFlow() {
                             <div className="flex items-center gap-3">
                                 <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${currentStep === 'review'
                                         ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted text-muted-foreground'
+                                        : 'bg-muted text-foreground'
                                     }`}>
                                     {getStepNumber('review')}
                                 </div>

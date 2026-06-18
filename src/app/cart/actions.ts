@@ -1,11 +1,13 @@
 'use server';
 
 import { getAuthToken } from '@/lib/auth';
+import { getCartId } from '@/lib/cart';
 import useShopModel from '@/lib/models/shop.model';
 import {
     applyPromotionCode as apiApplyPromotion,
     removeFromCart as apiRemoveFromCart,
-    removePromotionCode as apiRemovePromotion
+    removePromotionCode as apiRemovePromotion,
+    repriceCart,
 } from '@/lib/swipall/rest-adapter';
 import { updateTag } from 'next/cache';
 
@@ -59,6 +61,25 @@ export async function removePromotionCode(formData: FormData) {
     } catch (error) {
         console.error('Error removing promotion:', error);
         throw error;
+    }
+}
+
+// Reprica el carrito cuando la price_list del cliente cambió.
+// Retorna true si el repricing se ejecutó, false si no había carrito o no hay cambio.
+// Errores silenciados — best-effort.
+export async function repricePriceListCart(
+    localPriceListId: string | null | undefined,
+    remotePriceListId: string | null | undefined
+): Promise<boolean> {
+    if (localPriceListId === remotePriceListId) return false;
+    try {
+        const cartId = await getCartId();
+        if (!cartId) return false;
+        await repriceCart(cartId);
+        updateTag('cart');
+        return true;
+    } catch {
+        return false;
     }
 }
 

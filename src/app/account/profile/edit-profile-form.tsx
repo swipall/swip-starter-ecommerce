@@ -32,15 +32,15 @@ export function EditProfileForm({ customer }: EditProfileFormProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
+                <CardTitle>Información personal</CardTitle>
                 <CardDescription>
-                    Update your personal details.
+                    Actualiza los detalles de tu información.
                 </CardDescription>
             </CardHeader>
             <form id="edit-profile-form" action={formAction}>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
+                        <Label htmlFor="firstName">Name</Label>
                         <Input
                             id="firstName"
                             name="firstName"
@@ -52,7 +52,7 @@ export function EditProfileForm({ customer }: EditProfileFormProps) {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
+                        <Label htmlFor="lastName">Apellidos</Label>
                         <Input
                             id="lastName"
                             name="lastName"
@@ -64,7 +64,7 @@ export function EditProfileForm({ customer }: EditProfileFormProps) {
                         />
                     </div>
                     <Button type="submit" disabled={isPending}>
-                        {isPending ? 'Updating...' : 'Update Profile'}
+                        {isPending ? 'Updating...' : 'Actualizar perfil'}
                     </Button>
                 </CardContent>
             </form>

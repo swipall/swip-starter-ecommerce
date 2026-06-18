@@ -45,7 +45,7 @@ export function HomeBannerSliderSection({
 
     return (
         <section className="container mx-auto px-3 py-3 md:px-6 md:py-6">
-            <div className="relative w-full overflow-hidden rounded-2xl border border-transparent animate-[goldBorderIn_2s_ease-out_0.3s_forwards]">
+            <div className="relative w-full overflow-hidden">
                 <Carousel
                     opts={{
                         align: "start",
@@ -110,7 +110,7 @@ function BannerSliderItemFull({ item }: { item: CmsPost }) {
                 width={0}
                 height={0}
                 sizes="100vw"
-                className="w-full h-auto block"
+                className="w-full h-auto block rounded-2xl"
                 priority
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
@@ -173,7 +173,7 @@ function BannerSliderItemSimple({ item }: { item: CmsPost }) {
             width={0}
             height={0}
             sizes="100vw"
-            className="w-full h-auto block"
+            className="w-full h-auto block rounded-2xl"
             priority
         />
     );

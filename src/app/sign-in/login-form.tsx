@@ -104,7 +104,7 @@ export function LoginForm({redirectTo}: LoginFormProps) {
                                         <FormLabel>Contraseña</FormLabel>
                                         <Link
                                             href="/forgot-password"
-                                            className="text-muted-foreground hover:text-primary text-sm"
+                                            className="text-foreground hover:text-primary text-sm"
                                         >
                                             ¿Olvidaste tu contraseña?
                                         </Link>
@@ -122,7 +122,7 @@ export function LoginForm({redirectTo}: LoginFormProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword((prev) => !prev)}
-                                                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                                                className="absolute inset-y-0 right-0 flex items-center px-3 text-foreground hover:text-foreground"
                                                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                                             >
                                                 {showPassword ? (
@@ -143,7 +143,7 @@ export function LoginForm({redirectTo}: LoginFormProps) {
                         </Button>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4 mt-2">
-                        <div className="text-muted-foreground text-sm text-center">
+                        <div className="text-foreground text-sm text-center">
                             ¿No tienes una cuenta?{' '}
                             <Link href={registerHref} className="hover:text-primary underline">
                                 Regístrate

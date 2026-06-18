@@ -6,9 +6,13 @@ import {
     setShippingAddress as apiSetShippingAddress,
     createMpPreference,
     updateCartDeliveryInfo,
+    setOrderRequested,
+    getShippingQuotes,
+    setShipmentRate,
+    getActiveOrder,
 } from '@/lib/swipall/rest-adapter';
-import { InterfaceInventoryItem, ShopCart } from '@/lib/swipall/types/types';
-import { createAddress, createCustomerInfo } from '@/lib/swipall/users';
+import { InterfaceApiShippingQuoteResponse, InterfaceInventoryItem, Order, ShopCart, ShippingRate } from '@/lib/swipall/types/types';
+import { createAddressServer, createCustomerInfoServer } from '@/lib/swipall/users/server';
 import { AddressInterface } from '@/lib/swipall/users/user.types';
 import { revalidatePath } from 'next/cache';
 import { getAuthUserCustomerId } from '@/lib/auth';
@@ -41,7 +45,7 @@ export async function registerCustomerInfo(address: Partial<AddressInterface>): 
     address: AddressInterface;
 }> {
     try {
-        const result = await createCustomerInfo(address, { useAuthToken: true });
+        const result = await createCustomerInfoServer(address);
         revalidatePath('/checkout');
         return result;
     } catch (error) {
@@ -51,7 +55,7 @@ export async function registerCustomerInfo(address: Partial<AddressInterface>): 
 
 export async function createCustomerAddress(address: Partial<AddressInterface>): Promise<AddressInterface> {
     try {
-        const result = await createAddress(address, { useAuthToken: true });
+        const result = await createAddressServer(address);
         revalidatePath('/checkout');
         return result;
     } catch (error) {
@@ -59,7 +63,7 @@ export async function createCustomerAddress(address: Partial<AddressInterface>):
     }
 }
 
-export async function updateShippingAddressForCart(addressId: string) {
+export async function updateShippingAddressForCart(addressId: string): Promise<Order | null> {
     try {
         const shopModel = useShopModel();
         const cartId = await shopModel.getCurrentCartId();
@@ -69,6 +73,7 @@ export async function updateShippingAddressForCart(addressId: string) {
             });
         }
         revalidatePath('/checkout');
+        return getActiveOrder({ useAuthToken: true, mutateCookies: false });
     } catch (error) {
         throw new Error('Failed to update shipping address');
     }
@@ -99,9 +104,8 @@ const onProcessCardPayment = async (): Promise<{ type: 'redirect' | 'navigate'; 
                 throw new Error('No se pudo crear la preferencia de pago de Mercado Pago.' + response.mp_preference.preference.message);
             }
         }
+        // const initPoint = response.mp_preference.preference.sandbox_init_point;
         const initPoint = response.mp_preference.preference.init_point;
-        await shopModel.cleanCurrentCart();
-        
         return { type: 'redirect', url: initPoint };
     } catch (error) {
         throw error;
@@ -213,7 +217,43 @@ export async function fetchAddresses() {
         console.error('Error fetching user addresses:', error);
         throw error;
     }
-
 }
 
+export async function getShippingQuotesAction(addressId: string): Promise<InterfaceApiShippingQuoteResponse> {
+    const shopModel = useShopModel();
+    const cartId = await shopModel.getCurrentCartId();
+    if (!cartId) {
+        throw new Error('No cart ID found while requesting shipping quotes');
+    }
+    return getShippingQuotes(cartId, addressId);
+}
+
+export async function setShipmentRatesAction(
+    shipments: { shipmentId: string; rate: ShippingRate }[]
+): Promise<Order | null> {
+    await Promise.all(
+        shipments.map(({ shipmentId, rate }) => setShipmentRate(shipmentId, rate))
+    );
+    const totalAmount = shipments.reduce((sum, { rate }) => sum + rate.amount, 0);
+    return injectShippingServiceItemAction(totalAmount, false);
+}
+
+export async function injectShippingServiceItemAction(rateAmount: number, isFreeShipping: boolean): Promise<Order | null> {
+    const customerId = await getAuthUserCustomerId();
+    const shopModel = useShopModel();
+    const cartId = await shopModel.getCurrentCartId();
+    if (!cartId) {
+        throw new Error('No cart ID found while injecting shipping service item');
+    }
+    const results = await shopModel.fetchDeliveryConcept(customerId);
+    if (results.length === 0) return null;
+    const deliveryServiceItem = results[0];
+    const price = isFreeShipping ? 0 : rateAmount;
+    const { AddItemStrategyFactory } = await import('@/lib/strategies/shop/cart/add-item');
+    const factory = new AddItemStrategyFactory(shopModel);
+    const itemWithPrice = { ...deliveryServiceItem, web_price: String(price) };
+    const strategy = factory.getStrategy(itemWithPrice);
+    await strategy.addItemToCart(cartId, itemWithPrice.id, { item: itemWithPrice.id, quantity: 1, price }, itemWithPrice);
+    return getActiveOrder({ useAuthToken: true, mutateCookies: false });
+}
 

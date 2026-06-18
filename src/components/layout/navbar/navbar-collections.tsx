@@ -1,4 +1,6 @@
 import { NavbarLink } from '@/components/layout/navbar/navbar-link';
+import { NavbarDropdownItem } from '@/components/layout/navbar/navbar-dropdown-item';
+import { getMenuItemHref } from '@/components/layout/navbar/navbar-menu-helpers';
 import {
     NavigationMenu,
     NavigationMenuItem,
@@ -11,24 +13,36 @@ import { cacheLife } from 'next/cache';
 export async function NavbarCollections() {
     "use cache";
     cacheLife('days');
-    const params = { parent__slug: 'menu-principal' }
-    const taxonomies = await getPosts(params);
-    const redirectUrl = (collection: CmsPost) => {
-        if(collection.link){
-            return collection.link;
-        }
-        return `/collection/${collection.slug}`;
-    }    
+
+    const topLevel = await getPosts({ parent__slug: 'menu-principal', ordering: 'ordering' });
+
+    const itemsWithChildren = await Promise.all(
+        (topLevel?.results ?? []).map(async (item: CmsPost) => {
+            const children = await getPosts({ parent__slug: item.slug });
+            return { ...item, children: children?.results ?? [] };
+        })
+    );
+    const redirectUrl = (item: CmsPost) => getMenuItemHref(item);
+
     return (
         <NavigationMenu>
             <NavigationMenuList>
-                {(taxonomies?.results ?? []).map((collection: CmsPost) => (
-                    <NavigationMenuItem key={collection.slug}>
-                        <NavbarLink href={redirectUrl(collection)}>
-                            {collection.title}
-                        </NavbarLink>
-                    </NavigationMenuItem>
-                ))}
+                {itemsWithChildren.map((item) =>
+                    item.children.length > 0 ? (
+                        <NavbarDropdownItem
+                            key={item.slug}
+                            title={item.title}
+                            href={redirectUrl(item)}
+                            items={item.children}
+                        />
+                    ) : (
+                        <NavigationMenuItem key={item.slug}>
+                            <NavbarLink href={redirectUrl(item)}>
+                                {item.title}
+                            </NavbarLink>
+                        </NavigationMenuItem>
+                    )
+                )}
             </NavigationMenuList>
         </NavigationMenu>
     );

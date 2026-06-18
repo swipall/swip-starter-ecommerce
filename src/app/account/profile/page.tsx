@@ -1,13 +1,11 @@
 import type {Metadata} from 'next';
 import { getAuthToken } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { ChangePasswordForm } from './change-password-form';
 
 export const metadata: Metadata = {
     title: 'Profile',
 };
-import { ChangePasswordForm } from './change-password-form';
-import { EditProfileForm } from './edit-profile-form';
-import { EditEmailForm } from './edit-email-form';
 
 export default async function ProfilePage(_props: PageProps<'/account/profile'>) {
     const authToken = await getAuthToken();
@@ -18,15 +16,11 @@ export default async function ProfilePage(_props: PageProps<'/account/profile'>)
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold">Profile</h1>
-                <p className="text-muted-foreground mt-2">
-                    Manage your account information
+                <h1 className="text-2xl md:text-3xl font-bold">Mi perfil</h1>
+                <p className="text-foreground mt-2">
+                    Administra la información de tu cuenta
                 </p>
             </div>
-
-            <EditProfileForm customer={null} />
-
-            <EditEmailForm currentEmail={''} />
 
             <ChangePasswordForm />
         </div>

@@ -4,13 +4,13 @@ import {
     updateCustomerAddress as apiUpdateAddress,
     deleteCustomerAddress as apiDeleteAddress,
 } from '@/lib/swipall/rest-adapter';
-import { createAddress as createApiAddress } from '@/lib/swipall/users';
+import { createAddressServer as createApiAddress } from '@/lib/swipall/users/server';
 import { revalidatePath } from 'next/cache';
 import { AddressInterface } from '@/lib/swipall/users/user.types';
 
 export async function createAddress(address: Partial<AddressInterface>) {
     try {
-        const result = await createApiAddress(address, { useAuthToken: true });
+        const result = await createApiAddress(address);
         revalidatePath('/account/addresses');
         return result;
     } catch (error) {        

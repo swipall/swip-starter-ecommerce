@@ -20,8 +20,10 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
         (method) => method.id === selectedPaymentMethodCode
     );
 
-    const isForDelivery = order.for_delivery;
-    const isForPickup = order.for_pickup;
+    const isForDelivery = fulfillmentType === 'delivery';
+    const isForPickup = fulfillmentType === 'pickup';
+    const shippingLine = order.lines.find(l => l.item.name.toUpperCase().includes('ENVIO'));
+    const shippingPrice = shippingLine ? parseFloat(shippingLine.total) : null;
     const handlePlaceOrder = async () => {        
         if (!selectedPaymentMethodCode) return;
 
@@ -53,23 +55,23 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
                 {fulfillmentType === 'delivery' && (
                     <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                            <MapPin className="h-5 w-5 text-muted-foreground" />
+                            <MapPin className="h-5 w-5 text-foreground" />
                             <h4 className="font-medium">Dirección de envío</h4>
                         </div>
                         {order.shipment_address ? (
                             <div className="text-sm space-y-3">
                                 <div>
                                     <p className="font-medium">{order.shipment_address.receiver || 'Sin nombre'}</p>
-                                    <p className="text-muted-foreground">{order.shipment_address.address}</p>
+                                    <p className="text-foreground">{order.shipment_address.address}</p>
                                     {order.shipment_address.suburb && (
-                                        <p className="text-muted-foreground">{order.shipment_address.suburb}</p>
+                                        <p className="text-foreground">{order.shipment_address.suburb}</p>
                                     )}
-                                    <p className="text-muted-foreground">
+                                    <p className="text-foreground">
                                         {order.shipment_address.city}, {order.shipment_address.state} {order.shipment_address.postal_code}
                                     </p>
-                                    <p className="text-muted-foreground">{order.shipment_address.country}</p>
+                                    <p className="text-foreground">{order.shipment_address.country}</p>
                                     {order.shipment_address.mobile && (
-                                        <p className="text-muted-foreground">{order.shipment_address.mobile}</p>
+                                        <p className="text-foreground">{order.shipment_address.mobile}</p>
                                     )}
                                 </div>
                                 <Button
@@ -82,7 +84,7 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
                                 </Button>
                             </div>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No hay dirección de envío configurada</p>
+                            <p className="text-sm text-foreground">No hay dirección de envío configurada</p>
                         )}
                     </div>
                 )}
@@ -90,27 +92,29 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
                 {/* Delivery Method */}
                 <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                        <Truck className="h-5 w-5 text-muted-foreground" />
+                        <Truck className="h-5 w-5 text-foreground" />
                         <h4 className="font-medium">Método de entrega</h4>
                     </div>
                     <div className="text-sm space-y-3">
                         <div>
-                            {isForDelivery && deliveryItem ? (
+                            {isForDelivery ? (
                                 <>
                                     <p className="font-medium">Entrega a domicilio</p>
-                                    <p className="text-muted-foreground">
-                                        {deliveryItem.web_price && parseFloat(deliveryItem.web_price) > 0
-                                            ? <Price value={Number(deliveryItem.web_price)} />
-                                            : 'GRATIS'}
+                                    <p className="text-foreground">
+                                        {shippingPrice !== null
+                                            ? shippingPrice > 0 ? <Price value={shippingPrice} /> : 'GRATIS'
+                                            : deliveryItem && parseFloat(deliveryItem.price) > 0
+                                                ? <Price value={Number(deliveryItem.price)} />
+                                                : 'GRATIS'}
                                     </p>
                                 </>
                             ) : isForPickup ? (
                                 <>
                                     <p className="font-medium">Recoger en tienda</p>
-                                    <p className="text-muted-foreground">Sin costo</p>
+                                    <p className="text-foreground">Sin costo</p>
                                 </>
                             ) : (
-                                <p className="text-muted-foreground">No hay método de entrega seleccionado</p>
+                                <p className="text-foreground">No hay método de entrega seleccionado</p>
                             )}
                         </div>
                         <Button
@@ -127,7 +131,7 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
                 {/* Payment Method */}
                 <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5 text-muted-foreground" />
+                        <CreditCard className="h-5 w-5 text-foreground" />
                         <h4 className="font-medium">Método de pago</h4>
                     </div>
                     {selectedPaymentMethod ? (
@@ -135,7 +139,7 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
                             <div>
                                 <p className="font-medium">{selectedPaymentMethod.label}</p>
                                 {selectedPaymentMethod.description && (
-                                    <p className="text-muted-foreground mt-1">
+                                    <p className="text-foreground mt-1">
                                         {selectedPaymentMethod.description}
                                     </p>
                                 )}
@@ -150,7 +154,7 @@ export default function ReviewStep({ onEditStep }: ReviewStepProps) {
                             </Button>
                         </div>
                     ) : (
-                        <p className="text-sm text-muted-foreground">No hay método de pago seleccionado</p>
+                        <p className="text-sm text-foreground">No hay método de pago seleccionado</p>
                     )}
                 </div>
             </div>

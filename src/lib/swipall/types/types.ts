@@ -117,6 +117,7 @@ export interface InterfaceInventoryItem {
     sku: string;
     slug: string;
     taxonomy: TaxonomyInterface[];
+    price: string;
     web_price: string;
     extra_materials?: any[];
     description?: string;
@@ -130,6 +131,7 @@ export interface ProductVariant {
     id: string;
     slug: string;
     name: string;
+    price: string;
     web_price: string;
     sku: string;
     barcode: string | null;
@@ -235,6 +237,7 @@ export interface TaxonomyInterface {
     icon?: string;
     color?: string;
     imagen?: string;
+    products_count?: number;
 }
 
 // ============================================================================
@@ -440,4 +443,26 @@ export interface UpdateCartDeliveryInfoBody {
     shipment_address?: string | null;
     status?: 3;
     external_reference?: string | null;
+}
+
+// ============================================================================
+// Shipping Quote Types
+// ============================================================================
+
+export interface ShippingRate {
+    provider: string;
+    amount: number;
+    object_id: number;
+    [key: string]: unknown;
+}
+
+export interface ShipmentQuote {
+    id: string;
+    weight: number;
+    rates: ShippingRate[];
+}
+
+export interface InterfaceApiShippingQuoteResponse {
+    shipments: ShipmentQuote[];
+    free_shipping: boolean;
 }

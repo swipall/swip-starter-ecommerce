@@ -18,7 +18,7 @@ function VerifyLoading() {
                 </div>
                 <div className="space-y-2 text-center">
                     <h1 className="text-2xl font-bold">Verifying Your Account</h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-foreground">
                         Please wait while we verify your email address...
                     </p>
                 </div>

@@ -1,6 +1,5 @@
-import { getAuthToken } from '@/lib/auth';
-
 const SWIPALL_API_URL = process.env.SWIPALL_SHOP_API_URL || process.env.NEXT_PUBLIC_SWIPALL_SHOP_API_URL;
+
 const SWIPALL_AUTH_TOKEN_HEADER = process.env.SWIPALL_AUTH_TOKEN_HEADER || 'Authorization';
 const IS_BUILD_TIME = process.env.NEXT_PHASE === 'phase-production-build' || process.env.NODE_ENV === 'production' && !process.env.SWIPALL_SHOP_API_URL && !process.env.NEXT_PUBLIC_SWIPALL_SHOP_API_URL;
 
@@ -162,11 +161,7 @@ async function request<TResult>(
         ...(fetchOptions?.headers as Record<string, string>),
     };
 
-    // Use the explicitly provided token, or fetch from cookies if useAuthToken is true
     let authToken = token;
-    if (useAuthToken && !authToken) {
-        authToken = await getAuthToken();
-    }
 
     if (authToken) {
         // Support both "Bearer token" and plain token formats
@@ -206,12 +201,21 @@ async function request<TResult>(
     } catch (parseError: any) {
         if (parseError instanceof SwipallAPIError) throw parseError;
         console.warn(`[Swipall API] Could not parse response for ${method} ${endpoint} (HTTP ${response.status})`);
+        if (!response.ok) {
+            throw new SwipallAPIError({
+                status: response.status,
+                method,
+                endpoint,
+                message: `API request failed with status ${response.status} for ${method} ${endpoint}`,
+            });
+        }
         return emptyDataFor<TResult>(endpoint);
     }
 
     if (!response.ok) {
         const errorMessage = transformError(result) || `API request failed with status ${response.status} for ${method} ${endpoint}`;
-        console.error(`[Swipall API] Request failed - ${method} ${endpoint}:`, {
+        const logFn = response.status === 404 ? console.warn : console.error;
+        logFn(`[Swipall API] Request failed - ${method} ${endpoint}:`, {
             status: response.status,
             statusText: response.statusText,
             error: result.error || result.errors,

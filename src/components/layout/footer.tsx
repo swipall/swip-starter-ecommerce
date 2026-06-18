@@ -1,108 +1,103 @@
-import { getTaxonomies } from '@/lib/swipall/rest-adapter';
-import { TaxonomyInterface } from '@/lib/swipall/types/types';
+import { getPosts } from '@/lib/swipall/rest-adapter';
+import { CmsPost } from '@/lib/swipall/types/types';
 import { cacheLife } from 'next/cache';
 import Image from "next/image";
 import Link from "next/link";
 
+const FOOTER_MENUS = [
+    { slug: 'informacion',        title: 'Información' },
+    { slug: 'ayuda',              title: 'Ayuda' },
+    { slug: 'datos-de-contacto',  title: 'Datos de Contacto' },
+];
 
-async function Copyright() {
-    'use cache'
-    cacheLife('days');
-
-    return (
-        <div>
-            © {new Date().getFullYear()} Vendure Store. All rights reserved.
-        </div>
-    )
+async function fetchMenuChildren(parentSlug: string): Promise<CmsPost[]> {
+    try {
+        const res = await getPosts({ parent__slug: parentSlug, ordering: 'ordering' });
+        return res?.results ?? [];
+    } catch {
+        return [];
+    }
 }
 
-async function fetchFooterCollections() {
-    try {
-        const params = {
-            kind: 'family',
-            is_visible_on_web: true,
-        }
-        return await getTaxonomies(params);
-    } catch (error) {
-        return { results: [], count: 0, next: null, previous: null };
-    }
-
+async function Copyright() {
+    'use cache';
+    cacheLife('days');
+    return (
+        <div className='text-muted-foreground'>
+            © {new Date().getFullYear()} KOI Collectibles. All rights reserved.
+        </div>
+    );
 }
 
 export async function Footer() {
-    'use cache'
+    'use cache';
     cacheLife('days');
-    const collections = await fetchFooterCollections();
+
+    const menus = await Promise.all(
+        FOOTER_MENUS.map(async (menu) => ({
+            ...menu,
+            items: await fetchMenuChildren(menu.slug),
+        }))
+    );
 
     return (
         <footer className="border-t border-border mt-auto">
             <div className="container mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div>
-                        <p className="text-sm font-semibold mb-4 uppercase tracking-wider">
-                            Vendure Store
-                        </p>
+
+                    {/* Brand column */}
+                    <div className="flex flex-col gap-4">
+                        <Link href="/">
+                            <Image
+                                src="https://mmcb.b-cdn.net/media/attachments/0/c/4/0/60593b52331c1146353026da4cbc9ffbfd78b635db83fca47b25690df620/logo.jpg"
+                                alt="Koi Collectibles"
+                                width={120}
+                                height={40}
+                                className="h-12 w-auto rounded-md"
+                            />
+                        </Link>
                     </div>
 
-                    {/* <div>
-                        <p className="text-sm font-semibold mb-4">Categorías</p>
-                    
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            {collections.results.map((collection: TaxonomyInterface) => (
-                                <li key={collection.id}>
-                                    <Link
-                                        href={`/collection/${collection.slug}`}
-                                        className="hover:text-primary transition-colors"
-                                    >
-                                        {collection.value}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div> */}
-
-                    <div>
-                        <h4 className="text-sm font-semibold mb-4">Vendure</h4>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li>
-                                <a
-                                    href="https://github.com/vendure-ecommerce"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="hover:text-primary transition-colors"
-                                >
-                                    GitHub
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="https://docs.vendure.io"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="hover:text-primary transition-colors"
-                                >
-                                    Documentation
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="https://github.com/vendure-ecommerce/vendure"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="hover:text-primary transition-colors"
-                                >
-                                    Source code
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                    {/* Dynamic menu columns */}
+                    {menus.map((menu) => (
+                        <div key={menu.slug}>
+                            <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider text-primary">
+                                {menu.title}
+                            </h4>
+                            <ul className="space-y-2 text-md text-muted-foreground">
+                                {menu.items.length === 0 && (
+                                    <li className="italic opacity-40">Sin contenido</li>
+                                )}
+                                {menu.items.map((item) => (
+                                    <li key={item.slug}>
+                                        {item.link ? (
+                                            <Link
+                                                href={item.link}
+                                                className="hover:text-primary text-muted-foreground transition-colors"
+                                            >
+                                                {item.title}
+                                            </Link>
+                                        ) : (
+                                            <span className="hover:text-primary transition-colors cursor-default">
+                                                {item.title}
+                                                {item.excerpt && (
+                                                    <span className="block text-md mt-0.5 opacity-70">
+                                                        {item.excerpt}
+                                                    </span>
+                                                )}
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
                 </div>
 
-                {/* Bottom Section */}
-                <div
-                    className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+                {/* Bottom bar */}
+                <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-foreground">
                     <Copyright />
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                         <span>Powered by</span>
                         <a
                             href="https://swipall.io"
@@ -110,11 +105,18 @@ export async function Footer() {
                             rel="noopener noreferrer"
                             className="hover:text-primary transition-colors"
                         >
-                            <Image src="/swipall-icon.svg" alt="Swipall" width={40} height={27} className="h-4 w-auto dark:invert" />
+                            <Image
+                                src="https://mmcb.b-cdn.net/media/attachments/6/8/3/3/9a8955f143cdd1229610a38bdf23178fe55dcfd46f5ac580fb311c7861ad/logo.avif"
+                                alt="Swipall"
+                                width={40}
+                                height={27}
+                                className="h-4 w-auto dark:invert"
+                            />
                         </a>
                     </div>
                 </div>
             </div>
         </footer>
+        
     );
 }

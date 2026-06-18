@@ -26,13 +26,13 @@ async function VerifyPendingContent({searchParams}: {searchParams: Promise<Recor
                 </div>
                 <div className="space-y-2 text-center">
                     <h1 className="text-2xl font-bold">Verifica tu correo electrónico</h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-foreground">
                         Hemos enviado un enlace de verificación a tu dirección de correo electrónico.
                         Por favor, revisa tu bandeja de entrada y haz clic en el enlace para verificar tu cuenta.
                     </p>
                 </div>
                 <div className="bg-muted p-4 rounded-md">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground">
                         ¿No ves el correo electrónico? Revisa tu carpeta de spam o solicita un nuevo enlace de verificación.
                     </p>
                 </div>

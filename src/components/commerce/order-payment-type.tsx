@@ -1,6 +1,7 @@
 import { OrderPaymentType } from "@/app/account/orders/types";
 
-export default function PaymentTypeTextComponent({ paymentType }: { paymentType: OrderPaymentType }) {
+export default function PaymentTypeTextComponent({ paymentType, kind }: { paymentType: OrderPaymentType; kind?: string }) {
+    if (kind === "requested") return null;
 
     const paymentTypeText = (paymentType: string): string => {
         switch (paymentType as OrderPaymentType) {

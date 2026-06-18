@@ -29,15 +29,15 @@ export function EditEmailForm({ currentEmail }: EditEmailFormProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Email Address</CardTitle>
+                <CardTitle>Correo electrónico</CardTitle>
                 <CardDescription>
-                    Update your email address. You'll need to verify the new email.
+                    Actualiza tu dirección de correo electrónico. Deberás verificar la nueva dirección de correo electrónico.
                 </CardDescription>
             </CardHeader>
             <form id="edit-email-form" action={formAction}>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="currentEmail">Current Email</Label>
+                        <Label htmlFor="currentEmail">Correo actual</Label>
                         <Input
                             id="currentEmail"
                             type="email"
@@ -47,7 +47,7 @@ export function EditEmailForm({ currentEmail }: EditEmailFormProps) {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="newEmailAddress">New Email Address</Label>
+                        <Label htmlFor="newEmailAddress">Ingresa el nuevo correo electrónico</Label>
                         <Input
                             id="newEmailAddress"
                             name="newEmailAddress"
@@ -58,7 +58,7 @@ export function EditEmailForm({ currentEmail }: EditEmailFormProps) {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="password">Current Password</Label>
+                        <Label htmlFor="password">Contraseña actual</Label>
                         <Input
                             id="password"
                             name="password"
@@ -67,12 +67,12 @@ export function EditEmailForm({ currentEmail }: EditEmailFormProps) {
                             required
                             disabled={isPending}
                         />
-                        <p className="text-xs text-muted-foreground">
-                            Enter your password to confirm this change.
+                        <p className="text-xs text-foreground">
+                            Introduce tu contraseña para confirmar este cambio.
                         </p>
                     </div>
                     <Button type="submit" disabled={isPending}>
-                        {isPending ? 'Sending...' : 'Update Email'}
+                        {isPending ? 'Sending...' : 'Actualizar correo electrónico'}
                     </Button>
                 </CardContent>
             </form>

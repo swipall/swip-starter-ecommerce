@@ -38,16 +38,20 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
     const [variants, setVariants] = useState<VariantOption[]>([]);
     const [selectedSizeId, setSelectedSizeId] = useState<string>('');
     const [selectedColorId, setSelectedColorId] = useState<string>('');
-    
+
     const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
-    
+
     const itemPrice = useMemo(() => {
-        let basePrice = product.web_price ? parseFloat(product.web_price) : 0;
-        
         if (product.kind === ProductKind.Group && selectedVariant) {
-            basePrice = parseFloat(selectedVariant.web_price);
+            const variantPrice = parseFloat(selectedVariant.price) || 0;
+            const variantWebPrice = parseFloat(selectedVariant.web_price) || 0;
+            return variantPrice || variantWebPrice;
         }
-        
+
+        const priceVal = parseFloat(product.price) || 0;
+        const webPriceVal = parseFloat(product.web_price) || 0;
+        const basePrice = priceVal || webPriceVal;
+
         if (product.kind === ProductKind.Compound) {
             const materialsPrice = selectedMaterials.reduce(
                 (sum, material) => sum + (parseFloat(material.price) || 0),
@@ -55,10 +59,22 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
             );
             return basePrice + materialsPrice;
         }
-        
+
         return basePrice;
     }, [product, selectedVariant, selectedMaterials]);
-    
+
+    const originalPrice = useMemo(() => {
+        if (product.kind === ProductKind.Group && selectedVariant) {
+            const variantPrice = parseFloat(selectedVariant.price) || 0;
+            const variantWebPrice = parseFloat(selectedVariant.web_price) || 0;
+            return variantWebPrice > variantPrice ? variantWebPrice : undefined;
+        }
+        const priceVal = parseFloat(product.price) || 0;
+        const webPriceVal = parseFloat(product.web_price) || 0;
+        const finalPrice = priceVal || webPriceVal;
+        return webPriceVal > finalPrice ? webPriceVal : undefined;
+    }, [product, selectedVariant]);
+
     const materialIdToTaxonomy = useMemo(() => {
         const map = new Map<string, string>();
         product.extra_materials?.forEach(group => {
@@ -155,12 +171,12 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
                 const existingMaterial = prev.find(
                     m => materialIdToTaxonomy.get(m.id) === materialTaxonomy
                 );
-                
+
                 if (existingMaterial) {
                     return prev.map(m => m.id === existingMaterial.id ? material : m);
                 }
             }
-            
+
             return [...prev, material];
         });
     }, [materialIdToTaxonomy]);
@@ -172,7 +188,7 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
             });
             return;
         }
-        
+
         if (product.kind === ProductKind.Compound && !user) {
             toast.error('Error', {
                 description: 'Por favor inicia sesión para agregar productos compuestos',
@@ -180,15 +196,15 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
             router.push(`/sign-in?redirectTo=/product/${product.id}`);
             return;
         }
-        
+
         const itemId = product.kind === ProductKind.Group ? selectedVariant?.id : product.id;
         if (!itemId) return;
 
         startTransition(async () => {
             const addToCartParams = {
                 quantity: 1,
-                extra_materials: product.kind === ProductKind.Compound 
-                    ? selectedMaterials.map(mat => ({ material_id: mat.id, name: mat.name })) 
+                extra_materials: product.kind === ProductKind.Compound
+                    ? selectedMaterials.map(mat => ({ material_id: mat.id, name: mat.name }))
                     : [],
                 price: itemPrice,
                 item: itemId
@@ -211,23 +227,23 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
         });
     }, [product, selectedVariant, selectedMaterials, user, router, itemPrice]);
 
-    const isInStock = useMemo(() => 
+    const isInStock = useMemo(() =>
         product.kind === ProductKind.Group
             ? (selectedVariant?.available?.quantity ?? 0) > 0
             : (product.available?.quantity ?? 0) > 0
-    , [product.kind, product.available?.quantity, selectedVariant?.available?.quantity]);
+        , [product.kind, product.available?.quantity, selectedVariant?.available?.quantity]);
 
-    const availableQuantity = useMemo(() => 
+    const availableQuantity = useMemo(() =>
         product.kind === ProductKind.Group
             ? selectedVariant?.available?.quantity ?? 0
             : product.available?.quantity ?? 0
-    , [product.kind, product.available?.quantity, selectedVariant?.available?.quantity]);
+        , [product.kind, product.available?.quantity, selectedVariant?.available?.quantity]);
 
-    const canAddToCart = useMemo(() => 
+    const canAddToCart = useMemo(() =>
         product.kind === ProductKind.Group
             ? !!selectedVariant && isInStock
             : isInStock
-    , [product.kind, selectedVariant, isInStock]);
+        , [product.kind, selectedVariant, isInStock]);
 
     const buttonText = useMemo(() => {
         if (isAdded) return 'Se agregó al carrito';
@@ -241,48 +257,65 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-2xl font-bold mt-2">
-                    <Price value={itemPrice} />
-                </p>
-            </div>
-
-            <div className="prose prose-sm max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: product.description || '' }} />
+            {product.kind === ProductKind.Group ? (
+                selectedVariant?.sku && (
+                    <div className="text-xs text-foreground">
+                        SKU: {selectedVariant.sku}
+                    </div>
+                )
+            ) : (
+                product.sku && (
+                    <div className="text-xs text-foreground">
+                        SKU: {product.sku}
+                    </div>
+                )
+            )}
+            <div className='flex items-center gap-2'>
+                <div className="flex flex-col">
+                    <p className="text-2xl font-bold">
+                        <Price value={itemPrice} />
+                    </p>
+                    {originalPrice && (
+                        <p className="text-sm text-muted-foreground line-through">
+                            <Price value={originalPrice} />
+                        </p>
+                    )}
+                </div>
+                <div className="text-sm">
+                    {isInStock ? (
+                        <span className="bg-emerald-200 text-emerald-900 font-bold px-2 py-1 rounded-full">
+                            {availableQuantity} en existencia
+                        </span>
+                    ) : (
+                        <span className="bg-red-200 text-red-900 px-2 py-1 rounded-full font-bold">Agotado</span>
+                    )}
+                </div>
             </div>
 
             {product.kind === ProductKind.Group && variants.length > 0 && (
-                <ProductVariants 
-                    variants={variants} 
-                    handleAttributeChange={handleAttributeChange} 
-                    selectedSizeId={selectedSizeId} 
-                    selectedColorId={selectedColorId} 
+                <ProductVariants
+                    variants={variants}
+                    handleAttributeChange={handleAttributeChange}
+                    selectedSizeId={selectedSizeId}
+                    selectedColorId={selectedColorId}
                 />
             )}
 
             {product.kind === ProductKind.Compound && product.extra_materials && product.extra_materials.length > 0 && (
-                <CompoundMaterialsSelector 
-                    extraMaterials={product.extra_materials} 
-                    selectedMaterials={selectedMaterials} 
-                    onSelectMaterial={onSelectMaterial} 
-                    onRemoveMaterial={onRemoveMaterial} 
+                <CompoundMaterialsSelector
+                    extraMaterials={product.extra_materials}
+                    selectedMaterials={selectedMaterials}
+                    onSelectMaterial={onSelectMaterial}
+                    onRemoveMaterial={onRemoveMaterial}
                 />
             )}
 
-            <div className="text-sm">
-                {isInStock ? (
-                    <span className="text-green-600 font-medium">
-                        {availableQuantity} en existencia
-                    </span>
-                ) : (
-                    <span className="text-destructive font-medium">Agotado</span>
-                )}
-            </div>
+
 
             <div className="pt-4">
                 <Button
                     size="lg"
-                    className="w-full"
+                    className="w-full text-lg font-bold"
                     disabled={!canAddToCart || isPending}
                     onClick={handleAddToCart}
                 >
@@ -299,36 +332,10 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
                     )}
                 </Button>
             </div>
-            {/* TODO: Remove this after testing */}
-            <div id="TEST_BUTTON">
-                    <Button
-                        size="lg"
-                        className="w-full"
-                        onClick={() => {
-                            testApiMiddleWare().then((res) => {
-                                console.log('TEST BUTTON - API Permissions', res);
-                            }).catch((error) => {
-                                console.error('TEST BUTTON - API Permissions Error', error);
-                            });
-                        }}
-                    >
-                        TEST BUTTON - API Permissions
-                    </Button>
+            <div className="prose prose-sm max-w-none">
+                <div className='text-sm text-primary uppercase my-2 font-semibold'>Descripción</div>
+                <div dangerouslySetInnerHTML={{ __html: product.description || '' }} />
             </div>
-
-            {product.kind === ProductKind.Group ? (
-                selectedVariant?.sku && (
-                    <div className="text-xs text-muted-foreground">
-                        SKU: {selectedVariant.sku}
-                    </div>
-                )
-            ) : (
-                product.sku && (
-                    <div className="text-xs text-muted-foreground">
-                        SKU: {product.sku}
-                    </div>
-                )
-            )}
         </div>
     );
 }

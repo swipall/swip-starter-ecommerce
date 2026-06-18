@@ -38,13 +38,22 @@ export default async function OrdersPage(props: PageProps<'/account/orders'>) {
     const currentPage = parseInt(Array.isArray(pageParam) ? pageParam[0] : pageParam || '1', 10);
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-    const result = await getCustomerOrders(
-        {
-            limit: ITEMS_PER_PAGE,
-            offset,
-        },
-        { useAuthToken: true }
-    );
+    let result;
+    try {
+        result = await getCustomerOrders(
+            {
+                limit: ITEMS_PER_PAGE,
+                offset,
+                kind__in: 'order,requested',
+            },
+            { useAuthToken: true }
+        );
+    } catch (error: any) {
+        if (error?.status === 401) {
+            redirect('/sign-in');
+        }
+        throw error;
+    }
 
     const orders = result.results || [];
     const totalItems = result.count || 0;
@@ -56,7 +65,7 @@ export default async function OrdersPage(props: PageProps<'/account/orders'>) {
 
             {orders.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-muted-foreground">Aún no has realizado ningún pedido.</p>
+                    <p className="text-foreground">Aún no has realizado ningún pedido.</p>
                 </div>
             ) : (
                 <>
@@ -83,14 +92,14 @@ export default async function OrdersPage(props: PageProps<'/account/orders'>) {
                                                 </Link>
                                             </Button>
                                         </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
+                                        <TableCell className="text-sm text-foreground">
                                             {formatDate(order.created_at)}
                                         </TableCell>
                                         <TableCell>
-                                            <OrderStatusComponent className="inline-block px-2 py-1 rounded-md text-xs font-medium bg-muted text-foreground" status={order.status} />
+                                            <OrderStatusComponent className="inline-block px-2 py-1 rounded-md text-xs font-medium bg-muted text-foreground" status={order.status} kind={order.kind} />
                                         </TableCell>
                                         <TableCell>
-                                            <OrderIsPaidComponent className="inline-block px-2 py-1 rounded-md text-xs font-medium bg-muted text-foreground" isPaid={order.is_paid} />
+                                            <OrderIsPaidComponent className="inline-block px-2 py-1 rounded-md text-xs font-medium bg-muted text-foreground" isPaid={order.is_paid} kind={order.kind} />
                                         </TableCell>
                                         <TableCell className="text-right font-medium">
                                             <Price value={parseFloat(order.grand_total)} currencyCode="MXN"/>

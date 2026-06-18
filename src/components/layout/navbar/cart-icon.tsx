@@ -11,12 +11,12 @@ interface CartIconProps {
 
 export function CartIcon({cartItemCount}: CartIconProps) {
     return (
-        <Button variant="ghost" size="icon" asChild className="relative">
+        <Button className="text-primary-foreground dark:text-white relative" variant="ghost" size="icon" asChild >
             <Link href="/cart">
-                <ShoppingCart className="h-5 w-5"/>
+                <ShoppingCart className="h-5 w-5 text-primary-foreground dark:text-white"/>
                 {cartItemCount > 0 && (
                     <span
-                        className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        className="absolute -top-1 -right-1 bg-primary text-primary-foreground dark:text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                         {cartItemCount}
                     </span>
                 )}

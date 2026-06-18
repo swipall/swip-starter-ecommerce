@@ -32,7 +32,7 @@ interface AddressFormData {
 }
 
 export default function ShippingAddressStep({ onComplete }: ShippingAddressStepProps) {
-    const { addresses, order } = useCheckout();
+    const { addresses, order, setOrder } = useCheckout();
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(() => {
         if (order.shipment_address) {
             const matchingAddress = addresses.find(
@@ -67,8 +67,8 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
             const selectedAddress = addresses.find(a => a.id === selectedAddressId);
             if (!selectedAddress) return;
 
-            // Update shipping address using server action
-            await updateShippingAddressForCart(selectedAddress.id);
+            const updatedOrder = await updateShippingAddressForCart(selectedAddress.id);
+            if (updatedOrder) setOrder(updatedOrder);
 
             onComplete();
         } catch (error) {
@@ -90,8 +90,8 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
             }
             const addressData = response;
             if (addressData?.id) {
-                // Update cart with new shipping address using server action
-                await updateShippingAddressForCart(addressData.id);
+                const updatedOrder = await updateShippingAddressForCart(addressData.id);
+                if (updatedOrder) setOrder(updatedOrder);
                 setDialogOpen(false);
                 reset();
                 setSelectedAddressId(addressData.id);
@@ -118,16 +118,16 @@ export default function ShippingAddressStep({ onComplete }: ShippingAddressStepP
                                     <Card className="p-4">
                                         <div className="leading-tight space-y-0">
                                             <p className="font-medium">{address.receiver || 'Sin nombre'}</p>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="text-sm text-foreground">
                                                 {address.address}
                                                 {address.suburb && `, ${address.suburb}`}
                                             </p>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="text-sm text-foreground">
                                                 {address.city}, {address.state} {address.postal_code}
                                             </p>
-                                            <p className="text-sm text-muted-foreground">{address.country}</p>
-                                            {address.mobile && <p className="text-sm text-muted-foreground">{address.mobile}</p>}
-                                            {address.references && <p className="text-sm text-muted-foreground">Referencias: {address.references}</p>}
+                                            <p className="text-sm text-foreground">{address.country}</p>
+                                            {address.mobile && <p className="text-sm text-foreground">{address.mobile}</p>}
+                                            {address.references && <p className="text-sm text-foreground">Referencias: {address.references}</p>}
                                         </div>
                                     </Card>
                                 </Label>

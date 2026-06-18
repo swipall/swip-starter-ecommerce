@@ -1,9 +1,9 @@
 'use server';
 
 
-import { removeAuthToken, setAuthToken } from '@/lib/auth';
+import { removeAuthToken, setAuthToken, setRefreshToken } from '@/lib/auth';
 import { login, logout } from '@/lib/swipall/auth';
-import { getCustomerInfo } from '@/lib/swipall/users';
+import { getCustomerInfoServer } from '@/lib/swipall/users/server';
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -21,7 +21,10 @@ export async function loginAction(prevState: { error?: string } | undefined, for
         // Store the token in a cookie if returned
         if (result?.access_token) {
             await setAuthToken(result.access_token);
-            const userData = await getCustomerInfo({ useAuthToken: true });
+            if (result.refresh_token) {
+                await setRefreshToken(result.refresh_token);
+            }
+            const userData = await getCustomerInfoServer();
             revalidatePath('/', 'layout');
             const user = { ...result.user, ...userData };
             // Return user data to be stored in localStorage from client

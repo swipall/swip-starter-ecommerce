@@ -61,7 +61,7 @@ export default function useShopModel() {
         }
     };
 
-    const updateItemInCart = async (cartId: string, itemId: string, body: { quantity: number }) => {
+    const updateItemInCart = async (cartId: string, itemId: string, body: { quantity: number; price?: number }) => {
         try {
             if (!cartId) {
                 throw new Error("No cart ID provided");

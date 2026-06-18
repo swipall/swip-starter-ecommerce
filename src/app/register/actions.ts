@@ -2,7 +2,7 @@
 
 import { setAuthToken } from '@/lib/auth';
 import { login, registerCustomer } from '@/lib/swipall/auth';
-import { createCustomerInfo } from '@/lib/swipall/users';
+import { createCustomerInfoServer } from '@/lib/swipall/users/server';
 
 export async function registerAction(prevState: { error?: string } | undefined, formData: FormData) {
     const email = formData.get('email') as string;
@@ -64,7 +64,7 @@ export async function registerAction(prevState: { error?: string } | undefined, 
         await setAuthToken(loginResult.access_token);
 
         // Create customer info with the new token
-        await createCustomerInfo(customerInfo, { useAuthToken: true });
+        await createCustomerInfoServer(customerInfo);
 
         // Return user data to be stored in localStorage from client
         return {

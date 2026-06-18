@@ -96,8 +96,13 @@ export function AddressesClient({ addresses }: AddressesClientProps) {
 
     return (
         <>
-            <div className="flex justify-between items-center mb-6">
-                <div></div>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold">Mis Direcciones</h1>
+                    <p className="text-foreground mt-2">
+                        Administra tus direcciones de envío guardadas
+                    </p>
+                </div>
                 <Button onClick={handleAddNew}>
                     <Plus className="mr-2 h-4 w-4" />
                     Agregar nueva dirección
@@ -107,7 +112,7 @@ export function AddressesClient({ addresses }: AddressesClientProps) {
             {addresses.length === 0 ? (
                 <Card>
                     <CardContent className="py-12 text-center">
-                        <p className="text-muted-foreground mb-4">No tienes direcciones guardadas aún</p>
+                        <p className="text-foreground mb-4">No tienes direcciones guardadas aún</p>
                         <Button onClick={handleAddNew}>
                             <Plus className="mr-2 h-4 w-4" />
                             Agregar tu primera dirección
@@ -151,16 +156,29 @@ export function AddressesClient({ addresses }: AddressesClientProps) {
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-sm text-muted-foreground space-y-1">
-                                    <p>{address.address}</p>
-                                    {address.suburb && <p>{address.suburb}</p>}
-                                    <p>
-                                        {address.city}, {address.state} {address.postal_code}
-                                    </p>
-                                    {address.country && <p>{address.country}</p>}
-                                    {address.mobile && <p className="pt-2 font-medium text-foreground">{address.mobile}</p>}
-                                    {address.references && <p className="text-xs">{address.references}</p>}
+                                <div className="text-sm text-foreground space-y-1">
+                                    <div className='border border-muted p-2 rounded-lg'>
+                                        <small className='font-bold text-muted-foreground'>Dirección</small>
+                                        <p>{address.address}</p>
+                                    </div>
+                                    <div className='border border-muted p-2 rounded-lg'>
+                                        <small className='font-bold text-muted-foreground'>Ciudad</small>
+                                        <p>{address.city}, {address.state}, {address.country && <p>{address.country}.</p>}</p>
+                                    </div>
+                                    <div className='border border-muted p-2 rounded-lg'>
+                                        <small className='font-bold text-muted-foreground'>Código Postal y colonia</small>
+                                        <p>{address.postal_code}, {address.suburb}. </p>
+                                    </div>
+                                    <div className='border border-muted p-2 rounded-lg'>
+                                        <small className='font-bold text-muted-foreground'>Teléfono</small>
+                                        {address.mobile && <p className="font-medium text-foreground">{address.mobile}</p>}
+                                    </div>
+                                    <div className='border border-muted p-2 rounded-lg'>
+                                        <small className='font-bold text-muted-foreground'>Referencias</small>
+                                        {address.references && <p className="text-xs">{address.references}.</p>}
+                                    </div>
                                 </div>
+
                             </CardContent>
                         </Card>
                     ))}

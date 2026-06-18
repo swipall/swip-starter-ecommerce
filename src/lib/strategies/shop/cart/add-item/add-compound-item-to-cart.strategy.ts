@@ -18,7 +18,7 @@ export class AddCompoundItemToCartStrategy implements AddItemToCartStrategy {
         this.shopModel = shopModel;
     }
     
-    async addItemToCart(cartId: string, itemId: string, body: AddProductToCartBody): Promise<InterfaceApiDetailResponse<ShopCartItem>> {
+    async addItemToCart(cartId: string, itemId: string, body: AddProductToCartBody, _product?: InterfaceInventoryItem): Promise<InterfaceApiDetailResponse<ShopCartItem>> {
         // Los productos compuestos siempre se añaden como nuevos items
         // debido a que pueden tener diferentes combinaciones de materiales
         return this.shopModel.addItemToCart(cartId, { id: itemId } as InterfaceInventoryItem, body);

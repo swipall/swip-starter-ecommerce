@@ -17,19 +17,27 @@ export class AddSimpleItemToCartStrategy implements AddItemToCartStrategy {
         this.shopModel = shopModel;
     }
     
-    async addItemToCart(cartId: string, itemId: string, body: AddProductToCartBody): Promise<InterfaceApiDetailResponse<ShopCartItem>> {
+    async addItemToCart(cartId: string, itemId: string, body: AddProductToCartBody, product?: InterfaceInventoryItem): Promise<InterfaceApiDetailResponse<ShopCartItem>> {
+        const availableQty = product?.available?.quantity ?? Infinity;
+
         // Verificar si el item ya existe en el carrito
         const result = await this.shopModel.checkIfItemExistsInCart(itemId);
-        
+
         if (result.count > 0) {
-            // Si existe, actualizar la cantidad
             const itemInCart = result.results[0];
-            return this.shopModel.updateItemInCart(cartId, itemInCart.id, { 
-                quantity: itemInCart.quantity + body.quantity 
-            });
+            const newQuantity = itemInCart.quantity + body.quantity;
+
+            if (newQuantity > availableQty) {
+                throw new Error(`Solo hay ${availableQty} unidad${availableQty === 1 ? '' : 'es'} disponible${availableQty === 1 ? '' : 's'} y ya tienes ${itemInCart.quantity} en el carrito`);
+            }
+
+            return this.shopModel.updateItemInCart(cartId, itemInCart.id, { quantity: newQuantity });
         }
-        
-        // Si no existe, añadir nuevo item
+
+        if (body.quantity > availableQty) {
+            throw new Error(`Solo hay ${availableQty} unidad${availableQty === 1 ? '' : 'es'} disponible${availableQty === 1 ? '' : 's'}`);
+        }
+
         return this.shopModel.addItemToCart(cartId, { id: itemId } as InterfaceInventoryItem, body);
     }
     

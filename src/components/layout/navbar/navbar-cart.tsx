@@ -1,19 +1,27 @@
-import { getCurrentCart } from '@/lib/swipall/rest-adapter';
+import { clearCartId } from '@/lib/cart';
+import { getActiveOrder } from '@/lib/swipall/rest-adapter';
+import { SwipallAPIError } from '@/lib/swipall/api';
 import { cacheLife, cacheTag } from 'next/cache';
 import { CartIcon } from './cart-icon';
 
-export async function NavbarCart() {
+async function getCartItemCount(): Promise<number> {
     'use cache: private';
     cacheLife('minutes');
     cacheTag('cart');
     cacheTag('active-order');
 
+    const order = await getActiveOrder({ useAuthToken: true });
+    return order?.lines.filter((line) => !line.item.name.toUpperCase().includes('ENVIO')).length ?? 0;
+}
+
+export async function NavbarCart() {
     try {
-        const order = await getCurrentCart({ useAuthToken: true });        
-        const cartItemCount = order?.count_items.count || 0;
+        const cartItemCount = await getCartItemCount();
         return <CartIcon cartItemCount={cartItemCount} />;
     } catch (error) {
-        // During build or when API is unavailable, show cart with 0 items
+        if (error instanceof SwipallAPIError && error.status === 404) {
+            await clearCartId();
+        }
         return <CartIcon cartItemCount={0} />;
     }
 }

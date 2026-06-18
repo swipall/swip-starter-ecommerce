@@ -1,5 +1,6 @@
 import { connection } from 'next/server';
 import { getOrderDetail } from '@/lib/swipall/rest-adapter';
+import { clearCartId } from '@/lib/cart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
@@ -14,6 +15,8 @@ import ProductExtraMaterialsComponent from '@/components/commerce/product-extra-
 export async function OrderConfirmation({ params }: PageProps<'/order-confirmation/[code]'>) {
     const { code } = await params;
     let orderData: OrderDetailInterface | null = null;
+
+    await clearCartId();
 
     try {
         const result = await getOrderDetail(code, { useAuthToken: true });
@@ -33,7 +36,7 @@ export async function OrderConfirmation({ params }: PageProps<'/order-confirmati
                 <div className="text-center mb-8">
                     <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
                     <h1 className="text-3xl font-bold mb-2">¡Orden Confirmada!</h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-foreground">
                         Gracias por tu orden. Tu número de pedido es {' '}
                         <span className="font-semibold">{orderData.folio}</span>
                     </p>
@@ -59,11 +62,11 @@ export async function OrderConfirmation({ params }: PageProps<'/order-confirmati
                                 )}
                                 <div className="flex-1 min-w-0">
                                     <p className="font-medium">{item.item.name}</p>
-                                    <p className="text-sm text-muted-foreground">SKU: {item.item.sku}</p>
+                                    <p className="text-sm text-foreground">SKU: {item.item.sku}</p>
                                     <ProductExtraMaterialsComponent item={item} />
                                 </div>
                                 <div className="text-center w-16">
-                                    <p className="text-sm text-muted-foreground">Cantidad</p>
+                                    <p className="text-sm text-foreground">Cantidad</p>
                                     <p className="font-medium">{item.quantity}</p>
                                 </div>
                                 <div className="text-right w-24">
@@ -78,24 +81,24 @@ export async function OrderConfirmation({ params }: PageProps<'/order-confirmati
 
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Subtotal</span>
+                                <span className="text-foreground">Subtotal</span>
                                 <span><Price value={parseFloat(orderData.sub_total)} currencyCode="MXN" /></span>
                             </div>
                             {parseFloat(orderData.discount_total) > 0 && (
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Descuento</span>
+                                    <span className="text-foreground">Descuento</span>
                                     <span>-<Price value={parseFloat(orderData.discount_total)} currencyCode="MXN" /></span>
                                 </div>
                             )}
                             {parseFloat(orderData.shipment_total) > 0 && (
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Envío</span>
+                                    <span className="text-foreground">Envío</span>
                                     <span><Price value={parseFloat(orderData.shipment_total)} currencyCode="MXN" /></span>
                                 </div>
                             )}
                             {parseFloat(orderData.tax_total) > 0 && (
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Impuestos</span>
+                                    <span className="text-foreground">Impuestos</span>
                                     <span><Price value={parseFloat(orderData.tax_total)} currencyCode="MXN" /></span>
                                 </div>
                             )}
@@ -138,25 +141,25 @@ export async function OrderConfirmation({ params }: PageProps<'/order-confirmati
                         </CardHeader>
                         <CardContent>
                             <p className="font-medium">{orderData.shipment_address.receiver}</p>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-sm text-foreground mt-1">
                                 {orderData.shipment_address.address}
                             </p>
                             {orderData.shipment_address.suburb && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-foreground">
                                     {orderData.shipment_address.suburb}
                                 </p>
                             )}
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-foreground">
                                 {orderData.shipment_address.city}, {orderData.shipment_address.state}{' '}
                                 {orderData.shipment_address.postal_code}
                             </p>
                             {orderData.shipment_address.country && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-foreground">
                                     {orderData.shipment_address.country}
                                 </p>
                             )}
                             {orderData.shipment_address.mobile && (
-                                <p className="text-sm text-muted-foreground mt-2">
+                                <p className="text-sm text-foreground mt-2">
                                     Tel: {orderData.shipment_address.mobile}
                                 </p>
                             )}

@@ -12,7 +12,7 @@ interface RelatedProductsProps {
 async function getRelatedProducts(collectionSlug: string, currentProductId: string, customerId?: string) {
     'use cache'
     cacheLife('hours')
-    cacheTag(`related-products-${collectionSlug}`)
+    cacheTag(`related-products-${collectionSlug}-${customerId ?? 'anon'}`)
 
     const result = await searchProducts({
         search: collectionSlug,

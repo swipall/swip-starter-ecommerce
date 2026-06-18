@@ -1,5 +1,5 @@
 import { clearCartId, getCartId, setCartId } from '@/lib/cart';
-import { get, patch, post, put, remove } from './api';
+import { get, patch, post, put, remove } from './api-server';
 import type {
     Address,
     AddToCartInput,
@@ -11,9 +11,11 @@ import type {
     CurrentUser,
     InterfaceApiDetailResponse,
     InterfaceApiListResponse,
+    InterfaceApiShippingQuoteResponse,
     InterfaceInventoryItem,
     Order,
     SearchInput,
+    ShippingRate,
     ShopCart,
     ShopCartItem,
     TaxonomyInterface,
@@ -28,6 +30,10 @@ export type { SearchInput } from './types/types';
 // ============================================================================
 // Customer/User Endpoints
 // ============================================================================
+
+export async function getCurrentCustomer(options?: { useAuthToken?: boolean }): Promise<CurrentUser> {
+    return get<CurrentUser>('/customers/me', undefined, { useAuthToken: options?.useAuthToken });
+}
 
 export async function updateCustomer(input: UpdateCustomerInput, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<CurrentUser>> {
     return patch<InterfaceApiDetailResponse<CurrentUser>>('/customers/me', input, { useAuthToken: options?.useAuthToken });
@@ -84,8 +90,22 @@ export async function getPosts(params: any): Promise<InterfaceApiListResponse<Cm
     return get<InterfaceApiListResponse<CmsPost>>('/api/v1/cms/posts', params);
 }
 
-export async function getPostDetail(slug: string): Promise<CmsPost> {
-    return get<CmsPost>(`/api/v1/cms/post/${slug}`);
+export async function getPostDetail(slug: string): Promise<CmsPost | null> {
+    try {
+        const response = await get<any>(`/api/v1/cms/post/${slug}`);
+        if (!response) return null;
+        // Handle wrapped response { data: CmsPost }
+        if (response.data && typeof response.data === 'object' && 'slug' in response.data) {
+            return response.data as CmsPost;
+        }
+        // Handle direct response
+        if ('slug' in response) {
+            return response as CmsPost;
+        }
+        return null;
+    } catch {
+        return null;
+    }
 }
 
 // ============================================================================
@@ -134,6 +154,12 @@ export async function searchProducts(input: SearchInput, customerId?: string): P
 // Cart/Order Endpoints
 // ============================================================================
 
+async function clearCartIdOn404(error: unknown): Promise<void> {
+    if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
+        await clearCartId();
+    }
+}
+
 export async function getCurrentCart(options?: { useAuthToken?: boolean, cartId?: string }): Promise<ShopCart | null> {
     try {
         const storedCartId = options?.cartId || await getCartId();
@@ -143,6 +169,7 @@ export async function getCurrentCart(options?: { useAuthToken?: boolean, cartId?
         const response = await get<ShopCart>(`/api/v1/shop/cart/${storedCartId}`, undefined, { useAuthToken: options?.useAuthToken });
         return response;
     } catch (error) {
+        await clearCartIdOn404(error);
         return null;
     }
 }
@@ -152,22 +179,26 @@ export async function getCartItems(options?: { useAuthToken?: boolean; cartId?: 
     if (!storedCartId) {
         return [];
     }
-    const response = await get<InterfaceApiDetailResponse<ShopCartItem[]> | InterfaceApiListResponse<ShopCartItem>>(
-        `/api/v1/shop/cart/${storedCartId}/items`,
-        undefined,
-        { useAuthToken: options?.useAuthToken }
-    );
-    const itemLines = Array.isArray((response as InterfaceApiDetailResponse<ShopCartItem[]>)?.data)
-        ? (response as InterfaceApiDetailResponse<ShopCartItem[]>)?.data || []
-        : Array.isArray((response as InterfaceApiListResponse<ShopCartItem>)?.results)
-            ? (response as InterfaceApiListResponse<ShopCartItem>).results
-            : [];
-    return itemLines;
+    try {
+        const response = await get<InterfaceApiDetailResponse<ShopCartItem[]> | InterfaceApiListResponse<ShopCartItem>>(
+            `/api/v1/shop/cart/${storedCartId}/items`,
+            undefined,
+            { useAuthToken: options?.useAuthToken }
+        );
+        const itemLines = Array.isArray((response as InterfaceApiDetailResponse<ShopCartItem[]>)?.data)
+            ? (response as InterfaceApiDetailResponse<ShopCartItem[]>)?.data || []
+            : Array.isArray((response as InterfaceApiListResponse<ShopCartItem>)?.results)
+                ? (response as InterfaceApiListResponse<ShopCartItem>).results
+                : [];
+        return itemLines;
+    } catch (error) {
+        await clearCartIdOn404(error);
+        return [];
+    }
 }
 
 export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?: string; mutateCookies?: boolean }): Promise<Order | null> {
     const storedCartId = options?.cartId || await getCartId();
-    const mutateCookies = options?.mutateCookies === true;
 
     if (!storedCartId) {
         return null
@@ -189,14 +220,12 @@ export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?
                 ? (itemsResponse as InterfaceApiListResponse<ShopCartItem>).results
                 : [];
         const orderWithLines = cartData ? { ...cartData, lines: itemLines } as Order : null;
-        if (orderWithLines?.id && mutateCookies) {
+        if (orderWithLines?.id && options?.mutateCookies) {
             await setCartId(orderWithLines.id);
         }
         return orderWithLines;
     } catch (error) {
-        if (mutateCookies) {
-            await clearCartId();
-        }
+        await clearCartIdOn404(error);
         return null;
     }
 }
@@ -222,13 +251,16 @@ export async function addToCart(input: AddToCartInput, options?: { useAuthToken?
     const cartId = await getCartId();
     const endpoint = cartId ? `/api/v1/shop/cart/${cartId}/items` : '/api/v1/shop/cart/items';
 
-    const result = await post<InterfaceApiDetailResponse<Order>>(endpoint, input, { useAuthToken: options?.useAuthToken });
-
-    if (result?.data?.id) {
-        await setCartId(result.data.id);
+    try {
+        const result = await post<InterfaceApiDetailResponse<Order>>(endpoint, input, { useAuthToken: options?.useAuthToken });
+        if (result?.data?.id) {
+            await setCartId(result.data.id);
+        }
+        return result;
+    } catch (error) {
+        await clearCartIdOn404(error);
+        throw error;
     }
-
-    return result;
 }
 
 export interface AddProductToCartBody {
@@ -242,7 +274,7 @@ export const addProductToCart = async (cartId: string, body: AddProductToCartBod
     return post<InterfaceApiDetailResponse<ShopCartItem>>(`/api/v1/shop/cart/${cartId}/item/add/`, body);
 }
 
-export const updateProductInCart = async (itemId: string, body: { quantity: number }): Promise<InterfaceApiDetailResponse<ShopCartItem>> => {
+export const updateProductInCart = async (itemId: string, body: { quantity: number; price?: number }): Promise<InterfaceApiDetailResponse<ShopCartItem>> => {
     return patch<InterfaceApiDetailResponse<ShopCartItem>>(`/api/v1/shop/cart/item/set/${itemId}/`, body);
 }
 
@@ -255,7 +287,7 @@ export const fetchDeliveryItem = async (customerId?: string): Promise<InterfaceA
     const params: Record<string, any> = {
         limit: 1,
         offset: 0,
-        search: 'DOMICILIO',
+        search: 'ENVIO',
         kind: 'service'
     };
     if (customerId) {
@@ -271,6 +303,10 @@ export const updateCartDeliveryInfo = async (cartId: string, body: UpdateCartDel
 
 export const setCustomerToCart = async (cartId: string): Promise<ShopCart> => {
     return put<ShopCart>(`/api/v1/shop/me/order/${cartId}/set/customer/`, {}, { useAuthToken: true });
+}
+
+export const repriceCart = async (cartId: string): Promise<ShopCart> => {
+    return post<ShopCart>(`/api/v1/shop/me/order/${cartId}/reprice/`, {}, { useAuthToken: true });
 }
 
 
@@ -307,6 +343,10 @@ export async function createMpPreference(cartId: string): Promise<MercadoPagoPre
     return put<MercadoPagoPreferenceResponse>(`/api/v1/shop/me/order/${cartId}/mp/preference/`, {}, { useAuthToken: true });
 }
 
+export async function setOrderRequested(cartId: string, paymentType: string): Promise<InterfaceApiDetailResponse<any>> {
+    return put<InterfaceApiDetailResponse<any>>(`/api/v1/shop/me/order/${cartId}/set/requested/`, { payment_type: paymentType }, { useAuthToken: true });
+}
+
 export async function validateOrderStatus(orderId: string): Promise<ShopCart | OrderDetailInterface> {
     return get<ShopCart | OrderDetailInterface>(`/api/v1/shop/me/order/${orderId}/status`, undefined, { useAuthToken: true });
 }
@@ -315,12 +355,52 @@ export async function validateOrderStatus(orderId: string): Promise<ShopCart | O
 // Order History Endpoints
 // ============================================================================
 
-export async function getCustomerOrders(params?: { limit?: number; offset?: number }, options?: { useAuthToken?: boolean }): Promise<InterfaceApiListResponse<OrderInterface>> {
+export async function getCustomerOrders(
+    params?: { limit?: number; offset?: number; kind__in?: string; status__in?: number },
+    options?: { useAuthToken?: boolean }
+): Promise<InterfaceApiListResponse<OrderInterface>> {
     return get<InterfaceApiListResponse<OrderInterface>>(`/api/v1/shop/me/orders`, params, { useAuthToken: options?.useAuthToken });
 }
 
 export async function getOrderDetail(code: string, options?: { useAuthToken?: boolean }): Promise<OrderDetailInterface> {
     return get<OrderDetailInterface>(`/api/v1/shop/me/order/${code}`, undefined, { useAuthToken: options?.useAuthToken });
+}
+
+export interface ShipmentTrackingEvent {
+    date_time: string;
+    description: string;
+    code: string;
+    area: string;
+}
+
+export interface ShipmentTrackingData {
+    status_code: string;
+    status_description: string;
+    carrier: string;
+    tracking_number: string;
+    events: ShipmentTrackingEvent[];
+    address_to: {
+        name: string;
+        city: string;
+        state: string;
+    };
+}
+
+export interface ShipmentTrackingResponse {
+    id: string;
+    label: {
+        id: number;
+        label_url: string;
+        tracking_url: string;
+        tracking_number: string;
+    } | null;
+    kind: string;
+    status: number;
+    tracking: ShipmentTrackingData | null;
+}
+
+export async function getShipmentTracking(shipmentId: string): Promise<ShipmentTrackingResponse> {
+    return get<ShipmentTrackingResponse>(`/api/v1/shop/me/shipping/${shipmentId}/tracking`, undefined, { useAuthToken: true });
 }
 
 
@@ -342,4 +422,24 @@ export async function requestUpdateCustomerEmailAddress(
 
 export async function updateCustomerEmailAddress(token: string, options?: { useAuthToken?: boolean }): Promise<InterfaceApiDetailResponse<{ success: boolean }>> {
     return post<InterfaceApiDetailResponse<{ success: boolean }>>('/customers/me/email/update', { token }, { useAuthToken: options?.useAuthToken });
+}
+
+// ============================================================================
+// Shipping Quote Endpoints
+// ============================================================================
+
+export async function getShippingQuotes(cartId: string, addressId: string): Promise<InterfaceApiShippingQuoteResponse> {
+    return post<InterfaceApiShippingQuoteResponse>(
+        `/api/v1/shop/me/cart/${cartId}/shipping/quote/`,
+        { address_id: addressId },
+        { useAuthToken: true }
+    );
+}
+
+export async function setShipmentRate(shipmentId: string, rate: ShippingRate): Promise<void> {
+    await patch(
+        `/api/v1/shop/me/shipping/${shipmentId}/set/rate/`,
+        { rate },
+        { useAuthToken: true }
+    );
 }

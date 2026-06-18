@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAuthUser } from '@/lib/auth-client';
 import { CurrentUser } from '@/lib/swipall/types/types';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Phone } from 'lucide-react';
 
 export function ChangePasswordForm() {
     const storedUser: CurrentUser | null = getAuthUser();
@@ -28,6 +28,29 @@ export function ChangePasswordForm() {
     }, [state]);
 
     return (
+        <>
+        <Card>
+            <CardHeader>
+                <CardTitle>Información de la cuenta</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                <div className="flex items-center gap-3">
+                    <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span>{storedUser?.first_name ?? ''} {storedUser?.last_name ?? ''}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground  shrink-0" />
+                    <span>{storedUser?.email ?? '—'}</span>
+                </div>
+                {storedUser?.mobile && (
+                    <div className="flex items-center gap-3">
+                        <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span>{storedUser.mobile}</span>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+
         <Card>
             <CardHeader>
                 <CardTitle>Cambiar Contraseña</CardTitle>
@@ -52,7 +75,7 @@ export function ChangePasswordForm() {
                             <button
                                 type="button"
                                 onClick={() => setShowPassword((prev) => !prev)}
-                                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                                className="absolute inset-y-0 right-0 flex items-center px-3 text-foreground hover:text-foreground"
                                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                             >
                                 {showPassword ? (
@@ -77,7 +100,7 @@ export function ChangePasswordForm() {
                             <button
                                 type="button"
                                 onClick={() => setShowPassword((prev) => !prev)}
-                                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                                className="absolute inset-y-0 right-0 flex items-center px-3 text-foreground hover:text-foreground"
                                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                             >
                                 {showPassword ? (
@@ -94,5 +117,6 @@ export function ChangePasswordForm() {
                 </CardContent>
             </form>
         </Card>
+        </>
     );
 }

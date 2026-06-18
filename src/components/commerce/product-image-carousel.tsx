@@ -15,7 +15,7 @@ export function ProductImageCarousel({ images }: ProductImageCarouselProps) {
     if (!images || images.length === 0) {
         return (
             <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
-                <span className="text-muted-foreground">No images available</span>
+                <span className="text-foreground">No images available</span>
             </div>
         );
     }

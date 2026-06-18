@@ -27,7 +27,7 @@ export function VerifyResult({resultPromise}: VerifyResultProps) {
                         </div>
                         <div className="space-y-2 text-center">
                             <h1 className="text-2xl font-bold">Account Verified!</h1>
-                            <p className="text-muted-foreground">
+                            <p className="text-foreground">
                                 Your email has been successfully verified. You can now sign in to your account.
                             </p>
                         </div>
@@ -44,7 +44,7 @@ export function VerifyResult({resultPromise}: VerifyResultProps) {
                         </div>
                         <div className="space-y-2 text-center">
                             <h1 className="text-2xl font-bold">Verification Failed</h1>
-                            <p className="text-muted-foreground">
+                            <p className="text-foreground">
                                 {result.error || 'Unable to verify your account. The verification link may have expired.'}
                             </p>
                         </div>

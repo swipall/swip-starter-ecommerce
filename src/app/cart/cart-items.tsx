@@ -13,7 +13,7 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
             <div className="container mx-auto px-4 py-16">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold mb-4">Tu carrito está vacío</h1>
-                    <p className="text-muted-foreground mb-8">
+                    <p className="text-foreground mb-8">
                         Añade algunos artículos a tu carrito para comenzar
                     </p>
                     <Button asChild>
@@ -24,9 +24,11 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
         );
     }
 
+    const visibleLines = activeOrder.lines.filter((line) => !line.item.name.toUpperCase().includes('ENVIO'));
+
     return (
         <div className="lg:col-span-2 space-y-4">
-            {activeOrder.lines.map((line) => {
+            {visibleLines.map((line) => {
                 const unitPrice = line.sub_total ? parseFloat(line.sub_total) / line.quantity : 0;
                 return (
                     <div
@@ -49,11 +51,11 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
                             <p className="font-semibold">
                                 {line.item.name}
                             </p>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-sm text-foreground mt-1">
                                 SKU: {line.item.sku}
                             </p>
                             <ProductExtraMaterialsComponent item={line} />
-                            <p className="text-sm text-muted-foreground mt-2 sm:hidden">
+                            <p className="text-sm text-foreground mt-2 sm:hidden">
                                 <Price value={unitPrice} />xU
                             </p>
 
@@ -123,7 +125,7 @@ export async function CartItems({ activeOrder }: { activeOrder: Order | null }) 
                             <p className="font-semibold text-lg">
                                 <Price value={parseFloat(line.total)} />
                             </p>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-sm text-foreground mt-1">
                                 <Price value={unitPrice} />xU
                             </p>
                         </div>

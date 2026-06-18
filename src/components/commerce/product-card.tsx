@@ -9,9 +9,12 @@ interface ProductCardProps {
 }
 
 export function ProductCard({product}: ProductCardProps) {
-    const price = product.web_price ? parseFloat(product.web_price) : undefined;
+    const priceVal = product.price ? parseFloat(product.price) : undefined;
+    const webPriceVal = product.web_price ? parseFloat(product.web_price) : undefined;
+    const finalPrice = priceVal ?? webPriceVal;
+    const originalPrice = priceVal && webPriceVal && webPriceVal > priceVal ? webPriceVal : undefined;
+    const hasDiscount = !!originalPrice;
     const imageUrl = product.featured_image || product.pictures?.[0]?.url;
-
     return (
         <Link
             href={`/product/${product.id}`}
@@ -27,23 +30,30 @@ export function ProductCard({product}: ProductCardProps) {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    <div className="w-full h-full flex items-center justify-center text-foreground">
                         Sin imagen
                     </div>
                 )}
             </div>
             <div className="p-4 space-y-2">
-                <h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                <h3 className="font-medium text-muted-foreground line-clamp-2 group-hover:text-primary transition-colors">
                     {product.name}
                 </h3>
                 <Suspense fallback={<div className="h-8 w-36 rounded bg-muted"></div>}>
-                    <p className="text-lg font-bold">
-                        {price ? (
-                            <Price value={price} />
+                    <div className="flex flex-col gap-0.5">
+                        {finalPrice ? (
+                            <p className="text-lg font-bold text-primary">
+                                <Price value={finalPrice} />
+                            </p>
                         ) : (
-                            <span className="text-muted-foreground">Precio no disponible</span>
+                            <span className="text-foreground">Precio no disponible</span>
                         )}
-                    </p>
+                        {hasDiscount && (
+                            <p className="text-sm text-muted-foreground line-through">
+                                <Price value={originalPrice} />
+                            </p>
+                        )}
+                    </div>
                 </Suspense>
             </div>
         </Link>

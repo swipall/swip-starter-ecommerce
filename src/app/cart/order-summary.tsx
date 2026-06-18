@@ -9,9 +9,12 @@ import { Order } from '@/lib/swipall/types/types';
 import { isUserAuthenticated } from './actions';
 import { toast } from 'sonner';
 
-export function OrderSummary({activeOrder}: { activeOrder: Order }) {
+export function OrderSummary({activeOrder, minimalAmount}: { activeOrder: Order; minimalAmount?: number | null }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+
+    const grandTotal = parseFloat(activeOrder.grand_total);
+    const belowMinimum = minimalAmount != null && grandTotal < minimalAmount;
 
     const handleProceedCheckout = () => {
         startTransition(async () => {
@@ -29,13 +32,15 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
         });
     };
 
+    const shippingLine = activeOrder.lines?.find((line) => line.item.name.toUpperCase().includes('ENVIO'));
+
     return (
         <div className="border rounded-lg p-6 bg-card sticky top-4">
             <h2 className="text-xl font-bold mb-4">Resumen de pedido</h2>
 
             <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="text-foreground">Subtotal</span>
                     <span>
                         <Price value={parseFloat(activeOrder.sub_total)}/>
                     </span>
@@ -48,8 +53,16 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
                         </span>
                     </div>
                 )}
+                {shippingLine && (
+                    <div className="flex justify-between text-sm">
+                        <span className="text-foreground">Envío</span>
+                        <span>
+                            <Price value={parseFloat(shippingLine.total)}/>
+                        </span>
+                    </div>
+                )}
                 <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Impuestos</span>
+                    <span className="text-foreground">Impuestos</span>
                     <span>
                         <Price value={parseFloat(activeOrder.tax_total)}/>
                     </span>
@@ -65,7 +78,13 @@ export function OrderSummary({activeOrder}: { activeOrder: Order }) {
                 </div>
             </div>
 
-            <Button className="w-full" size="lg" onClick={handleProceedCheckout} disabled={isPending}>
+            {belowMinimum && (
+                <p className="text-sm text-destructive mb-3">
+                    El monto mínimo de compra es <Price value={minimalAmount!} />. Te faltan <Price value={minimalAmount! - grandTotal} />.
+                </p>
+            )}
+
+            <Button className="w-full" size="lg" onClick={handleProceedCheckout} disabled={isPending || belowMinimum}>
                 {isPending ? 'Verificando...' : 'Proceder al pago'}
             </Button>
 

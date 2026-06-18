@@ -14,6 +14,12 @@ export interface AddressInterface {
     mobile?: string;
 }
 
+export interface PriceListInterface {
+    id: string;
+    description: string;
+    minimal_amount: number;
+}
+
 export interface CustomerInfoInterface {
     id: string;
     business_name: string;
@@ -21,8 +27,8 @@ export interface CustomerInfoInterface {
     email: string;
     extra_fields: any[];
     properties: any[];
-    address: AddressInterface
-    price_list?: string;
+    address: AddressInterface;
+    price_list?: PriceListInterface | null;
 }
 
 export interface OrderInterface {
@@ -42,6 +48,8 @@ export interface OrderInterface {
     created_at: string;
     for_pickup: boolean;
     for_delivery: boolean;
+    requires_payment_validation: boolean;
+    kind: string;
 }
 
 export interface OrderItemInterface {
@@ -68,6 +76,21 @@ export interface OrderItemDetailInterface {
     item: OrderItemInterface;
 }
 
+export interface OrderShipmentRateInterface {
+    provider: string;
+    servicelevel: string;
+    days: number;
+    duration_terms: string;
+    collect_home: boolean;
+}
+
+export interface OrderShipmentInterface {
+    id: string;
+    kind: string;
+    status: number;
+    rate: OrderShipmentRateInterface | null;
+}
+
 export interface OrderDetailInterface {
     id: string;
     created_at: string;
@@ -83,6 +106,8 @@ export interface OrderDetailInterface {
     weight: number;
     balance: string;
     payment_type: OrderPaymentType;
+    requires_payment_validation: boolean;
+    kind: string;
     shipment_address: AddressInterface | null;
     items: {
         results: OrderItemDetailInterface[];
@@ -90,4 +115,6 @@ export interface OrderDetailInterface {
     };
     for_delivery: boolean;
     for_pickup: boolean;
+    shipment_id: string | null;
+    shipment: OrderShipmentInterface[];
 }

@@ -37,6 +37,7 @@ export function ForgotPasswordForm() {
     });
 
     const onSubmit = (data: ForgotPasswordFormData) => {
+        if (isPending) return;
         startTransition(async () => {
             const formData = new FormData();
             formData.append('emailAddress', data.emailAddress);
@@ -60,11 +61,11 @@ export function ForgotPasswordForm() {
                     </CardDescription>
                 </CardHeader>
                 <CardFooter>
-                    <Link href="/sign-in">
-                        <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={() => setSuccess(false)} asChild>
+                        <Link href="/sign-in">
                             Volver a Iniciar Sesión
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 </CardFooter>
             </Card>
         );
@@ -107,7 +108,7 @@ export function ForgotPasswordForm() {
                         </Button>
                         <Link
                             href="/sign-in"
-                            className="text-sm text-center text-muted-foreground hover:text-primary"
+                            className="text-sm text-center text-foreground hover:text-primary"
                         >
                             Volver a Iniciar Sesión
                         </Link>

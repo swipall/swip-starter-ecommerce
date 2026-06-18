@@ -83,7 +83,7 @@ export function ResetPasswordForm({ searchParams }: ResetPasswordFormProps) {
                     </Button>
                     <Link
                         href="/sign-in"
-                        className="text-sm text-center text-muted-foreground hover:text-primary"
+                        className="text-sm text-center text-foreground hover:text-primary"
                     >
                         Back to Sign In
                     </Link>
