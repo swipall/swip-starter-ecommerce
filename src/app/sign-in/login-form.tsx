@@ -19,8 +19,9 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import Link from 'next/link';
-import { setAuthUser } from '@/lib/auth-client';
+import { setAuthUser, removeAuthUser } from '@/lib/auth-client';
 import { toast } from 'sonner';
+import { useEffect } from 'react';
 
 const loginSchema = z.object({
     email: z.email('Por favor ingresa un correo electrónico válido'),
@@ -37,6 +38,10 @@ export function LoginForm({redirectTo}: LoginFormProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        removeAuthUser();
+    }, []);
 
     const form = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),

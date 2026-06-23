@@ -464,7 +464,7 @@ export function RegistrationForm({ redirectTo }: RegistrationFormProps) {
                                 name="references"
                                 render={({ field }) => (
                                     <FormItem className="mt-4">
-                                        <FormLabel>Referencias</FormLabel>
+                                        <FormLabel>Referencias *</FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="text"

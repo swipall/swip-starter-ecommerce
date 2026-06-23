@@ -1,9 +1,18 @@
 import { get, post } from "../api-server";
+import { SwipallAPIError } from "../api";
 import { InterfaceApiListResponse } from "../types/types";
 import { AddressInterface, CustomerInfoInterface } from './user.types';
 
 export async function getCustomerInfoServer(): Promise<CustomerInfoInterface> {
-    return get<CustomerInfoInterface>('/api/v1/shop/customer/info', {}, { useAuthToken: true });
+    try {
+        return await get<CustomerInfoInterface>('/api/v1/shop/customer/info', {}, { useAuthToken: true });
+    } catch (err) {
+        if (err instanceof SwipallAPIError && err.status === 404) {
+            const { removeAuthToken } = await import('@/lib/auth');
+            await removeAuthToken();
+        }
+        throw err;
+    }
 }
 
 export async function fetchAddressesServer(): Promise<InterfaceApiListResponse<AddressInterface>> {
