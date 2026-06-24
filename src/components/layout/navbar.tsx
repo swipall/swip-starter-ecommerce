@@ -4,6 +4,7 @@ import { NavbarCollections } from '@/components/layout/navbar/navbar-collections
 import { NavbarCart } from '@/components/layout/navbar/navbar-cart';
 import { NavbarUser } from '@/components/layout/navbar/navbar-user';
 import { NavbarMobileHeader } from '@/components/layout/navbar/navbar-mobile-header';
+import { PromoBar } from '@/components/layout/navbar/promo-bar';
 import { Suspense } from "react";
 import { SearchInput } from '@/components/layout/search-input';
 import { SearchInputSkeleton } from '@/components/shared/skeletons/search-input-skeleton';
@@ -20,10 +21,10 @@ const cartSlot = (
 export function Navbar() {
     return (
         <header className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
-            {/* Promo bar */}
-            <div className="bg-black text-white text-xs text-center py-2 tracking-widest font-medium font-jost uppercase">
-                ENVÍO GRATIS EN PEDIDOS DESDE $2,000 MXN — MAYOREO DESDE 6 PIEZAS
-            </div>
+            {/* Promo bar — contenido dinámico desde slug: barra-de-anuncio */}
+            <Suspense>
+                <PromoBar />
+            </Suspense>
 
             {/* Mobile header (< md) */}
             <NavbarMobileHeader logoUrl={LOGO_URL} cart={cartSlot} />
