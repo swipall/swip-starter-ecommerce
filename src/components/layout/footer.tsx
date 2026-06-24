@@ -24,7 +24,7 @@ async function Copyright() {
     cacheLife('days');
     return (
         <div className='text-muted-foreground'>
-            © {new Date().getFullYear()} KOI Collectibles. All rights reserved.
+            © {new Date().getFullYear()} Mérida Mayoreo.
         </div>
     );
 }
@@ -49,8 +49,8 @@ export async function Footer() {
                     <div className="flex flex-col gap-4">
                         <Link href="/">
                             <Image
-                                src="https://mmcb.b-cdn.net/media/attachments/0/c/4/0/60593b52331c1146353026da4cbc9ffbfd78b635db83fca47b25690df620/logo.jpg"
-                                alt="Koi Collectibles"
+                                src="https://mmcb.b-cdn.net/media/attachments/f/f/e/6/c77a2aed2634f9a90555c2db1507cad8ea06a1c4bf34c2e46ac3aeab0f61/logo-merida.png"
+                                alt="Mérida Mayoreo"
                                 width={120}
                                 height={40}
                                 className="h-12 w-auto rounded-md"

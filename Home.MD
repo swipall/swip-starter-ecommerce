@@ -259,6 +259,31 @@ Solo imagen, opcionalmente con link (sin botón visible):
 
 ---
 
+### 5️⃣ Barra de anuncio con html Personalizado
+
+**Slug:** `barra-de-anuncio` | **Típicamente:** Arriba del navbar
+
+```json
+{
+  "slug": "barra-de-anuncio",
+  "title": null,
+  "excerpt": null,
+  "body": "<div class=\"promo\">Envíos gratis desde $999</div>",
+  "categories": [
+    { "name": "Home", "slug": "home-block" },
+    { "name": "HTML", "slug": "home-html" }
+  ]
+}
+```
+
+**Campos importantes:**
+- `slug`: Identificamos con el slug la seccion de promociones
+- `body`: HTML puro (sin escapar)
+- `title`: Opcional (puede ser null)
+- Uso: Dividers, banners, texto libre, widgets personalizados
+
+---
+
 ## 📐 Orden Recomendado
 
 ```

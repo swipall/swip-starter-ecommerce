@@ -1,4 +1,4 @@
-# swip-koi-ecommerce — Purpose
+# Merida mayoreo — Purpose
 
 > This storefront is the **customer-facing purchase interface** of the Swipall commerce platform. Its job is to translate the Swipall REST API into a fast, reliable shopping experience — from product discovery to confirmed payment — without requiring the customer to leave a single flow.
 
