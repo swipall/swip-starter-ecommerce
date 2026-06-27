@@ -63,9 +63,11 @@ La página de inicio está compuesta por bloques modulares (posts CMS) que se pu
 ```
 
 **Campos importantes:**
-- `body`: JSON con `subtitle` (texto secundario) y `autoplay` (rotación automática)
+- `body`: JSON con:
+  - `subtitle`: Texto secundario (aparece sobre el título en mayúsculas)
+  - `buttonText`: Texto del botón CTA (default: `"Ver más"`)
 - `featured_image`: Imagen principal (recomendado: 1920x600px)
-- `link`: Destino al hacer click
+- `link`: Destino al hacer click (si está presente, se muestra el botón CTA)
 - `title`: Título principal
 
 ---
@@ -94,8 +96,9 @@ La página de inicio está compuesta por bloques modulares (posts CMS) que se pu
 
 **Campos importantes:**
 - `body`: JSON con array `items`:
-  - `slug`: Slug de la categoría (navegación)
+  - `slug`: Slug de la categoría (navegación, también se usa como label si no hay `title`)
   - `image`: Imagen de la categoría (recomendado: 300x300px)
+  - `title` _(opcional)_: Etiqueta visible; si se omite se genera automáticamente desde el `slug`
 
 ---
 
@@ -189,10 +192,12 @@ Reutiliza la estructura de `home-banner` pero como child del slider:
 **Campos importantes:**
 - `title`: Título principal (visible en el banner)
 - `excerpt`: Subtítulo o descripción (visible en el banner)
-- `body`: JSON con `subtitle` (texto secundario adicional)
+- `body`: JSON con:
+  - `subtitle`: Texto terciario (aparece sobre el título en mayúsculas)
+  - `buttonText`: Texto del botón CTA (default: `"Ver más"`)
 - `featured_image`: Imagen principal (1920x600px)
-- `link`: Destino al hacer click
-- `categories`: Debe incluir `home-banner` para identificar como banner completo
+- `link`: Destino al hacer click (si está presente, se muestra el botón CTA)
+- `categories`: **Debe incluir `home-banner`** — es la única forma en que el slider lo identifica como banner completo
 
 ---
 
@@ -226,7 +231,7 @@ Solo imagen, opcionalmente con link (sin botón visible):
 - `featured_image`: Imagen principal (1920x600px)
 - `link`: URL destino (opcional, si está presente toda la imagen es clickeable)
 - `title`, `excerpt`, `body`: Todos null/vacíos
-- `categories`: Debe incluir `home-banner-slider-item-image` para identificar como imagen simple
+- `categories`: **No debe incluir `home-banner`** — el slider detecta imagen simple por la _ausencia_ de esa categoría. La categoría `home-banner-slider-item-image` no es leída por el código; se puede omitir o usar solo como referencia semántica
 
 ---
 
@@ -286,8 +291,8 @@ ordering: 7+ → Más bloques según necesites
 **Items del slider (children):**
 - [ ] Cada item tiene `parent: { slug: "ecommerce-home-banner-slider-main", ... }`
 - [ ] Los items están ordenados por `ordering` secuencial
-- [ ] Items tipo `home-banner`: incluyen `title`, `featured_image`, `link` y category `home-banner`
-- [ ] Items tipo `home-banner-slider-item-image`: solo `featured_image` + opcionalmente `link`, category `home-banner-slider-item-image`
+- [ ] Items tipo banner completo: incluyen `featured_image`, `link` y **category `home-banner`** (es lo que los identifica)
+- [ ] Items tipo imagen simple: incluyen `featured_image` + opcionalmente `link`, y **NO tienen category `home-banner`**
 - [ ] Todas las imágenes existen y tienen peso adecuado (1920x600px)
 
 ---
