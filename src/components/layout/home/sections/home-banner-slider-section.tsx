@@ -134,7 +134,7 @@ function BannerSliderItemFull({ item }: { item: CmsPost }) {
                     )}
                     {item.link && (
                         <div className="pt-2">
-                            <Button asChild size="lg">
+                            <Button  asChild size="lg" variant="accent">
                                 <Link href={item.link}>{buttonText}</Link>
                             </Button>
                         </div>

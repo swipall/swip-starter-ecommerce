@@ -55,7 +55,7 @@ export function HomeBannerSection({ post }: HomeBannerSectionProps) {
                             )}
                             {post.link && (
                                 <Button asChild size="lg">
-                                    <Link href={post.link}>{buttonText}</Link>
+                                    <Link href={post.link}>{buttonText} DFDF</Link>
                                 </Button>
                             )}
                         </div>

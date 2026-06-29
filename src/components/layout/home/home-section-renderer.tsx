@@ -1,9 +1,8 @@
 import { cacheLife } from "next/cache";
-import { getPostDetail, getPosts } from "@/lib/swipall/rest-adapter";
 import type { CmsPost } from "@/lib/swipall/types/types";
 import { getHomeBlockType, type HomeBlockType } from "./home-section-types";
 import { HomeBannerSection } from "./sections/home-banner-section";
-import { HomeBannerSliderSection } from "./sections/home-banner-slider-section";
+import { HomePromoBannerSection } from "./sections/home-promo-banner-section";
 import { HomeCategoriesSection } from "./sections/home-categories-section";
 import { HomeProductsByCategorySection } from "./sections/home-products-by-category-section";
 import { HomeHtmlSection } from "./sections/home-html-section";
@@ -18,6 +17,7 @@ interface HomeSectionRendererProps {
 const SECTION_RENDERERS: Record<HomeBlockType, (props: { post: CmsPost; items?: CmsPost[] }) => JSX.Element | Promise<JSX.Element | null>> = {
     "home-banner": HomeBannerSection as any,
     "home-banner-slider": HomeBannerSliderSectionWrapper,
+    "home-promo-banner": HomePromoBannerSection as any,
     "home-categories": HomeCategoriesSection as any,
     "home-products-by-category": HomeProductsByCategorySection as any,
     "home-html": HomeHtmlSection as any,

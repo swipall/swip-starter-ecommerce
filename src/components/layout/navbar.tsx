@@ -23,7 +23,7 @@ export function Navbar() {
         <header className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
             {/* Promo bar — contenido dinámico desde slug: barra-de-anuncio */}
             <Suspense>
-                <PromoBar />
+                <PromoBar/>
             </Suspense>
 
             {/* Mobile header (< md) */}
