@@ -269,6 +269,11 @@ export function ProductInfo({ product, searchParams }: ProductInfoProps) {
 
     const commitQuantityInput = useCallback((raw: string) => {
         const parsed = parseInt(raw, 10);
+        if (!Number.isNaN(parsed) && parsed > maxQuantity) {
+            toast.error('Cantidad no disponible', {
+                description: `Solo hay ${maxQuantity} ${maxQuantity === 1 ? 'pieza disponible' : 'piezas disponibles'} en existencia`,
+            });
+        }
         const next = Number.isNaN(parsed) ? quantity : Math.min(Math.max(parsed, 1), maxQuantity);
         setQuantity(next);
         setQuantityInput(String(next));
