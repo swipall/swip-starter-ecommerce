@@ -239,6 +239,8 @@ export interface TaxonomyInterface {
     color?: string;
     imagen?: string;
     products_count?: number;
+    is_visible_on_web?: boolean;
+    parent?: string | null;
 }
 
 // ============================================================================

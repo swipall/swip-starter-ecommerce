@@ -87,16 +87,16 @@ export function FacetFilters({ taxonomies, searchParams, counts }: FacetFiltersP
                         </div>
                     </div>
                 )}
-                <ul className="space-y-3 text-sm text-white">
+                <ul className="space-y-3 text-sm">
                     {taxonomies.map((taxonomy) => (
-                        <li key={taxonomy.id} className="text-white">
+                        <li key={taxonomy.id} className="text-muted-foreground">
                             <a
                                 onClick={() => navigateToFacet(taxonomy)}
                                 className={`cursor-pointer transition-colors hover:text-primary flex items-center gap-2 ${taxonomy.slug === selectedSlug ? 'text-primary font-semibold' : ''}`}
                             >
                                 <span>{taxonomy.value ?? taxonomy.name}</span>
                                 {counts?.[taxonomy.slug] !== undefined && (
-                                    <span className="text-xs font-bold text-foreground tabular-nums">
+                                    <span className="text-xs font-bold text-muted-foreground tabular-nums">
                                         ({counts[taxonomy.slug]})
                                     </span>
                                 )}

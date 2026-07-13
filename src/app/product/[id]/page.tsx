@@ -21,7 +21,7 @@ import {
     SITE_NAME,
     truncateDescription,
 } from '@/lib/metadata';
-import { getProduct } from '@/lib/swipall/rest-adapter';
+import { getProduct, getTaxonomies } from '@/lib/swipall/rest-adapter';
 import { InterfaceInventoryItem, Material, ProductKind } from '@/lib/swipall/types/types';
 import type { Metadata } from 'next';
 import { cacheLife, cacheTag } from 'next/cache';
@@ -42,6 +42,15 @@ async function getProductData(id: string, customerId?: string) {
     } catch (error) {
         return null;
     }
+}
+
+async function getParentCategories() {
+    'use cache';
+    cacheLife('days');
+    cacheTag('taxonomy-parent-categories');
+
+    const result = await getTaxonomies({ kind: 'category', is_visible_on_web: true });
+    return result.results;
 }
 
 
@@ -140,6 +149,9 @@ async function ProductDetailContent({ params, searchParams }: PageProps<'/produc
     // const primaryCollection = product.taxonomy?.[0]; //TODO: Supoort related products
     const category = product.taxonomy?.find(t => t.kind === 'family') ?? product.taxonomy?.[0];
     const categoryLabel = category?.value ?? category?.name;
+    const parentCategories = category?.parent ? await getParentCategories() : [];
+    const parentCategory = parentCategories.find(c => c.id === category?.parent);
+    const parentCategoryLabel = parentCategory?.value ?? parentCategory?.name;
 
     return (
         <>
@@ -151,6 +163,16 @@ async function ProductDetailContent({ params, searchParams }: PageProps<'/produc
                                 <Link className='text-muted-foreground' href="/">Inicio</Link>
                             </BreadcrumbLink>
                         </BreadcrumbItem>
+                        {parentCategory && parentCategoryLabel && (
+                            <>
+                                <BreadcrumbSeparator className='text-muted-foreground' />
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink asChild>
+                                        <Link className='text-muted-foreground' href={`/collection/${parentCategory.slug}`}>{parentCategoryLabel}</Link>
+                                    </BreadcrumbLink>
+                                </BreadcrumbItem>
+                            </>
+                        )}
                         {category && categoryLabel && (
                             <>
                                 <BreadcrumbSeparator className='text-muted-foreground' />
