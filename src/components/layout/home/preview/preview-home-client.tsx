@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { adaptSerializedBlocks, type AdaptedBlock, type SerializedBlockNode } from "./serialized-block-adapter";
 import { renderPreviewBlock } from "./render-preview-block";
 import { HomeHeroSkeleton } from "@/components/shared/skeletons/home-hero-skeleton";
@@ -116,6 +116,8 @@ function BlockBoundary({ block, allowedOrigin }: { block: AdaptedBlock; allowedO
         );
     };
 
+    const blockContentKey = useMemo(() => JSON.stringify(block.node), [block.node]);
+
     useEffect(() => {
         let cancelled = false;
         setStatus("loading");
@@ -138,7 +140,7 @@ function BlockBoundary({ block, allowedOrigin }: { block: AdaptedBlock; allowedO
             cancelled = true;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [block]);
+    }, [blockContentKey]);
 
     useEffect(() => {
         report(status);
