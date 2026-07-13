@@ -4,6 +4,7 @@ import { getActiveOrder } from '@/lib/swipall/rest-adapter';
 import {PromotionCode} from '@/app/cart/promotion-code';
 import { getAuthToken } from '@/lib/auth';
 import { getCustomerInfoServer } from '@/lib/swipall/users/server';
+import { SwipallAPIError } from '@/lib/swipall/api';
 
 export async function Cart() {
     "use cache: private"
@@ -15,6 +16,11 @@ export async function Cart() {
         const result = await getActiveOrder({ useAuthToken: true, mutateCookies: false });
         activeOrder = result || null;
     } catch (error) {
+        if (error instanceof SwipallAPIError && error.status === 404) {
+            // Stale cart cookie — surface as empty cart. The caller (outside
+            // this cache scope) is responsible for clearing the cookie.
+            throw error;
+        }
         console.error('[Cart] Failed to fetch active order:', error);
     }
 

@@ -20,7 +20,8 @@ import type {
     ShopCartItem,
     TaxonomyInterface,
     UpdateCartDeliveryInfoBody,
-    UpdateCustomerInput
+    UpdateCustomerInput,
+    SiteConfig
 } from './types/types';
 import { OrderDetailInterface, OrderInterface } from './users/user.types';
 
@@ -108,6 +109,15 @@ export async function getPostDetail(slug: string): Promise<CmsPost | null> {
     }
 }
 
+export async function getSiteConfig(): Promise<SiteConfig | null> {
+    try {
+        const response = await get<SiteConfig>('/api/v1/shop/site');
+        return response ?? null;
+    } catch {
+        return null;
+    }
+}
+
 // ============================================================================
 // Catalogs & Taxonomies Endpoints
 // ============================================================================
@@ -154,24 +164,13 @@ export async function searchProducts(input: SearchInput, customerId?: string): P
 // Cart/Order Endpoints
 // ============================================================================
 
-async function clearCartIdOn404(error: unknown): Promise<void> {
-    if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
-        await clearCartId();
-    }
-}
-
 export async function getCurrentCart(options?: { useAuthToken?: boolean, cartId?: string }): Promise<ShopCart | null> {
-    try {
-        const storedCartId = options?.cartId || await getCartId();
-        if (!storedCartId) {
-            return null
-        }
-        const response = await get<ShopCart>(`/api/v1/shop/cart/${storedCartId}`, undefined, { useAuthToken: options?.useAuthToken });
-        return response;
-    } catch (error) {
-        await clearCartIdOn404(error);
-        return null;
+    const storedCartId = options?.cartId || await getCartId();
+    if (!storedCartId) {
+        return null
     }
+    const response = await get<ShopCart>(`/api/v1/shop/cart/${storedCartId}`, undefined, { useAuthToken: options?.useAuthToken });
+    return response;
 }
 
 export async function getCartItems(options?: { useAuthToken?: boolean; cartId?: string }): Promise<ShopCartItem[]> {
@@ -179,22 +178,17 @@ export async function getCartItems(options?: { useAuthToken?: boolean; cartId?: 
     if (!storedCartId) {
         return [];
     }
-    try {
-        const response = await get<InterfaceApiDetailResponse<ShopCartItem[]> | InterfaceApiListResponse<ShopCartItem>>(
-            `/api/v1/shop/cart/${storedCartId}/items`,
-            undefined,
-            { useAuthToken: options?.useAuthToken }
-        );
-        const itemLines = Array.isArray((response as InterfaceApiDetailResponse<ShopCartItem[]>)?.data)
-            ? (response as InterfaceApiDetailResponse<ShopCartItem[]>)?.data || []
-            : Array.isArray((response as InterfaceApiListResponse<ShopCartItem>)?.results)
-                ? (response as InterfaceApiListResponse<ShopCartItem>).results
-                : [];
-        return itemLines;
-    } catch (error) {
-        await clearCartIdOn404(error);
-        return [];
-    }
+    const response = await get<InterfaceApiDetailResponse<ShopCartItem[]> | InterfaceApiListResponse<ShopCartItem>>(
+        `/api/v1/shop/cart/${storedCartId}/items`,
+        undefined,
+        { useAuthToken: options?.useAuthToken }
+    );
+    const itemLines = Array.isArray((response as InterfaceApiDetailResponse<ShopCartItem[]>)?.data)
+        ? (response as InterfaceApiDetailResponse<ShopCartItem[]>)?.data || []
+        : Array.isArray((response as InterfaceApiListResponse<ShopCartItem>)?.results)
+            ? (response as InterfaceApiListResponse<ShopCartItem>).results
+            : [];
+    return itemLines;
 }
 
 export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?: string; mutateCookies?: boolean }): Promise<Order | null> {
@@ -204,30 +198,25 @@ export async function getActiveOrder(options?: { useAuthToken?: boolean; cartId?
         return null
     }
 
-    try {
-        const [cartResponse, itemsResponse] = await Promise.all([
-            get<ShopCart>(`/api/v1/shop/cart/${storedCartId}`, undefined, { useAuthToken: options?.useAuthToken }),
-            get<InterfaceApiDetailResponse<ShopCartItem[]> | InterfaceApiListResponse<ShopCartItem>>(
-                `/api/v1/shop/cart/${storedCartId}/items`,
-                undefined,
-                { useAuthToken: options?.useAuthToken }
-            ),
-        ]);
-        const cartData = cartResponse;
-        const itemLines = Array.isArray((itemsResponse as InterfaceApiDetailResponse<ShopCartItem[]>)?.data)
-            ? (itemsResponse as InterfaceApiDetailResponse<ShopCartItem[]>)?.data || []
-            : Array.isArray((itemsResponse as InterfaceApiListResponse<ShopCartItem>)?.results)
-                ? (itemsResponse as InterfaceApiListResponse<ShopCartItem>).results
-                : [];
-        const orderWithLines = cartData ? { ...cartData, lines: itemLines } as Order : null;
-        if (orderWithLines?.id && options?.mutateCookies) {
-            await setCartId(orderWithLines.id);
-        }
-        return orderWithLines;
-    } catch (error) {
-        await clearCartIdOn404(error);
-        return null;
+    const [cartResponse, itemsResponse] = await Promise.all([
+        get<ShopCart>(`/api/v1/shop/cart/${storedCartId}`, undefined, { useAuthToken: options?.useAuthToken }),
+        get<InterfaceApiDetailResponse<ShopCartItem[]> | InterfaceApiListResponse<ShopCartItem>>(
+            `/api/v1/shop/cart/${storedCartId}/items`,
+            undefined,
+            { useAuthToken: options?.useAuthToken }
+        ),
+    ]);
+    const cartData = cartResponse;
+    const itemLines = Array.isArray((itemsResponse as InterfaceApiDetailResponse<ShopCartItem[]>)?.data)
+        ? (itemsResponse as InterfaceApiDetailResponse<ShopCartItem[]>)?.data || []
+        : Array.isArray((itemsResponse as InterfaceApiListResponse<ShopCartItem>)?.results)
+            ? (itemsResponse as InterfaceApiListResponse<ShopCartItem>).results
+            : [];
+    const orderWithLines = cartData ? { ...cartData, lines: itemLines } as Order : null;
+    if (orderWithLines?.id && options?.mutateCookies) {
+        await setCartId(orderWithLines.id);
     }
+    return orderWithLines;
 }
 
 export const itemExistsInCart = async (cartId: string, itemId: string): Promise<InterfaceApiListResponse<ShopCartItem>> => {
@@ -258,7 +247,9 @@ export async function addToCart(input: AddToCartInput, options?: { useAuthToken?
         }
         return result;
     } catch (error) {
-        await clearCartIdOn404(error);
+        if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
+            await clearCartId();
+        }
         throw error;
     }
 }

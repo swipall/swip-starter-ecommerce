@@ -187,7 +187,9 @@ async function request<TResult>(
     try {
         response = await fetch(url, requestInit);
     } catch (fetchError: any) {
-        console.warn(`[Swipall API] Network error for ${method} ${endpoint}:`, fetchError?.message);
+        if (fetchError?.name !== 'AbortError') {
+            console.warn(`[Swipall API] Network error for ${method} ${endpoint}:`, fetchError?.message);
+        }
         return emptyDataFor<TResult>(endpoint);
     }
 
