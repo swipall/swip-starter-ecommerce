@@ -5,9 +5,13 @@ import { SwipallAPIError } from '@/lib/swipall/api';
 import {PromotionCode} from '@/app/cart/promotion-code';
 import { getAuthToken } from '@/lib/auth';
 import { getCustomerInfoServer } from '@/lib/swipall/users/server';
+import { cacheLife, cacheTag } from 'next/cache';
 
 export async function Cart() {
     "use cache: private"
+    cacheLife('minutes');
+    cacheTag('cart');
+    cacheTag('active-order');
 
     let activeOrder = null;
     let minimalAmount: number | null = null;

@@ -1,5 +1,6 @@
 import { fetchAddressesServer, createAddressServer } from "../swipall/users/server";
 import { AddressInterface } from "../swipall/users/user.types";
+import { isPrerenderBailout } from "../utils";
 
 
 export default function useUserModel() {
@@ -8,7 +9,9 @@ export default function useUserModel() {
             const response = await fetchAddressesServer();
             return response;
         } catch (error) {
-            console.error("Error fetching user addresses:", error);
+            if (!isPrerenderBailout(error)) {
+                console.error("Error fetching user addresses:", error);
+            }
             throw error;
         }
     }
@@ -18,7 +21,9 @@ export default function useUserModel() {
             const response = await createAddressServer(body);
             return response;
         } catch (error) {
-            console.error("Error creating address:", error);
+            if (!isPrerenderBailout(error)) {
+                console.error("Error creating address:", error);
+            }
             throw error;
         }
     }

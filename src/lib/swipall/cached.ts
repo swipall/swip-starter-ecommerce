@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag } from 'next/cache';
-import { getActiveChannel, getAvailableCountries, getCatalogs as getCatalogsREST } from './rest-adapter';
-import { CatalogInterface, InterfaceApiListResponse } from './types/types';
+import { getActiveChannel, getAvailableCountries, getCatalogs as getCatalogsREST, getTaxonomies } from './rest-adapter';
+import { CatalogInterface, InterfaceApiListResponse, TaxonomyInterface } from './types/types';
 
 /**
  * Get the active channel with caching enabled.
@@ -56,4 +56,28 @@ export async function getCatalogs(params: Record<string, any> = {}): Promise<Int
             previous: null,
         };
     }
+}
+
+/**
+ * Resolve a visible taxonomy by its slug, with caching enabled.
+ */
+export async function getTaxonomyBySlugCached(slug: string): Promise<TaxonomyInterface | null> {
+    'use cache';
+    cacheLife('hours');
+    cacheTag(`taxonomy-${slug}`);
+
+    const result = await getTaxonomies({ slug, is_visible_on_web: true });
+    return result.results[0] ?? null;
+}
+
+/**
+ * Get the visible children of a taxonomy by its parent id, with caching enabled.
+ */
+export async function getTaxonomyChildrenCached(parentId: string): Promise<TaxonomyInterface[]> {
+    'use cache';
+    cacheLife('hours');
+    cacheTag(`taxonomy-children-${parentId}`);
+
+    const result = await getTaxonomies({ parent: parentId, is_visible_on_web: true });
+    return result.results;
 }

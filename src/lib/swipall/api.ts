@@ -1,3 +1,5 @@
+import { isPrerenderBailout } from '../utils';
+
 const SWIPALL_API_URL = process.env.SWIPALL_SHOP_API_URL || process.env.NEXT_PUBLIC_SWIPALL_SHOP_API_URL;
 
 const SWIPALL_AUTH_TOKEN_HEADER = process.env.SWIPALL_AUTH_TOKEN_HEADER || 'Authorization';
@@ -187,6 +189,9 @@ async function request<TResult>(
     try {
         response = await fetch(url, requestInit);
     } catch (fetchError: any) {
+        if (isPrerenderBailout(fetchError)) {
+            throw fetchError;
+        }
         if (fetchError?.name !== 'AbortError') {
             console.warn(`[Swipall API] Network error for ${method} ${endpoint}:`, fetchError?.message);
         }

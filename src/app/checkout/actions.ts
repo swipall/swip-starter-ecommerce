@@ -16,6 +16,7 @@ import { createAddressServer, createCustomerInfoServer } from '@/lib/swipall/use
 import { AddressInterface } from '@/lib/swipall/users/user.types';
 import { revalidatePath } from 'next/cache';
 import { getAuthUserCustomerId } from '@/lib/auth';
+import { isPrerenderBailout } from '@/lib/utils';
 
 interface AddressInput {
     fullName: string;
@@ -154,6 +155,9 @@ export async function setCustomerForOrder(): Promise<ShopCart | null> {
         const response = await shopModel.onSetCustomerToCart(cartId);
         return response;
     } catch (error: unknown) {
+        if (isPrerenderBailout(error)) {
+            throw error;
+        }
         console.warn('Error setting customer for order:', error);
         // Don't throw - silently fail as this is not critical for checkout
         return null;
@@ -214,7 +218,9 @@ export async function fetchAddresses() {
         return addresses;
     }
     catch (error) {
-        console.error('Error fetching user addresses:', error);
+        if (!isPrerenderBailout(error)) {
+            console.error('Error fetching user addresses:', error);
+        }
         throw error;
     }
 }

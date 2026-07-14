@@ -1,5 +1,7 @@
 import { ProductCarousel } from "@/components/commerce/product-carousel";
+import { getTaxonomyBySlugCached, getTaxonomyChildrenCached } from "@/lib/swipall/cached";
 import { searchProducts } from "@/lib/swipall/rest-adapter";
+import { sortByLabel } from "@/lib/swipall/taxonomy-helpers";
 import { ProductKind } from "@/lib/swipall/types/types";
 import type { CmsPost } from "@/lib/swipall/types/types";
 import { parsePostBody } from "../home-section-types";
@@ -52,5 +54,13 @@ export async function HomeProductsByCategorySection({ post }: HomeProductsByCate
         return null;
     }
 
-    return <ProductCarousel title={post.title ?? "Productos"} excerpt={post.excerpt} products={products} />;
+    const parentTaxonomy = await getTaxonomyBySlugCached(categorySlug);
+    const children = parentTaxonomy ? sortByLabel(await getTaxonomyChildrenCached(parentTaxonomy.id)) : [];
+    const filters = children.map((child) => ({
+        id: child.id,
+        label: child.value ?? child.name,
+        href: `/collection/${child.slug}`,
+    }));
+
+    return <ProductCarousel title={post.title ?? "Productos"} excerpt={post.excerpt} products={products} filters={filters} />;
 }

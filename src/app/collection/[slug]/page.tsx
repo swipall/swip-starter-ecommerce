@@ -8,7 +8,9 @@ import {
     SITE_NAME
 } from '@/lib/metadata';
 import { buildSearchInput, getCurrentPage } from '@/lib/search-helpers';
+import { getTaxonomyBySlugCached, getTaxonomyChildrenCached } from '@/lib/swipall/cached';
 import { getTaxonomies, searchProducts } from '@/lib/swipall/rest-adapter';
+import { sortByLabel } from '@/lib/swipall/taxonomy-helpers';
 import type { Metadata } from 'next';
 import { cacheLife, cacheTag } from 'next/cache';
 import { Suspense } from 'react';
@@ -27,22 +29,19 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
     return results;
 }
 
-async function getParentTaxonomy(slug: string) {
+async function getAllCategoryGroups() {
     'use cache';
     cacheLife('minutes');
-    cacheTag(`collection-parent-${slug}`);
+    cacheTag('taxonomy-category-tree');
 
-    const parent = await getTaxonomies({ slug, is_visible_on_web: true });
-    return parent.results[0] ?? null;
-}
-
-async function getChildTaxonomies(parentId: string) {
-    'use cache';
-    cacheLife('minutes');
-    cacheTag(`collection-taxonomies-${parentId}`);
-
-    const children = await getTaxonomies({ parent: parentId, is_visible_on_web: true });
-    return children.results;
+    const parents = await getTaxonomies({ kind: 'category', is_visible_on_web: true });
+    const groups = await Promise.all(
+        sortByLabel(parents.results).map(async (parent) => ({
+            parent,
+            children: sortByLabel(await getTaxonomyChildrenCached(parent.id)),
+        }))
+    );
+    return groups;
 }
 
 async function getTaxonomyProductCounts(taxonomySlugs: string[]) {
@@ -63,7 +62,7 @@ async function getCollectionMetadata(slug: string) {
     cacheLife('minutes');
     cacheTag(`collection-meta-${slug}`);
 
-    const taxonomy = await getParentTaxonomy(slug);
+    const taxonomy = await getTaxonomyBySlugCached(slug);
     const name = taxonomy?.value ?? taxonomy?.name ?? '';
     return { data: { name, slug } }
 }
@@ -111,10 +110,11 @@ export default async function CollectionPage({ params, searchParams }: PageProps
 
     const customerId = await getAuthUserCustomerId();
     const productDataPromise = getCollectionProducts(slug, searchParamsResolved, customerId);
-    const parentTaxonomy = await getParentTaxonomy(slug);
+    const parentTaxonomy = await getTaxonomyBySlugCached(slug);
     const collectionName = parentTaxonomy?.value ?? parentTaxonomy?.name ?? '';
-    const taxonomies = parentTaxonomy ? await getChildTaxonomies(parentTaxonomy.id) : [];
-    const taxonomyCounts = await getTaxonomyProductCounts(taxonomies.map(t => t.slug));
+    const categoryGroups = await getAllCategoryGroups();
+    const allTaxonomySlugs = categoryGroups.flatMap(g => [g.parent.slug, ...g.children.map(c => c.slug)]);
+    const taxonomyCounts = await getTaxonomyProductCounts(allTaxonomySlugs);
     return (
         <div className="container mx-auto px-4 py-8 sm:mt-16">
             {collectionName && (
@@ -124,7 +124,7 @@ export default async function CollectionPage({ params, searchParams }: PageProps
                 <aside className="lg:col-span-1">
                     <div className='font-bold text-sm text-primary uppercase'>Categorías</div>
                     <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
-                        <FacetFilters taxonomies={taxonomies} searchParams={searchParamsResolved} counts={taxonomyCounts} />
+                        <FacetFilters groups={categoryGroups} searchParams={searchParamsResolved} counts={taxonomyCounts} />
                     </Suspense>
                 </aside>
                 <div className="lg:col-span-3">
