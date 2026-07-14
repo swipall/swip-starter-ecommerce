@@ -4,11 +4,10 @@ import { CatalogInterface, InterfaceApiListResponse } from './types/types';
 
 /**
  * Get the active channel with caching enabled.
- * Channel configuration rarely changes, so we cache it for 1 hour.
  */
 export async function getActiveChannelCached() {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
 
     try {
         const result = await getActiveChannel();
@@ -39,11 +38,10 @@ export async function getAvailableCountriesCached() {
 
 /**
  * Get top-level collections with caching enabled.
- * Collections rarely change, so we cache them for 1 day.
  */
 export async function getCatalogs(params: Record<string, any> = {}): Promise<InterfaceApiListResponse<CatalogInterface>> {
     'use cache';
-    cacheLife('days');
+    cacheLife('minutes');
     cacheTag('collections');
 
     try {

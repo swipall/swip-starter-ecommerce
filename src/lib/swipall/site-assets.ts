@@ -5,7 +5,7 @@ import type { SiteConfig } from '@/lib/swipall/types/types';
 
 async function getCachedSiteConfig(): Promise<SiteConfig | null> {
     'use cache';
-    cacheLife('days');
+    cacheLife('minutes');
     return getSiteConfig();
 }
 

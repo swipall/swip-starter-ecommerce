@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 async function getCategoriesWithCounts() {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
 
     const topLevel = await getPosts({ parent__slug: 'menu-principal', ordering: 'ordering' });
     const items = topLevel?.results ?? [];

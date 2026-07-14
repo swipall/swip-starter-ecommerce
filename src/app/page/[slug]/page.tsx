@@ -11,7 +11,7 @@ import {
 
 async function getPagePost(slug: string) {
 	'use cache';
-	cacheLife('hours');
+	cacheLife('minutes');
 	cacheTag(`page-${slug}`);
 
 	const post = await getPostDetail(slug);

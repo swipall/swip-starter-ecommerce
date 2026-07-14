@@ -4,7 +4,7 @@ import { PromoBarCarousel } from './promo-bar-carousel';
 
 export async function PromoBar() {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
 
     const post = await getPostDetail('barra-de-anuncio-merida');
 

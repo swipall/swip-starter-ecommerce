@@ -7,7 +7,7 @@ import { ChevronRight } from 'lucide-react';
 
 export async function NavbarCollectionsMobile() {
     'use cache';
-    cacheLife('days');
+    cacheLife('minutes');
 
     const topLevel = await getPosts({ parent__slug: 'menu-principal', ordering: 'ordering' });
 

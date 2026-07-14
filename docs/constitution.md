@@ -71,7 +71,7 @@ lib/swipall/api.ts           (raw fetch client)
 ## Caching Rules
 
 - Data caching uses Next.js `'use cache'` + `cacheLife` + `cacheTag`. No manual `fetch` cache headers outside `lib/swipall/api.ts`.
-- Cache invalidation is triggered by `revalidateTag()`. The `/api/revalidate` route is the backend-facing entry point.
+- Cache invalidation relies solely on `cacheLife` time-based expiry. There is no on-demand revalidation endpoint.
 - Never cache user-specific or cart data. Only catalog, channel, and country data is cacheable.
 
 ---

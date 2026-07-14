@@ -15,7 +15,7 @@ import { Suspense } from 'react';
 
 async function getCollectionProducts(slug: string, searchParams: { [key: string]: string | string[] | undefined }, customerId?: string) {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
     cacheTag(`collection-${slug}`);
 
     const params = buildSearchInput({
@@ -29,7 +29,7 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
 
 async function getParentTaxonomy(slug: string) {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
     cacheTag(`collection-parent-${slug}`);
 
     const parent = await getTaxonomies({ slug, is_visible_on_web: true });
@@ -38,7 +38,7 @@ async function getParentTaxonomy(slug: string) {
 
 async function getChildTaxonomies(parentId: string) {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
     cacheTag(`collection-taxonomies-${parentId}`);
 
     const children = await getTaxonomies({ parent: parentId, is_visible_on_web: true });
@@ -47,7 +47,7 @@ async function getChildTaxonomies(parentId: string) {
 
 async function getTaxonomyProductCounts(taxonomySlugs: string[]) {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
 
     const counts = await Promise.all(
         taxonomySlugs.map(async (slug) => {
@@ -60,7 +60,7 @@ async function getTaxonomyProductCounts(taxonomySlugs: string[]) {
 
 async function getCollectionMetadata(slug: string) {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
     cacheTag(`collection-meta-${slug}`);
 
     const taxonomy = await getParentTaxonomy(slug);

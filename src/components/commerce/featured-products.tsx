@@ -6,7 +6,7 @@ import { getAuthUserCustomerId } from '@/lib/auth';
 
 async function getFeaturedCollectionProducts(customerId?: string) {
     'use cache'
-    cacheLife('days')
+    cacheLife('minutes')
 
     try {
         const params = {

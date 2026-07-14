@@ -33,7 +33,7 @@ import ProductLoading from './loading';
 
 async function getProductData(id: string, customerId?: string) {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
     cacheTag(`product-${id}`);
 
     try {
@@ -46,7 +46,7 @@ async function getProductData(id: string, customerId?: string) {
 
 async function getParentCategories() {
     'use cache';
-    cacheLife('days');
+    cacheLife('minutes');
     cacheTag('taxonomy-parent-categories');
 
     const result = await getTaxonomies({ kind: 'category', is_visible_on_web: true });
