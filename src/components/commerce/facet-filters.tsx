@@ -2,13 +2,18 @@
 
 import { TaxonomyInterface } from '@/lib/swipall/types/types';
 
+interface TaxonomyGroup {
+    parent: TaxonomyInterface;
+    children: TaxonomyInterface[];
+}
+
 interface FacetFiltersProps {
-    taxonomies: TaxonomyInterface[];
+    groups: TaxonomyGroup[];
     searchParams: Record<string, string | string[] | undefined>;
     counts?: Record<string, number>;
 }
 
-export function FacetFilters({ taxonomies, searchParams, counts }: FacetFiltersProps) {
+export function FacetFilters({ groups, searchParams, counts }: FacetFiltersProps) {
 
     const buildParams = (overrides: Record<string, string | null>) => {
         const params = new URLSearchParams();
@@ -43,7 +48,9 @@ export function FacetFilters({ taxonomies, searchParams, counts }: FacetFiltersP
         })}`;
     };
 
-    if (taxonomies.length === 0) return null;
+    const flatTaxonomies = groups.flatMap(g => [g.parent, ...g.children]);
+
+    if (flatTaxonomies.length === 0) return null;
 
     return (
         <>
@@ -58,7 +65,7 @@ export function FacetFilters({ taxonomies, searchParams, counts }: FacetFiltersP
                         <span className="text-sm leading-none">&times;</span>
                     </button>
                 )}
-                {taxonomies
+                {flatTaxonomies
                     .filter(t => t.slug !== selectedSlug)
                     .map((taxonomy) => (
                         <button
@@ -71,7 +78,7 @@ export function FacetFilters({ taxonomies, searchParams, counts }: FacetFiltersP
                     ))}
             </div>
 
-            {/* Desktop: lista vertical en el sidebar */}
+            {/* Desktop: árbol de categorías en el sidebar */}
             <div className="hidden lg:block py-4 rounded-lg">
                 {selectedLabel && (
                     <div className="mb-4 w-full border-b border-gray-300 pb-4">
@@ -87,20 +94,34 @@ export function FacetFilters({ taxonomies, searchParams, counts }: FacetFiltersP
                         </div>
                     </div>
                 )}
-                <ul className="space-y-3 text-sm">
-                    {taxonomies.map((taxonomy) => (
-                        <li key={taxonomy.id} className="text-muted-foreground">
+                <ul className="space-y-4 text-sm">
+                    {groups.map((group) => (
+                        <li key={group.parent.id}>
                             <a
-                                onClick={() => navigateToFacet(taxonomy)}
-                                className={`cursor-pointer transition-colors hover:text-primary flex items-center gap-2 ${taxonomy.slug === selectedSlug ? 'text-primary font-semibold' : ''}`}
+                                onClick={() => navigateToFacet(group.parent)}
+                                className={`block cursor-pointer text-xs font-bold uppercase tracking-wide mb-2 transition-colors hover:text-primary ${group.parent.slug === selectedSlug ? 'text-primary' : 'text-foreground'}`}
                             >
-                                <span>{taxonomy.value ?? taxonomy.name}</span>
-                                {counts?.[taxonomy.slug] !== undefined && (
-                                    <span className="text-xs font-bold text-muted-foreground tabular-nums">
-                                        ({counts[taxonomy.slug]})
-                                    </span>
-                                )}
+                                {group.parent.value ?? group.parent.name}
                             </a>
+                            {group.children.length > 0 && (
+                                <ul className="space-y-2 pl-3 border-l border-gray-200">
+                                    {group.children.map((child) => (
+                                        <li key={child.id} className="text-muted-foreground">
+                                            <a
+                                                onClick={() => navigateToFacet(child)}
+                                                className={`cursor-pointer transition-colors hover:text-primary flex items-center gap-2 ${child.slug === selectedSlug ? 'text-primary font-semibold' : ''}`}
+                                            >
+                                                <span>{child.value ?? child.name}</span>
+                                                {counts?.[child.slug] !== undefined && (
+                                                    <span className="text-xs font-bold text-muted-foreground tabular-nums">
+                                                        ({counts[child.slug]})
+                                                    </span>
+                                                )}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </li>
                     ))}
                 </ul>

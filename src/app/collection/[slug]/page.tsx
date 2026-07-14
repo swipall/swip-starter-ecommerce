@@ -45,6 +45,27 @@ async function getChildTaxonomies(parentId: string) {
     return children.results;
 }
 
+function sortByLabel<T extends { value: string | null; name: string }>(items: T[]): T[] {
+    return [...items].sort((a, b) =>
+        (a.value ?? a.name).localeCompare(b.value ?? b.name, 'es', { sensitivity: 'base' })
+    );
+}
+
+async function getAllCategoryGroups() {
+    'use cache';
+    cacheLife('hours');
+    cacheTag('taxonomy-category-tree');
+
+    const parents = await getTaxonomies({ kind: 'category', is_visible_on_web: true });
+    const groups = await Promise.all(
+        sortByLabel(parents.results).map(async (parent) => ({
+            parent,
+            children: sortByLabel(await getChildTaxonomies(parent.id)),
+        }))
+    );
+    return groups;
+}
+
 async function getTaxonomyProductCounts(taxonomySlugs: string[]) {
     'use cache';
     cacheLife('hours');
@@ -113,8 +134,9 @@ export default async function CollectionPage({ params, searchParams }: PageProps
     const productDataPromise = getCollectionProducts(slug, searchParamsResolved, customerId);
     const parentTaxonomy = await getParentTaxonomy(slug);
     const collectionName = parentTaxonomy?.value ?? parentTaxonomy?.name ?? '';
-    const taxonomies = parentTaxonomy ? await getChildTaxonomies(parentTaxonomy.id) : [];
-    const taxonomyCounts = await getTaxonomyProductCounts(taxonomies.map(t => t.slug));
+    const categoryGroups = await getAllCategoryGroups();
+    const allTaxonomySlugs = categoryGroups.flatMap(g => [g.parent.slug, ...g.children.map(c => c.slug)]);
+    const taxonomyCounts = await getTaxonomyProductCounts(allTaxonomySlugs);
     return (
         <div className="container mx-auto px-4 py-8 sm:mt-16">
             {collectionName && (
@@ -124,7 +146,7 @@ export default async function CollectionPage({ params, searchParams }: PageProps
                 <aside className="lg:col-span-1">
                     <div className='font-bold text-sm text-primary uppercase'>Categorías</div>
                     <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
-                        <FacetFilters taxonomies={taxonomies} searchParams={searchParamsResolved} counts={taxonomyCounts} />
+                        <FacetFilters groups={categoryGroups} searchParams={searchParamsResolved} counts={taxonomyCounts} />
                     </Suspense>
                 </aside>
                 <div className="lg:col-span-3">
