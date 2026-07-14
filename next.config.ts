@@ -2,6 +2,8 @@ import {NextConfig} from 'next';
 import path from 'path';
 
 const nextConfig: NextConfig = {
+    output: 'standalone',
+
     cacheComponents: true,
 
     turbopack: {
