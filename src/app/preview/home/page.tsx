@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { timingSafeEqual } from "crypto";
 import { Suspense } from "react";
 import { PreviewHomeClient } from "@/components/layout/home/preview/preview-home-client";
+import { PreviewAccessCookieSetter } from "./preview-access-cookie-setter";
 
 const PREVIEW_ACCESS_COOKIE = "swipall-preview-access";
 
@@ -51,14 +52,10 @@ async function PreviewHomeGuard({
         notFound();
     }
 
-    if (hasValidQueryToken) {
-        cookieStore.set(PREVIEW_ACCESS_COOKIE, secret, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            path: "/",
-        });
-    }
-
-    return <PreviewHomeClient allowedOrigins={allowedOrigins} />;
+    return (
+        <>
+            {hasValidQueryToken && <PreviewAccessCookieSetter pk={pk as string} />}
+            <PreviewHomeClient allowedOrigins={allowedOrigins} />
+        </>
+    );
 }
