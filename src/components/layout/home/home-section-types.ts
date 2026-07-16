@@ -45,3 +45,14 @@ export function parsePostBody<T>(body: string | null | undefined): T | null {
         return null;
     }
 }
+
+/**
+ * home-html bodies are meant to be raw HTML. Other block types (e.g.
+ * home-company-info) store JSON.stringify(BlockBody) in the same field —
+ * if a node is mistagged, this keeps that JSON from being dumped as HTML.
+ */
+export function looksLikeJson(body: string | null | undefined): boolean {
+    if (!body) return false;
+    const trimmed = body.trim();
+    return trimmed.startsWith("{") || trimmed.startsWith("[");
+}

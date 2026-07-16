@@ -1,5 +1,5 @@
 import type { CmsPost } from "@/lib/swipall/types/types";
-import { getHomeBlockType, parsePostBody } from "../home-section-types";
+import { getHomeBlockType, looksLikeJson, parsePostBody } from "../home-section-types";
 import type { AdaptedBlock } from "./serialized-block-adapter";
 import { searchProducts } from "@/lib/swipall/rest-adapter";
 import { getAuthUserCustomerId } from "@/lib/auth";
@@ -242,7 +242,7 @@ function PreviewCategoriesSection({ post }: { post: CmsPost }) {
 }
 
 function PreviewHtmlSection({ post }: { post: CmsPost }) {
-    if (!post.body) return null;
+    if (!post.body || looksLikeJson(post.body)) return null;
 
     return (
         <section>

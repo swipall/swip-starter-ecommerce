@@ -126,7 +126,8 @@ function BlockBoundary({
         );
     };
 
-    const blockContentKey = useMemo(() => JSON.stringify(block.node), [block.node]);
+    const flattenNodes = (b: AdaptedBlock): SerializedBlockNode[] => [b.node, ...b.children.flatMap(flattenNodes)];
+    const blockContentKey = useMemo(() => JSON.stringify(flattenNodes(block)), [block]);
 
     useEffect(() => {
         let cancelled = false;
@@ -136,7 +137,7 @@ function BlockBoundary({
         fetch("/api/preview/render-block", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(block.node),
+            body: JSON.stringify(flattenNodes(block)),
         })
             .then((res) => {
                 if (!res.ok) throw new Error("render failed");

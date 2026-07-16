@@ -1,11 +1,12 @@
 import type { CmsPost } from "@/lib/swipall/types/types";
+import { looksLikeJson } from "../home-section-types";
 
 interface HomeHtmlSectionProps {
     post: CmsPost;
 }
 
 export function HomeHtmlSection({ post }: HomeHtmlSectionProps) {
-    if (!post.body) {
+    if (!post.body || looksLikeJson(post.body)) {
         return null;
     }
 

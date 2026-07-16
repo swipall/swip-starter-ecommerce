@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const node = (await req.json()) as SerializedBlockNode;
-    const [block] = adaptSerializedBlocks([node]);
+    const nodes = (await req.json()) as SerializedBlockNode[];
+    const [block] = adaptSerializedBlocks(nodes);
     if (!block) {
         return NextResponse.json({ error: "Invalid block" }, { status: 400 });
     }
