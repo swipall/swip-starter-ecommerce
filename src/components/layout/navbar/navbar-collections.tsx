@@ -3,11 +3,12 @@ import { NavbarDropdownItem } from '@/components/layout/navbar/navbar-dropdown-i
 import { getMenuItemHref } from '@/components/layout/navbar/navbar-menu-helpers';
 import { getPosts } from '@/lib/swipall/rest-adapter';
 import { CmsPost } from '@/lib/swipall/types/types';
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 
 export async function NavbarCollections() {
     "use cache";
-    cacheLife('days');
+    cacheLife('minutes');
+    cacheTag('navbar-collections');
 
     const topLevel = await getPosts({ parent__slug: 'menu-principal', ordering: 'ordering' });
 

@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import type { CmsPost } from "@/lib/swipall/types/types";
 import { getHomeBlockType, type HomeBlockType } from "./home-section-types";
 import { HomeBannerSection } from "./sections/home-banner-section";
@@ -31,7 +31,8 @@ const USER_DEPENDENT_SECTIONS: HomeBlockType[] = ["home-products-by-category"];
 
 async function CachedSectionRenderer({ post }: HomeSectionRendererProps) {
     "use cache";
-    cacheLife("hours");
+    cacheLife("minutes");
+    cacheTag(`home-section-${post.slug}`);
     const type = getHomeBlockType(post);
     if (!type) return null;
     const Renderer = SECTION_RENDERERS[type];

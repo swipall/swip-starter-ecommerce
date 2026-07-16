@@ -63,7 +63,7 @@ export async function getCatalogs(params: Record<string, any> = {}): Promise<Int
  */
 export async function getTaxonomyBySlugCached(slug: string): Promise<TaxonomyInterface | null> {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
     cacheTag(`taxonomy-${slug}`);
 
     const result = await getTaxonomies({ slug, is_visible_on_web: true });
@@ -75,7 +75,7 @@ export async function getTaxonomyBySlugCached(slug: string): Promise<TaxonomyInt
  */
 export async function getTaxonomyChildrenCached(parentId: string): Promise<TaxonomyInterface[]> {
     'use cache';
-    cacheLife('hours');
+    cacheLife('minutes');
     cacheTag(`taxonomy-children-${parentId}`);
 
     const result = await getTaxonomies({ parent: parentId, is_visible_on_web: true });

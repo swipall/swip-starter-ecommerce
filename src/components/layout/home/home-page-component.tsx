@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { getPosts } from "@/lib/swipall/rest-adapter";
 import { HomeSectionRenderer } from "./home-section-renderer";
 import { getHomeBlockType } from "./home-section-types";
@@ -9,7 +9,8 @@ const HOME_PARENT_SLUG = "ecommerce-home";
 
 async function getHomeBlocks(): Promise<CmsPost[]> {
     "use cache";
-    cacheLife("hours");
+    cacheLife("minutes");
+    cacheTag("home-blocks");
     const postsResponse = await getPosts({ parent__slug: HOME_PARENT_SLUG });
     return (postsResponse.results ?? [])
         .filter((post) => getHomeBlockType(post))

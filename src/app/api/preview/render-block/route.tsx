@@ -45,7 +45,10 @@ export async function POST(req: NextRequest) {
         const stream = await renderToReadableStream(<PreviewSectionRenderer block={block} />);
         const html = await streamToString(stream);
         const status = html.match(/data-block-status="([^"]*)"/)?.[1] ?? "hydrated";
-        return NextResponse.json({ html, status });
+        return NextResponse.json(
+            { html, status },
+            { headers: { "Cache-Control": "no-store" } },
+        );
     } catch (error) {
         console.error("[render-block] failed to render", error);
         return NextResponse.json({ error: "Failed to render block" }, { status: 500 });

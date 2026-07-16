@@ -272,6 +272,7 @@ async function PreviewProductsByCategorySection({ post }: { post: CmsPost }) {
         const result = await searchProducts(
             { limit: body?.limit ?? 8, offset: 0, taxonomies__slug__and: categorySlug },
             customerId,
+            { noStore: true },
         );
         products = result.results;
         allOutOfStock = products.length > 0 && products.every((p) => (p.available?.quantity ?? 0) <= 0);
