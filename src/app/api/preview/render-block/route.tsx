@@ -5,8 +5,6 @@ import { renderToReadableStream } from "react-dom/server.edge";
 import { PreviewSectionRenderer } from "@/components/layout/home/preview/preview-section-renderer";
 import { adaptSerializedBlocks, type SerializedBlockNode } from "@/components/layout/home/preview/serialized-block-adapter";
 
-export const runtime = "edge";
-
 const PREVIEW_ACCESS_COOKIE = "swipall-preview-access";
 
 function safeEqual(a: string, b: string): boolean {
