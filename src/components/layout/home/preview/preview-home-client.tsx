@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { adaptSerializedBlocks, type AdaptedBlock, type SerializedBlockNode } from "./serialized-block-adapter";
-import { renderPreviewBlock } from "./render-preview-block";
 import { HomeHeroSkeleton } from "@/components/shared/skeletons/home-hero-skeleton";
 import { HomeCategoriesSkeleton } from "@/components/shared/skeletons/home-categories-skeleton";
 import { HomeProductGridSkeleton } from "@/components/shared/skeletons/home-product-grid-skeleton";
@@ -102,7 +101,7 @@ function BlockBoundary({
 }) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const lastReportedRef = useRef<{ status: BlockStatus; top: number; height: number } | null>(null);
-    const [content, setContent] = useState<ReactNode>(null);
+    const [html, setHtml] = useState<string | null>(null);
     const [status, setStatus] = useState<BlockStatus>("loading");
 
     const report = (nextStatus: BlockStatus) => {
@@ -134,13 +133,18 @@ function BlockBoundary({
         setStatus("loading");
         report("loading");
 
-        renderPreviewBlock(block)
-            .then((rendered) => {
+        fetch("/api/preview/render-block", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(block.node),
+        })
+            .then((res) => {
+                if (!res.ok) throw new Error("render failed");
+                return res.json() as Promise<{ html: string; status: BlockStatus }>;
+            })
+            .then(({ html: rendered, status: resolvedStatus }) => {
                 if (cancelled) return;
-                setContent(rendered);
-                const el = wrapperRef.current;
-                const statusEl = el?.querySelector<HTMLElement>("[data-block-status]");
-                const resolvedStatus = (statusEl?.dataset.blockStatus as BlockStatus | undefined) ?? "hydrated";
+                setHtml(rendered);
                 setStatus(resolvedStatus);
             })
             .catch(() => {
@@ -164,11 +168,15 @@ function BlockBoundary({
 
         return () => resizeObserver.disconnect();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [status, content]);
+    }, [status, html]);
 
     return (
         <div ref={wrapperRef} data-block-id={block.node.id}>
-            {content ?? skeletonForType(block.node.type)}
+            {html !== null ? (
+                <div dangerouslySetInnerHTML={{ __html: html }} />
+            ) : (
+                skeletonForType(block.node.type)
+            )}
         </div>
     );
 }
