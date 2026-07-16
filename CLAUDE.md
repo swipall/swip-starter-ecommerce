@@ -82,3 +82,7 @@ Multi-step checkout at `src/app/checkout/steps/`:
 ### Inventory (`src/lib/swipall/inventory.ts`)
 
 Helpers for fetching product variants and compound materials. Available stock is validated against existing cart quantity on add-to-cart.
+
+### CMS Live Preview
+
+See [`docs/preview.md`](docs/preview.md) for how the CMS live preview renders home blocks. **Read it before touching any component under `src/components/layout/home/sections/`** — the preview renders a separate, static-HTML mirror of those components (`preview-section-renderer.tsx`), and if you change a home block's markup/props there, you must update its counterpart in the preview renderer in the same change, or the preview will drift out of sync with the real home page.

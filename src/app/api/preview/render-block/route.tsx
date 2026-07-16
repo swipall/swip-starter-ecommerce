@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
         const html = await streamToString(stream);
         const status = html.match(/data-block-status="([^"]*)"/)?.[1] ?? "hydrated";
         return NextResponse.json({ html, status });
-    } catch {
+    } catch (error) {
+        console.error("[render-block] failed to render", error);
         return NextResponse.json({ error: "Failed to render block" }, { status: 500 });
     }
 }
