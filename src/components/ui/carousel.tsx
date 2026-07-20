@@ -193,6 +193,7 @@ function CarouselPrevious({
       )}
       disabled={!canScrollPrev}
       onClick={scrollPrev}
+      suppressHydrationWarning
       {...props}
     >
       <ArrowLeft />
@@ -223,6 +224,7 @@ function CarouselNext({
       )}
       disabled={!canScrollNext}
       onClick={scrollNext}
+      suppressHydrationWarning
       {...props}
     >
       <ArrowRight />
