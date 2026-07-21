@@ -5,7 +5,7 @@ import { parsePostBody } from "../home-section-types";
 import { CategoriesCarousel } from "./categories-carousel";
 
 interface HomeCategoriesBody {
-    categoryItems?: Array<{
+    items?: Array<{
         slug: string;
         image?: string;
         title?: string;
@@ -20,7 +20,7 @@ interface HomeCategoriesSectionProps {
 
 export function HomeCategoriesSection({ post }: HomeCategoriesSectionProps) {
     const body = parsePostBody<HomeCategoriesBody>(post.body);
-    const items = body?.categoryItems ?? [];
+    const items = body?.items ?? [];
     const eyebrow = body?.eyebrow ?? post.excerpt ?? "EXPLORAR";
     const viewAllHref = post.link ?? body?.viewAllHref ?? "/search";
 
