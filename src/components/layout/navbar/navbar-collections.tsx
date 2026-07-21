@@ -1,6 +1,6 @@
 import { NavbarLink } from '@/components/layout/navbar/navbar-link';
 import { NavbarDropdownItem } from '@/components/layout/navbar/navbar-dropdown-item';
-import { getMenuItemHref } from '@/components/layout/navbar/navbar-menu-helpers';
+import { getMenuItemHref, isCollection } from '@/components/layout/navbar/navbar-menu-helpers';
 import { getPosts } from '@/lib/swipall/rest-adapter';
 import { CmsPost } from '@/lib/swipall/types/types';
 import { cacheLife, cacheTag } from 'next/cache';
@@ -14,7 +14,7 @@ export async function NavbarCollections() {
 
     const itemsWithChildren = await Promise.all(
         (topLevel?.results ?? []).map(async (item: CmsPost) => {
-            const children = await getPosts({ parent__slug: item.slug });
+            const children = isCollection(item) ? await getPosts({ parent__slug: item.slug }) : null;
             return { ...item, children: children?.results ?? [] };
         })
     );
